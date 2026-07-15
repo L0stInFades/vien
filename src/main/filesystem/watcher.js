@@ -6,12 +6,16 @@ import { exists } from 'common/filesystem'
 import { hasMarkdownExtension } from 'common/filesystem/paths'
 import { getUniqueId } from '../utils'
 import { loadMarkdownFile } from '../filesystem/markdown'
+import { isSameDiskVersion } from '../filesystem/atomicWrite'
 import { isLinux, isOsx } from '../config'
 
 // TODO(refactor): Please see GH#1035.
 
 export const WATCHER_STABILITY_THRESHOLD = 1000
 export const WATCHER_STABILITY_POLL_INTERVAL = 150
+
+/** Self-save origin tokens are pruned after this idle time. */
+export const SELF_SAVE_TOKEN_TTL = 60 * 1000
 
 const EVENT_NAME = {
   dir: 'mt::update-object-tree',
@@ -129,6 +133,10 @@ class Watcher {
   constructor(preferences) {
     this._preferences = preferences
     this._ignoreChangeEvents = []
+    // WATCH-001 origin tokens: "<windowId>|<pathname>" -> { diskVersion, registeredAt }.
+    // A token records the exact on-disk version our own save produced; a
+    // watcher event whose current stat matches the token is a self-save.
+    this._selfSaveTokens = new Map()
     this.watchers = {}
   }
 
@@ -304,12 +312,45 @@ class Watcher {
     }
     this.watchers = {}
     this._ignoreChangeEvents = []
+    this._selfSaveTokens.clear()
+  }
+
+  /**
+   * Register the disk version produced by our own save (WATCH-001).
+   * Subsequent add/change events whose on-disk version equals this token
+   * are recognized as self-saves and suppressed — no time-window guessing.
+   *
+   * @param {number} windowId The window id.
+   * @param {string} pathname The saved path.
+   * @param {{mtimeMs: number, size: number}} diskVersion The version written.
+   */
+  expectSelfSave(windowId, pathname, diskVersion) {
+    if (!diskVersion) {
+      // No version available — fall back to the legacy time window.
+      this.ignoreChangedEvent(windowId, pathname)
+      return
+    }
+    this._pruneSelfSaveTokens()
+    this._selfSaveTokens.set(`${windowId}|${pathname}`, {
+      diskVersion,
+      registeredAt: Date.now(),
+    })
+  }
+
+  _pruneSelfSaveTokens() {
+    const now = Date.now()
+    for (const [key, token] of this._selfSaveTokens) {
+      if (now - token.registeredAt > SELF_SAVE_TOKEN_TTL) {
+        this._selfSaveTokens.delete(key)
+      }
+    }
   }
 
   /**
    * Ignore the next changed event within a certain time for the current file and window.
    *
-   * NOTE: Only valid for files and "add"/"change" event!
+   * NOTE: Only valid for files and "add"/"change" event! Legacy fallback —
+   * prefer `expectSelfSave` with the saved disk version.
    *
    * @param {number} windowId The window id.
    * @param {string} pathname The path to ignore.
@@ -328,35 +369,64 @@ class Watcher {
    * @param {boolean} usePolling
    */
   async _shouldIgnoreEvent(winId, pathname, type, usePolling) {
-    if (type === 'file') {
-      const { _ignoreChangeEvents } = this
-      const currentTime = new Date()
-      for (let i = 0; i < _ignoreChangeEvents.length; ++i) {
-        const { windowId, pathname: pathToIgnore, start, duration } = _ignoreChangeEvents[i]
-        if (windowId === winId && pathToIgnore === pathname) {
-          _ignoreChangeEvents.splice(i, 1)
-          --i
+    if (type !== 'file') {
+      return false
+    }
 
-          // Modification origin is the editor and we should ignore the event.
-          if (currentTime - start < duration) {
+    // WATCH-001: exact-version origin token beats any time heuristics.
+    const tokenKey = `${winId}|${pathname}`
+    const token = this._selfSaveTokens.get(tokenKey)
+    if (token) {
+      if (Date.now() - token.registeredAt > SELF_SAVE_TOKEN_TTL) {
+        this._selfSaveTokens.delete(tokenKey)
+      } else {
+        try {
+          const stat = await fsPromises.stat(pathname)
+          const currentVersion = { mtimeMs: stat.mtimeMs, size: stat.size }
+          if (isSameDiskVersion(currentVersion, token.diskVersion)) {
+            // Disk holds exactly what we wrote — self-save. Keep the token:
+            // watchers may emit multiple events for one write.
             return true
           }
+          // Disk differs from our last write — a real external change.
+          this._selfSaveTokens.delete(tokenKey)
+          return false
+        } catch (_error) {
+          // File vanished between event and stat; treat as external.
+          this._selfSaveTokens.delete(tokenKey)
+          return false
+        }
+      }
+    }
 
-          // Try to catch cloud drives that emit the change event not immediately or re-sync the change (GH#3044).
-          if (!usePolling) {
-            try {
-              const fileInfo = await fsPromises.stat(pathname)
-              if (fileInfo.mtime - start < duration) {
-                if (global.MARKTEXT_DEBUG_VERBOSE >= 3) {
-                  console.log(
-                    `Ignoring file event after "stat": current="${currentTime}", start="${start}", file="${fileInfo.mtime}".`,
-                  )
-                }
-                return true
+    // Legacy time-window entries (callers without a disk version).
+    const { _ignoreChangeEvents } = this
+    const currentTime = new Date()
+    for (let i = 0; i < _ignoreChangeEvents.length; ++i) {
+      const { windowId, pathname: pathToIgnore, start, duration } = _ignoreChangeEvents[i]
+      if (windowId === winId && pathToIgnore === pathname) {
+        _ignoreChangeEvents.splice(i, 1)
+        --i
+
+        // Modification origin is the editor and we should ignore the event.
+        if (currentTime - start < duration) {
+          return true
+        }
+
+        // Try to catch cloud drives that emit the change event not immediately or re-sync the change (GH#3044).
+        if (!usePolling) {
+          try {
+            const fileInfo = await fsPromises.stat(pathname)
+            if (fileInfo.mtime - start < duration) {
+              if (global.MARKTEXT_DEBUG_VERBOSE >= 3) {
+                console.log(
+                  `Ignoring file event after "stat": current="${currentTime}", start="${start}", file="${fileInfo.mtime}".`,
+                )
               }
-            } catch (error) {
-              console.error('Failed to "stat" file to determine modification time:', error)
+              return true
             }
+          } catch (error) {
+            console.error('Failed to "stat" file to determine modification time:', error)
           }
         }
       }

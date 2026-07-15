@@ -159,7 +159,7 @@ const handleResponseForSave = async (
         const filename = path.basename(filePath)
         win.webContents.send('mt::set-pathname', { id, pathname: filePath, filename, ...ack })
       } else {
-        ipcMain.emit('window-file-saved', win.id, filePath)
+        ipcMain.emit('window-file-saved', win.id, filePath, newDiskVersion)
         win.webContents.send('mt::tab-saved', id, ack)
       }
       return id
@@ -289,7 +289,7 @@ ipcMain.on(
             const filename = path.basename(filePath)
             win.webContents.send('mt::set-pathname', { id, pathname: filePath, filename, ...ack })
           } else {
-            ipcMain.emit('window-file-saved', win.id, filePath)
+            ipcMain.emit('window-file-saved', win.id, filePath, newDiskVersion)
             win.webContents.send('mt::tab-saved', id, ack)
           }
         })

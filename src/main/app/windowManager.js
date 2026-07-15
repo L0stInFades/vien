@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import EventEmitter from 'node:events'
 import log from 'electron-log'
-import Watcher, { WATCHER_STABILITY_THRESHOLD, WATCHER_STABILITY_POLL_INTERVAL } from '../filesystem/watcher'
+import Watcher from '../filesystem/watcher'
 import { WindowType } from '../windows/base'
 import ipcListenerRegistry from '../ipc/listenerRegistry'
 
@@ -434,10 +434,10 @@ class WindowManager extends EventEmitter {
       editor.changeOpenedFilePath(pathname, oldPathname)
     })
 
-    ipcMain.on('window-file-saved', (windowId, pathname) => {
-      // A changed event is emitted earliest after the stability threshold.
-      const duration = WATCHER_STABILITY_THRESHOLD + WATCHER_STABILITY_POLL_INTERVAL * 2
-      this._watcher.ignoreChangedEvent(windowId, pathname, duration)
+    ipcMain.on('window-file-saved', (windowId, pathname, diskVersion = null) => {
+      // WATCH-001: register the exact saved disk version as an origin
+      // token; the watcher compares versions instead of guessing by time.
+      this._watcher.expectSelfSave(windowId, pathname, diskVersion)
     })
 
     ipcMain.on('window-close-by-id', (id) => {
