@@ -9,6 +9,7 @@ import { setWindowRegistry } from '../security/ipcGuard'
 import { WorkspaceService } from '../services/workspace'
 import { AssetService } from '../services/assets'
 import { ExportThemeService } from '../services/exportThemes'
+import { SearchService } from '../services/search'
 
 class Accessor {
   /**
@@ -35,6 +36,7 @@ class Accessor {
     this.workspaceService = new WorkspaceService(this.windowManager)
     this.assetService = new AssetService(this.windowManager, this.paths, this.dataCenter)
     this.exportThemeService = new ExportThemeService(this.paths)
+    this.searchService = new SearchService(this.windowManager)
   }
 
   _loadCommands() {

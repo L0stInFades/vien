@@ -17,7 +17,6 @@ import fsExtraStub from '@/node/fs-extra-stub'
 import fsPromisesStub from '@/node/fs-promises-stub'
 import cpStub from '@/node/child-process-stub'
 import zlibStub from '@/node/zlib-stub'
-import { rgPath } from '@/node/vscode-ripgrep-stub'
 
 const expectSyncThrow = (fn, api) => {
   let thrown = null
@@ -119,13 +118,6 @@ describe('renderer Node stubs fail loudly (no silent no-ops)', () => {
   it('zlib APIs fail loudly instead of returning identity data', () => {
     expectSyncThrow(() => zlibStub.deflateSync('data'), 'zlib.deflateSync')
     expectSyncThrow(() => zlibStub.gzipSync('data'), 'zlib.gzipSync')
-  })
-
-  it('vscode-ripgrep rgPath stays a bootstrap-safe string', () => {
-    // RendererPaths calls rgPath.replace() at module load; a throwing export
-    // would crash startup. Spawn attempts still fail via the child_process stub.
-    expect(typeof rgPath).toBe('string')
-    expect(() => rgPath.replace(/a/, 'b')).not.toThrow()
   })
 
   it('error carries structured capability metadata', () => {

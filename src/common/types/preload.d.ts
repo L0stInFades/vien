@@ -116,6 +116,45 @@ export interface ExportThemesApi {
   read(name: string): Promise<CapabilityResult<{ css: string }>>
 }
 
+export interface SearchContentMatch {
+  matchText: string
+  lineText: string
+  range: [[number, number], [number, number]]
+  leadingContextLines: string[]
+  trailingContextLines: string[]
+}
+
+export interface SearchBatchPayload {
+  searchId: string
+  results?: { filePath: string; matches: SearchContentMatch[] }[]
+  paths?: string[]
+  pathCount: number
+}
+
+export interface SearchDonePayload {
+  searchId: string
+  ok: boolean
+  pathCount: number
+  error?: { code: string; message: string }
+}
+
+export interface SearchApi {
+  startContentSearch(request: {
+    searchId: string
+    rootPath: string
+    pattern: string
+    options?: Record<string, unknown>
+  }): Promise<CapabilityResult<{ searchId: string }>>
+  startFileSearch(request: {
+    searchId: string
+    rootPath: string
+    options?: Record<string, unknown>
+  }): Promise<CapabilityResult<{ searchId: string }>>
+  cancel(searchId: string): Promise<CapabilityResult<{ cancelled: boolean }>>
+  onResultBatch(listener: (batch: SearchBatchPayload) => void): () => void
+  onDone(listener: (done: SearchDonePayload) => void): () => void
+}
+
 export interface FontsApi {
   getAvailableFamilies(onlyMonospace?: boolean): Promise<string[]>
 }
@@ -144,6 +183,7 @@ export interface PreloadApi {
   workspace: WorkspaceApi
   assets: AssetsApi
   exportThemes: ExportThemesApi
+  search: SearchApi
   /** Trigger a receive-channel listener locally (renderer → renderer, no main process roundtrip). */
   localEmit(channel: string, ...args: unknown[]): void
   ipc: IpcApi

@@ -229,7 +229,9 @@ export default defineConfig(({ mode }) => {
           { find: 'snapsvg', replacement: resolve('src/muya/lib/assets/libs/snap.svg-min.js') },
           // Renderer-safe stubs for Node.js-only packages
           { find: /^electron-log$/, replacement: resolve('src/renderer/node/electron-log-renderer.js') },
-          { find: /^vscode-ripgrep$/, replacement: resolve('src/renderer/node/vscode-ripgrep-stub.js') },
+          // vscode-ripgrep has NO renderer alias on purpose: search runs in
+          // the main-process SearchService (SEARCH-001); any renderer import
+          // of it must fail the build.
         ],
       },
       define: {

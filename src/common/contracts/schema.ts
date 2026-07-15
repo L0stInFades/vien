@@ -117,7 +117,14 @@ const nullable = <T>(schema: Schema<T>): Schema<T | null> => ({
 })
 
 type ObjectShape = Record<string, Schema<unknown>>
-type ObjectOutput<S extends ObjectShape> = { [K in keyof S]: Infer<S[K]> }
+// Keys whose schema accepts undefined (s.optional) become optional keys in
+// the output type, so `{}` is assignable when every field is optional.
+type UndefinedKeys<S extends ObjectShape> = {
+  [K in keyof S]: undefined extends Infer<S[K]> ? K : never
+}[keyof S]
+type ObjectOutput<S extends ObjectShape> = { [K in Exclude<keyof S, UndefinedKeys<S>>]: Infer<S[K]> } & {
+  [K in UndefinedKeys<S>]?: Infer<S[K]>
+}
 
 const object = <S extends ObjectShape>(shape: S): Schema<ObjectOutput<S>> => ({
   validate(value, path = '$') {

@@ -1,8 +1,15 @@
 import { contextBridge, ipcRenderer, clipboard, shell, webFrame, nativeImage } from 'electron'
-import type { PreloadApi, SideBarContextMenuPayload, TabContextMenuPayload } from '../common/types/preload'
+import type {
+  PreloadApi,
+  SideBarContextMenuPayload,
+  TabContextMenuPayload,
+  SearchBatchPayload,
+  SearchDonePayload,
+} from '../common/types/preload'
 import { WorkspaceChannels } from '../common/contracts/workspace'
 import { AssetChannels } from '../common/contracts/assets'
 import { ExportChannels } from '../common/contracts/export'
+import { SearchChannels } from '../common/contracts/search'
 
 /** Listener with an optional attached wrapped version (event-stripped) for ipcRenderer.on/off symmetry */
 type WrappedIpcListener = ((...args: unknown[]) => void) & {
@@ -258,6 +265,26 @@ const api: PreloadApi = {
   exportThemes: {
     list: () => invokeCapability(ExportChannels.listThemes, {}),
     read: (name: string) => invokeCapability(ExportChannels.readTheme, { name }),
+  },
+
+  search: {
+    startContentSearch: (request: unknown) => invokeCapability(SearchChannels.contentStart, request),
+    startFileSearch: (request: unknown) => invokeCapability(SearchChannels.filesStart, request),
+    cancel: (searchId: string) => invokeCapability(SearchChannels.cancel, { searchId }),
+    onResultBatch: (listener: (batch: SearchBatchPayload) => void) => {
+      const wrapped = (_event: Electron.IpcRendererEvent, batch: unknown) => listener(batch as SearchBatchPayload)
+      ipcRenderer.on(SearchChannels.resultBatch, wrapped)
+      return () => {
+        ipcRenderer.off(SearchChannels.resultBatch, wrapped)
+      }
+    },
+    onDone: (listener: (done: SearchDonePayload) => void) => {
+      const wrapped = (_event: Electron.IpcRendererEvent, done: unknown) => listener(done as SearchDonePayload)
+      ipcRenderer.on(SearchChannels.done, wrapped)
+      return () => {
+        ipcRenderer.off(SearchChannels.done, wrapped)
+      }
+    },
   },
 
   // Trigger a receive-channel listener locally (renderer-to-renderer, no main process).
