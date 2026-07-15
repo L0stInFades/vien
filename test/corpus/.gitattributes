@@ -1,0 +1,4 @@
+# Corpus fixtures are byte-exact test data. Never normalize line endings,
+# never diff-mangle: CRLF, BOM, trailing whitespace and zero-width characters
+# are the point of these files.
+* -text

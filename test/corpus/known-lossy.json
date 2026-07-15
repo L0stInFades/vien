@@ -1,0 +1,54 @@
+{
+  "$comment": "Fixtures that do NOT round-trip byte-identical through open→save today. Phase 3 exit criterion (PLAN.md §5.5) is an empty list. Regenerate with UPDATE_LOSSY_MANIFEST=1 pnpm run unit -- corpus-roundtrip",
+  "generatedBy": "test/unit/specs/corpus-roundtrip.spec.js",
+  "lossy": [
+    {
+      "fixture": "commonmark/blockquotes.md",
+      "note": "first byte difference at offset 67"
+    },
+    {
+      "fixture": "commonmark/fences.md",
+      "note": "first byte difference at offset 47"
+    },
+    {
+      "fixture": "commonmark/headings.md",
+      "note": "first byte difference at offset 33"
+    },
+    {
+      "fixture": "extensions/gfm-table-strike.md",
+      "note": "first byte difference at offset 39"
+    },
+    {
+      "fixture": "lists/loose-tight.md",
+      "note": "first byte difference at offset 12"
+    },
+    {
+      "fixture": "lists/markers.md",
+      "note": "first byte difference at offset 12"
+    },
+    {
+      "fixture": "lists/nesting.md",
+      "note": "first byte difference at offset 52"
+    },
+    {
+      "fixture": "lists/numbering.md",
+      "note": "first byte difference at offset 7"
+    },
+    {
+      "fixture": "pathological/edge-blocks.md",
+      "note": "first byte difference at offset 37"
+    },
+    {
+      "fixture": "whitespace-eol/mixed-eol.md",
+      "note": "first byte difference at offset 62"
+    },
+    {
+      "fixture": "whitespace-eol/multiple-trailing-newlines.md",
+      "note": "first byte difference at offset 56"
+    },
+    {
+      "fixture": "whitespace-eol/tabs.md",
+      "note": "first byte difference at offset 8"
+    }
+  ]
+}
