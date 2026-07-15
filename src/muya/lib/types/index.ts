@@ -292,6 +292,8 @@ export interface IContentState {
   tabSize: number
   isGitlabCompatibilityEnabled: boolean
   listIndentation: string | number
+  /** Per-instance code block render throttle (CORE-003). */
+  _renderCodeBlockTimer: ReturnType<typeof setTimeout> | null
 
   // Block tree traversal
   getBlock(key: string | null | undefined): Block | null

@@ -30,7 +30,6 @@ const BACK_HASH = {
 }
 
 // TODO: refactor later.
-let renderCodeBlockTimer: ReturnType<typeof setTimeout> | null = null
 
 const inputCtrl = (ContentState: { prototype: IContentState }) => {
   // Input @ to quick insert paragraph
@@ -333,13 +332,15 @@ const inputCtrl = (ContentState: { prototype: IContentState }) => {
 
     // Throttle render if edit in code block.
     if (block && block.type === 'span' && block.functionType === 'codeContent') {
-      if (renderCodeBlockTimer) {
-        clearTimeout(renderCodeBlockTimer)
+      if (this._renderCodeBlockTimer) {
+        clearTimeout(this._renderCodeBlockTimer)
+        this._renderCodeBlockTimer = null
       }
       if (needRender) {
         this.partialRender()
       } else {
-        renderCodeBlockTimer = setTimeout(() => {
+        this._renderCodeBlockTimer = setTimeout(() => {
+          this._renderCodeBlockTimer = null
           this.partialRender()
         }, 300)
       }

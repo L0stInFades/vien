@@ -125,7 +125,11 @@ class ContentState {
     cells: Array<{ key: string; [key: string]: unknown }>
     [key: string]: unknown
   } | null
-  blocks: Block[]
+  private _blocks: Block[] = []
+  /** Lazy key -> block index (CORE-003); null means "rebuild on next use". */
+  private _blockIndex: Map<string, Block> | null = null
+  /** Per-instance code block render throttle (was module-level, leaked across editors). */
+  _renderCodeBlockTimer: ReturnType<typeof setTimeout> | null = null
   cellSelectEventIds: string[]
   cellSelectInfo: ICellSelectInfo | null
   currentCursor: Cursor | null
@@ -153,7 +157,7 @@ class ContentState {
 
     // Use to cache the keys which you don't want to remove.
     this.exemption = new Set()
-    this.blocks = [this.createBlockP()]
+    this._blocks = [this.createBlockP()]
     this.stateRender = new StateRenderStub()
     this.renderRange = [null, null]
     this.currentCursor = null
@@ -175,6 +179,59 @@ class ContentState {
     this._selectedTableCells = null
     this.cellSelectEventIds = []
     this.init()
+  }
+
+  // Wholesale replacement (history undo/redo, import) invalidates the index.
+  get blocks(): Block[] {
+    return this._blocks
+  }
+
+  set blocks(value: Block[]) {
+    this._blocks = value
+    this._blockIndex = null
+  }
+
+  private _indexBlockTree(block: Block): void {
+    this._blockIndex!.set(block.key, block)
+    for (const child of block.children) {
+      this._indexBlockTree(child)
+    }
+  }
+
+  private _unindexBlockTree(block: Block): void {
+    if (!this._blockIndex) return
+    this._blockIndex.delete(block.key)
+    for (const child of block.children) {
+      this._unindexBlockTree(child)
+    }
+  }
+
+  private _rebuildBlockIndex(): void {
+    this._blockIndex = new Map()
+    for (const block of this._blocks) {
+      this._indexBlockTree(block)
+    }
+  }
+
+  /**
+   * Verify an indexed block is still attached to the live tree by walking
+   * its parent chain with identity membership checks. Guards against the
+   * places that splice children arrays directly (enterCtrl/updateCtrl) and
+   * against stale objects after history replaced the whole tree.
+   */
+  private _isAttachedToTree(block: Block): boolean {
+    let current = block
+    for (let depth = 0; depth < 1000; depth++) {
+      if (current.parent == null) {
+        return this._blocks.includes(current)
+      }
+      const parent = this._blockIndex!.get(current.parent)
+      if (!parent || !parent.children.includes(current)) {
+        return false
+      }
+      current = parent
+    }
+    return false
   }
 
   setStateRender(stateRender: IStateRender) {
@@ -446,21 +503,16 @@ class ContentState {
 
   getBlock(key: string | null | undefined): Block | null {
     if (!key) return null
-    let result = null
-    const travel = (blocks: Block[]) => {
-      for (const block of blocks) {
-        if (block.key === key) {
-          result = block
-          return
-        }
-        const { children } = block
-        if (children.length) {
-          travel(children)
-        }
-      }
+    if (!this._blockIndex) {
+      this._rebuildBlockIndex()
     }
-    travel(this.blocks)
-    return result
+    const hit = this._blockIndex!.get(key)
+    if (hit && this._isAttachedToTree(hit)) {
+      return hit
+    }
+    // Miss or detached entry: rebuild once and take the authoritative answer.
+    this._rebuildBlockIndex()
+    return this._blockIndex!.get(key) ?? null
   }
 
   copyBlock(origin: Block) {
