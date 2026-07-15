@@ -7,14 +7,6 @@
       "note": "first byte difference at offset 67"
     },
     {
-      "fixture": "commonmark/fences.md",
-      "note": "first byte difference at offset 47"
-    },
-    {
-      "fixture": "commonmark/headings.md",
-      "note": "first byte difference at offset 33"
-    },
-    {
       "fixture": "extensions/gfm-table-strike.md",
       "note": "first byte difference at offset 39"
     },

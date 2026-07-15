@@ -197,7 +197,9 @@ class ExportMarkdown {
     const { text } = block.children[0]
     if (headingStyle === 'atx') {
       const match = text.match(/(#{1,6})(.*)/)
-      const atxHeadingText = `${match![1]} ${match![2].trim()}`
+      // Replay the original closing-hash sequence when present (ADR-001).
+      const closedAtxSuffix = (block.closedAtxSuffix as string | undefined) ?? ''
+      const atxHeadingText = `${match![1]} ${match![2].trim()}${closedAtxSuffix}`
       return `${indent}${atxHeadingText}\n`
     } else if (headingStyle === 'setext') {
       const lines = text.trim().split('\n')
@@ -281,11 +283,13 @@ class ExportMarkdown {
     const textList = codeContent.text.split('\n')
     const { functionType } = block
     if (functionType === 'fencecode') {
-      result.push(`${indent}${block.lang ? `\`\`\`${block.lang}\n` : '```\n'}`)
+      // Replay the original fence opener (char + length) when present.
+      const fenceMarker = (block.fenceMarker as string | undefined) ?? '```'
+      result.push(`${indent}${block.lang ? `${fenceMarker}${block.lang}\n` : `${fenceMarker}\n`}`)
       textList.forEach((text: string) => {
         result.push(`${indent}${text}\n`)
       })
-      result.push(`${indent}\`\`\`\n`)
+      result.push(`${indent}${fenceMarker}\n`)
     } else {
       textList.forEach((text: string) => {
         result.push(`${indent}    ${text}\n`)

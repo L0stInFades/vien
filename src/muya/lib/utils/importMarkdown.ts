@@ -216,6 +216,11 @@ const importRegister = (ContentState: any) => {
             block.marker = marker
           }
 
+          if (headingStyle === 'atx' && token.closedAtxSuffix) {
+            // Original closing-hash sequence (ADR-001 lossless round-trip).
+            block.closedAtxSuffix = token.closedAtxSuffix
+          }
+
           this.appendChild(parentList[0], block)
           break
         }
@@ -246,6 +251,10 @@ const importRegister = (ContentState: any) => {
               functionType: codeBlockStyle === 'fenced' ? 'fencecode' : 'indentcode',
               lang,
             })
+            if (codeBlockStyle === 'fenced' && token.fenceMarker) {
+              // Original fence opener, e.g. "~~~" or "````" (ADR-001).
+              block.fenceMarker = token.fenceMarker
+            }
             const codeBlock = this.createBlock('code', {
               lang,
             })

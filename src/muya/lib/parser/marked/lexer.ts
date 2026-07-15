@@ -220,6 +220,9 @@ Lexer.prototype.token = function (src: string, top: boolean) {
       this.tokens.push({
         type: 'code',
         codeBlockStyle: 'fenced',
+        // Original fence opener (e.g. "~~~~~" or "````") — preserved so
+        // an unedited block round-trips byte-identical (ADR-001).
+        fenceMarker: cap[1],
         lang: cap[2] ? cap[2].trim() : cap[2],
         text,
       })
@@ -231,6 +234,7 @@ Lexer.prototype.token = function (src: string, top: boolean) {
     if (cap) {
       src = src.substring(cap[0].length)
       let text = cap[2] ? cap[2].trim() : ''
+      let closedAtxSuffix = ''
 
       if (text.endsWith('#')) {
         const trimmed = rtrim(text, '#')
@@ -239,6 +243,11 @@ Lexer.prototype.token = function (src: string, top: boolean) {
           text = trimmed.trim()
         } else if (!trimmed || trimmed.endsWith(' ')) {
           // CommonMark requires space before trailing #s
+          // Preserve the exact closing sequence (spacing + hashes) so the
+          // exporter can reproduce closed ATX headings (ADR-001).
+          const hashes = text.slice(trimmed.length)
+          const spacing = trimmed.slice(trimmed.trimEnd().length)
+          closedAtxSuffix = `${spacing}${hashes}`
           text = trimmed.trim()
         }
       }
@@ -247,6 +256,7 @@ Lexer.prototype.token = function (src: string, top: boolean) {
         type: 'heading',
         headingStyle: 'atx',
         depth: cap[1].length,
+        closedAtxSuffix,
         text,
       })
       continue

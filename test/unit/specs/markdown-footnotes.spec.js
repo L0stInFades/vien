@@ -278,7 +278,7 @@ describe('Markdown Footnotes', () => {
       { type: 'footnote_start', identifier: 'foo1' },
       { type: 'paragraph', text: 'At vero eos et accusam et justo duo dolores et ea rebum!' },
       { type: 'space' },
-      { type: 'code', codeBlockStyle: 'fenced', lang: '', text: 'code block text' },
+      { type: 'code', codeBlockStyle: 'fenced', fenceMarker: '```', lang: '', text: 'code block text' },
       { type: 'paragraph', text: 'Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.' },
       { type: 'footnote_end' }
     ]
