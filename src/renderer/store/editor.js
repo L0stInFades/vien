@@ -11,6 +11,47 @@ import { markEdited, saveSnapshotFields, applySaveAck } from './documentSession'
 
 const autoSaveTimers = new Map()
 
+// Crash-recovery journal debounce (SAFE-004): per-tab timers, RPO <= 1.5s.
+const RECOVERY_DEBOUNCE_MS = 1500
+const recoverySnapshotTimers = new Map()
+
+const armRecoverySnapshot = (state, tabId) => {
+  if (!window.api?.recovery) {
+    return
+  }
+  if (recoverySnapshotTimers.has(tabId)) {
+    clearTimeout(recoverySnapshotTimers.get(tabId))
+  }
+  const timer = setTimeout(() => {
+    recoverySnapshotTimers.delete(tabId)
+    const tab = state.tabs.find((t) => t.id === tabId)
+    if (!tab || tab.isSaved) {
+      return
+    }
+    window.api.recovery
+      .snapshot({
+        tabId: tab.id,
+        pathname: tab.pathname || null,
+        filename: tab.filename || '',
+        markdown: tab.markdown ?? '',
+        revision: tab.revision ?? 0,
+      })
+      .catch(() => {})
+  }, RECOVERY_DEBOUNCE_MS)
+  recoverySnapshotTimers.set(tabId, timer)
+}
+
+const discardRecoverySnapshot = (tabId) => {
+  if (!tabId || !window.api?.recovery) {
+    return
+  }
+  if (recoverySnapshotTimers.has(tabId)) {
+    clearTimeout(recoverySnapshotTimers.get(tabId))
+    recoverySnapshotTimers.delete(tabId)
+  }
+  window.api.recovery.discard(tabId).catch(() => {})
+}
+
 // Flag to suppress false "dirty" marking when Muya re-serializes markdown
 // during initial file load. Muya's setMarkdown() fires dispatchChange() via
 // setTimeout which triggers LISTEN_FOR_CONTENT_CHANGE. The round-tripped
@@ -198,7 +239,9 @@ const mutations = {
       Object.assign(tab, { filename, pathname })
       // set-pathname doubles as the save ack for newly created files —
       // apply it revision-aware so a stale ack never clears newer edits.
-      applySaveAck(tab, fileInfo)
+      if (applySaveAck(tab, fileInfo) !== 'stale') {
+        discardRecoverySnapshot(tab.id)
+      }
     }
   },
   SET_SAVE_STATUS_BY_TAB(_state, { tab, status }) {
@@ -425,6 +468,8 @@ const actions = {
 
   FORCE_CLOSE_TAB({ commit, dispatch }, file) {
     commit('REMOVE_FILE_WITHIN_TABS', file)
+    // Deliberate close: the crash journal entry is no longer wanted.
+    discardRecoverySnapshot(file.id)
     const { pathname } = file
 
     // Notify main process to remove the file from the window and free resources.
@@ -523,7 +568,10 @@ const actions = {
       if (tab) {
         // Revision-aware ack (SAFE-001): a stale ack — the user edited
         // after this save snapshot was serialized — must NOT clear dirty.
-        applySaveAck(tab, ack)
+        if (applySaveAck(tab, ack) !== 'stale') {
+          // Content is safely on disk; the crash journal entry is obsolete.
+          discardRecoverySnapshot(tabId)
+        }
       }
     })
 
@@ -723,7 +771,65 @@ const actions = {
       } else {
         dispatch('NEW_UNTITLED_TAB', {})
       }
+
+      // Restore crash-recovery leftovers from a killed session (SAFE-004).
+      dispatch('RESTORE_RECOVERY_SNAPSHOTS')
     })
+  },
+
+  async RESTORE_RECOVERY_SNAPSHOTS({ dispatch, state }) {
+    if (!window.api?.recovery) {
+      return
+    }
+    try {
+      const result = await window.api.recovery.list()
+      if (!result?.ok) {
+        return
+      }
+      const { snapshots, corrupt } = result.value
+      if (snapshots.length === 0 && corrupt === 0) {
+        return
+      }
+
+      for (const snapshot of snapshots) {
+        dispatch('NEW_UNTITLED_TAB', { markdown: snapshot.markdown, selected: false })
+        // The restored content lives in a NEW tab: find it (last added),
+        // mark it dirty and re-journal it under the new tab id before the
+        // old snapshot file is removed — a crash right now must not lose it.
+        const restoredTab = state.tabs[state.tabs.length - 1]
+        if (restoredTab) {
+          restoredTab.isSaved = false
+          window.api.recovery
+            .snapshot({
+              tabId: restoredTab.id,
+              pathname: null,
+              filename: snapshot.filename || restoredTab.filename || '',
+              markdown: snapshot.markdown,
+              revision: restoredTab.revision ?? 0,
+            })
+            .catch(() => {})
+        }
+        window.api.recovery.discard(snapshot.tabId).catch(() => {})
+      }
+
+      const parts = []
+      if (snapshots.length > 0) {
+        parts.push(
+          `Restored ${snapshots.length} unsaved ${snapshots.length === 1 ? 'document' : 'documents'} from the previous session.`,
+        )
+      }
+      if (corrupt > 0) {
+        parts.push(`${corrupt} recovery ${corrupt === 1 ? 'entry was' : 'entries were'} unreadable.`)
+      }
+      notice.notify({
+        title: 'Crash recovery',
+        type: snapshots.length > 0 ? 'primary' : 'warning',
+        time: 20000,
+        message: parts.join(' '),
+      })
+    } catch (_error) {
+      // Recovery must never block startup.
+    }
   },
 
   // Open a new tab, optionally with content.
@@ -1037,6 +1143,8 @@ const actions = {
     // Change save status/save to file only when the markdown changed!
     if (markdown !== oldMarkdown) {
       commit('SET_SAVE_STATUS', false)
+      // Crash journal (SAFE-004): capture the dirty document within 1.5s.
+      armRecoverySnapshot(state, currentId)
 
       // Save file is auto save is enable and file exist on disk.
       if (pathname && autoSave) {

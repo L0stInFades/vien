@@ -10,6 +10,7 @@ import { WorkspaceChannels } from '../common/contracts/workspace'
 import { AssetChannels } from '../common/contracts/assets'
 import { ExportChannels } from '../common/contracts/export'
 import { SearchChannels } from '../common/contracts/search'
+import { RecoveryChannels } from '../common/contracts/recovery'
 
 /** Listener with an optional attached wrapped version (event-stripped) for ipcRenderer.on/off symmetry */
 type WrappedIpcListener = ((...args: unknown[]) => void) & {
@@ -285,6 +286,12 @@ const api: PreloadApi = {
         ipcRenderer.off(SearchChannels.done, wrapped)
       }
     },
+  },
+
+  recovery: {
+    snapshot: (request: unknown) => invokeCapability(RecoveryChannels.snapshot, request),
+    discard: (tabId: string) => invokeCapability(RecoveryChannels.discard, { tabId }),
+    list: () => invokeCapability(RecoveryChannels.list, {}),
   },
 
   // Trigger a receive-channel listener locally (renderer-to-renderer, no main process).

@@ -155,6 +155,28 @@ export interface SearchApi {
   onDone(listener: (done: SearchDonePayload) => void): () => void
 }
 
+export interface RecoverySnapshotEntryPayload {
+  tabId: string
+  pathname: string | null
+  filename: string
+  markdown: string
+  revision: number
+  savedAt: number
+  schemaVersion: number
+}
+
+export interface RecoveryApi {
+  snapshot(request: {
+    tabId: string
+    pathname: string | null
+    filename: string
+    markdown: string
+    revision: number
+  }): Promise<CapabilityResult<{ savedAt: number }>>
+  discard(tabId: string): Promise<CapabilityResult<{ discarded: boolean }>>
+  list(): Promise<CapabilityResult<{ snapshots: RecoverySnapshotEntryPayload[]; corrupt: number }>>
+}
+
 export interface FontsApi {
   getAvailableFamilies(onlyMonospace?: boolean): Promise<string[]>
 }
@@ -184,6 +206,7 @@ export interface PreloadApi {
   assets: AssetsApi
   exportThemes: ExportThemesApi
   search: SearchApi
+  recovery: RecoveryApi
   /** Trigger a receive-channel listener locally (renderer → renderer, no main process roundtrip). */
   localEmit(channel: string, ...args: unknown[]): void
   ipc: IpcApi

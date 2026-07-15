@@ -10,6 +10,7 @@ import { WorkspaceService } from '../services/workspace'
 import { AssetService } from '../services/assets'
 import { ExportThemeService } from '../services/exportThemes'
 import { SearchService } from '../services/search'
+import { RecoveryService } from '../services/recovery'
 
 class Accessor {
   /**
@@ -37,6 +38,7 @@ class Accessor {
     this.assetService = new AssetService(this.windowManager, this.paths, this.dataCenter)
     this.exportThemeService = new ExportThemeService(this.paths)
     this.searchService = new SearchService(this.windowManager)
+    this.recoveryService = new RecoveryService(this.paths)
   }
 
   _loadCommands() {
