@@ -1,17 +1,22 @@
 /**
- * Browser stub for Node.js 'fs' module.
- * Used in renderer process where nodeIntegration is disabled.
- * Real filesystem access goes through IPC (Phase 5+).
+ * Renderer stub for Node.js 'fs'.
+ *
+ * PLAN.md Phase 0 contract: every call fails loudly with a structured
+ * CapabilityUnavailableError — a stub must never fake success (empty reads,
+ * no-op writes, "file does not exist" answers). Real filesystem access
+ * belongs to main-process services (WorkspaceService / AssetService /
+ * ExportService) reached over the preload capability API.
+ *
+ * `constants` stays as plain data: it is destructured at module load time
+ * and carries no behavior.
  */
-const noop = () => {}
-const noopAsync = () => Promise.resolve()
-const fakeStat = () => ({
-  isFile: () => false,
-  isDirectory: () => false,
-  isSymbolicLink: () => false,
-  mode: 0,
-  size: 0,
-})
+import { unavailableSync, unavailableAsync } from 'common/errors/capabilityUnavailable'
+
+const CAPABILITY = 'filesystem'
+const MIGRATION = 'a main-process service over IPC (PLAN.md WORKSPACE-001/ASSET-001/EXPORT-001)'
+
+const sync = (api) => unavailableSync({ capability: CAPABILITY, api: `fs.${api}`, migration: MIGRATION })
+const async = (api) => unavailableAsync({ capability: CAPABILITY, api: `fs.${api}`, migration: MIGRATION })
 
 export const constants = {
   S_IXUSR: 0o100,
@@ -30,67 +35,33 @@ export const constants = {
   X_OK: 1,
 }
 
-export const statSync = fakeStat
-export const lstatSync = fakeStat
-export const readFileSync = () => ''
-export const writeFileSync = noop
-export const existsSync = () => false
-export const readlinkSync = () => ''
-export const mkdirSync = noop
-export const readdirSync = () => []
-export const unlinkSync = noop
-export const renameSync = noop
-export const copyFileSync = noop
-export const accessSync = noop
-export const chmodSync = noop
-export const createReadStream = () => ({ on: noop, pipe: noop })
-export const createWriteStream = () => ({ on: noop, write: noop, end: noop })
-export const stat = (_p, cb) => (cb ? cb(null, fakeStat()) : noopAsync())
-export const lstat = (_p, cb) => (cb ? cb(null, fakeStat()) : noopAsync())
-export const readFile = (_p, opts, cb) => {
-  const done = typeof opts === 'function' ? opts : cb
-  if (done) done(null, '')
-  return noopAsync()
-}
-export const writeFile = (_p, _data, opts, cb) => {
-  const done = typeof opts === 'function' ? opts : cb
-  if (done) done(null)
-  return noopAsync()
-}
-export const mkdir = (_p, opts, cb) => {
-  const done = typeof opts === 'function' ? opts : cb
-  if (done) done(null)
-  return noopAsync()
-}
-export const readdir = (_p, cb) => {
-  if (cb) cb(null, [])
-  return noopAsync()
-}
-export const unlink = (_p, cb) => {
-  if (cb) cb(null)
-  return noopAsync()
-}
-export const rename = (_o, _n, cb) => {
-  if (cb) cb(null)
-  return noopAsync()
-}
-export const copyFile = (_s, _d, cb) => {
-  if (cb) cb(null)
-  return noopAsync()
-}
-export const access = (_p, mode, cb) => {
-  const done = typeof mode === 'function' ? mode : cb
-  if (done) done(null)
-  return noopAsync()
-}
-export const chmod = (_p, _m, cb) => {
-  if (cb) cb(null)
-  return noopAsync()
-}
-export const readlink = (_p, cb) => {
-  if (cb) cb(null, '')
-  return noopAsync()
-}
+export const statSync = sync('statSync')
+export const lstatSync = sync('lstatSync')
+export const readFileSync = sync('readFileSync')
+export const writeFileSync = sync('writeFileSync')
+export const existsSync = sync('existsSync')
+export const readlinkSync = sync('readlinkSync')
+export const mkdirSync = sync('mkdirSync')
+export const readdirSync = sync('readdirSync')
+export const unlinkSync = sync('unlinkSync')
+export const renameSync = sync('renameSync')
+export const copyFileSync = sync('copyFileSync')
+export const accessSync = sync('accessSync')
+export const chmodSync = sync('chmodSync')
+export const createReadStream = sync('createReadStream')
+export const createWriteStream = sync('createWriteStream')
+export const stat = async('stat')
+export const lstat = async('lstat')
+export const readFile = async('readFile')
+export const writeFile = async('writeFile')
+export const mkdir = async('mkdir')
+export const readdir = async('readdir')
+export const unlink = async('unlink')
+export const rename = async('rename')
+export const copyFile = async('copyFile')
+export const access = async('access')
+export const chmod = async('chmod')
+export const readlink = async('readlink')
 
 const fsStub = {
   constants,

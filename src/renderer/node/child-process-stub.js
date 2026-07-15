@@ -1,28 +1,25 @@
 /**
- * Browser stub for Node.js 'child_process' module.
- * Used in renderer process where nodeIntegration is disabled.
+ * Renderer stub for Node.js 'child_process'.
+ *
+ * PLAN.md Phase 0 contract: spawning processes from the renderer is a
+ * privilege violation — every call fails loudly with a structured
+ * CapabilityUnavailableError. Search (ripgrep) and external tools belong to
+ * main-process services (PLAN.md SEARCH-001 / ShellService).
  */
-const noop = () => {}
-const fakeProcess = { stdout: { on: noop, pipe: noop }, stderr: { on: noop, pipe: noop }, on: noop, kill: noop }
+import { unavailableSync, unavailableAsync } from 'common/errors/capabilityUnavailable'
 
-export const spawn = () => fakeProcess
-export const exec = (_cmd, opts, cb) => {
-  const done = typeof opts === 'function' ? opts : cb
-  if (done) done(new Error('child_process.exec not available in browser renderer'))
-  return fakeProcess
-}
-export const execFile = (_file, args, opts, cb) => {
-  const done = typeof opts === 'function' ? opts : typeof args === 'function' ? args : cb
-  if (done) done(new Error('child_process.execFile not available in browser renderer'))
-  return fakeProcess
-}
-export const fork = () => fakeProcess
-export const execSync = () => (Buffer.from ? Buffer.from('') : '')
-export const spawnSync = () => ({
-  stdout: Buffer.from ? Buffer.from('') : '',
-  stderr: Buffer.from ? Buffer.from('') : '',
-  status: 0,
-})
+const CAPABILITY = 'process.spawn'
+const MIGRATION = 'SearchService/ShellService over IPC (PLAN.md SEARCH-001)'
+
+const sync = (api) => unavailableSync({ capability: CAPABILITY, api: `child_process.${api}`, migration: MIGRATION })
+const async = (api) => unavailableAsync({ capability: CAPABILITY, api: `child_process.${api}`, migration: MIGRATION })
+
+export const spawn = sync('spawn')
+export const exec = async('exec')
+export const execFile = async('execFile')
+export const fork = sync('fork')
+export const execSync = sync('execSync')
+export const spawnSync = sync('spawnSync')
 
 const cp = { spawn, exec, execFile, fork, execSync, spawnSync }
 export default cp

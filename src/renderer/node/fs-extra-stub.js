@@ -1,32 +1,39 @@
 /**
- * Browser stub for 'fs-extra' package.
- * Used in renderer process where nodeIntegration is disabled.
+ * Renderer stub for 'fs-extra'.
+ *
+ * PLAN.md Phase 0 contract: every call fails loudly with a structured
+ * CapabilityUnavailableError. File create/copy/move/delete belongs to the
+ * main-process WorkspaceService/AssetService (PLAN.md WORKSPACE-001 /
+ * ASSET-001), not to the renderer.
  */
-const noopAsync = () => Promise.resolve()
-const noop = () => {}
+import { unavailableSync, unavailableAsync } from 'common/errors/capabilityUnavailable'
 
-export const ensureDir = noopAsync
-export const ensureDirSync = noop
-export const outputFile = noopAsync
-export const move = noopAsync
-export const copy = noopAsync
-export const writeFile = noopAsync
-export const readFile = () => Promise.resolve(Buffer.from ? Buffer.from('') : '')
-export const unlink = noopAsync
-export const stat = () =>
-  Promise.resolve({ size: 0, isFile: () => false, isDirectory: () => false, isSymbolicLink: () => false, mode: 0 })
-export const lstat = () =>
-  Promise.resolve({ size: 0, isFile: () => false, isDirectory: () => false, isSymbolicLink: () => false, mode: 0 })
-export const existsSync = () => false
-export const lstatSync = () => ({ isFile: () => false, isDirectory: () => false, isSymbolicLink: () => false, mode: 0 })
-export const readlinkSync = () => ''
-export const outputJson = noopAsync
-export const readJson = () => Promise.resolve({})
-export const writeJson = noopAsync
-export const remove = noopAsync
-export const emptyDir = noopAsync
-export const mkdirs = noopAsync
-export const mkdirsSync = noop
+const CAPABILITY = 'workspace.file-operations'
+const MIGRATION = 'WorkspaceService/AssetService over IPC (PLAN.md WORKSPACE-001/ASSET-001)'
+
+const sync = (api) => unavailableSync({ capability: CAPABILITY, api: `fs-extra.${api}`, migration: MIGRATION })
+const async = (api) => unavailableAsync({ capability: CAPABILITY, api: `fs-extra.${api}`, migration: MIGRATION })
+
+export const ensureDir = async('ensureDir')
+export const ensureDirSync = sync('ensureDirSync')
+export const outputFile = async('outputFile')
+export const move = async('move')
+export const copy = async('copy')
+export const writeFile = async('writeFile')
+export const readFile = async('readFile')
+export const unlink = async('unlink')
+export const stat = async('stat')
+export const lstat = async('lstat')
+export const existsSync = sync('existsSync')
+export const lstatSync = sync('lstatSync')
+export const readlinkSync = sync('readlinkSync')
+export const outputJson = async('outputJson')
+export const readJson = async('readJson')
+export const writeJson = async('writeJson')
+export const remove = async('remove')
+export const emptyDir = async('emptyDir')
+export const mkdirs = async('mkdirs')
+export const mkdirsSync = sync('mkdirsSync')
 
 const fsExtra = {
   ensureDir,

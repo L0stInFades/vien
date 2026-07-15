@@ -1,25 +1,30 @@
 /**
- * Browser stub for Node.js 'fs/promises' module.
- * Used in renderer process where nodeIntegration is disabled.
+ * Renderer stub for Node.js 'fs/promises'.
+ *
+ * PLAN.md Phase 0 contract: every call fails loudly with a structured
+ * CapabilityUnavailableError instead of resolving with fake data.
  */
-const noopAsync = () => Promise.resolve()
-const fakeStat = () =>
-  Promise.resolve({ isFile: () => false, isDirectory: () => false, isSymbolicLink: () => false, mode: 0, size: 0 })
+import { unavailableAsync } from 'common/errors/capabilityUnavailable'
 
-export const access = noopAsync
-export const stat = fakeStat
-export const lstat = fakeStat
-export const readFile = () => Promise.resolve('')
-export const writeFile = noopAsync
-export const mkdir = noopAsync
-export const readdir = () => Promise.resolve([])
-export const unlink = noopAsync
-export const rename = noopAsync
-export const copyFile = noopAsync
-export const chmod = noopAsync
-export const readlink = () => Promise.resolve('')
-export const rm = noopAsync
-export const rmdir = noopAsync
+const CAPABILITY = 'filesystem'
+const MIGRATION = 'a main-process service over IPC (PLAN.md WORKSPACE-001/ASSET-001/EXPORT-001)'
+
+const async = (api) => unavailableAsync({ capability: CAPABILITY, api: `fs/promises.${api}`, migration: MIGRATION })
+
+export const access = async('access')
+export const stat = async('stat')
+export const lstat = async('lstat')
+export const readFile = async('readFile')
+export const writeFile = async('writeFile')
+export const mkdir = async('mkdir')
+export const readdir = async('readdir')
+export const unlink = async('unlink')
+export const rename = async('rename')
+export const copyFile = async('copyFile')
+export const chmod = async('chmod')
+export const readlink = async('readlink')
+export const rm = async('rm')
+export const rmdir = async('rmdir')
 
 const fsPromisesStub = {
   access,
