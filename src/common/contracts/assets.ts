@@ -8,7 +8,26 @@ export const AssetChannels = {
   copyImageToFolder: 'mt::asset-copy-image-to-folder',
   moveToRelativeFolder: 'mt::asset-move-to-relative-folder',
   uploadByCommand: 'mt::asset-upload-by-command',
+  uploaderAvailable: 'mt::asset-uploader-available',
+  readImageForUpload: 'mt::asset-read-image-for-upload',
 } as const
+
+/** Check whether an uploader command is available on this machine. */
+export const AssetUploaderAvailableRequestSchema = s.object({
+  uploader: s.literal('picgo'),
+})
+export type AssetUploaderAvailableRequest = Infer<typeof AssetUploaderAvailableRequestSchema>
+
+/**
+ * Read image bytes for an upload flow (github uploader with a path
+ * reference). Restricted to image extensions and size-capped main-side.
+ */
+export const AssetReadImageRequestSchema = s.object({
+  docPathname: s.absolutePath(),
+  imagePath: s.string({ minLength: 1, maxLength: 4096 }),
+  maxBytes: s.optional(s.number({ integer: true, min: 1, max: 256 * 1024 * 1024 })),
+})
+export type AssetReadImageRequest = Infer<typeof AssetReadImageRequestSchema>
 
 /**
  * Copy an image (referenced by path, or pasted bytes) into `outputDir`,

@@ -1,10 +1,8 @@
-import fs from 'node:fs'
-import path from 'node:path'
 import Slugger from 'muya/lib/parser/marked/slugger'
-import { isFile } from 'common/filesystem'
 import { escapeHTML, unescapeHTML } from 'muya/lib/utils'
 import academicTheme from '@/assets/themes/export/academic.theme.css?inline'
 import liberTheme from '@/assets/themes/export/liber.theme.css?inline'
+import { unwrapCapability } from '@/services/capability'
 import { cloneObj } from '../util'
 import { sanitize, EXPORT_DOMPURIFY_CONFIG } from '../util/dompurify'
 
@@ -23,7 +21,7 @@ interface CssOptions {
   headerFooterFontSize: number
 }
 
-export const getCssForOptions = (options: CssOptions): string => {
+export const getCssForOptions = async (options: CssOptions): Promise<string> => {
   const {
     type,
     pageMarginTop,
@@ -77,16 +75,12 @@ export const getCssForOptions = (options: CssOptions): string => {
     } else if (theme === 'liber') {
       output += liberTheme
     } else {
-      // Read theme from disk
-      const { userDataPath } = (window as unknown as { marktext: { paths: { userDataPath: string } } }).marktext.paths
-      const themePath = path.join(userDataPath, 'themes/export', theme)
-      if (isFile(themePath)) {
-        try {
-          const themeCSS = fs.readFileSync(themePath, 'utf8')
-          output += themeCSS
-        } catch (_) {
-          // No-op
-        }
+      // Custom themes are served by the main-process export theme service.
+      try {
+        const { css } = await unwrapCapability(window.api.exportThemes.read(theme))
+        output += css
+      } catch (_) {
+        // Missing/unreadable custom theme: continue without it.
       }
     }
   }

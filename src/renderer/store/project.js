@@ -218,9 +218,17 @@ const actions = {
     const src = state.renameCache
     const dirname = path.dirname(src)
     const dest = dirname + PATH_SEPARATOR + name
-    rename(src, dest).then(() => {
-      commit('RENAME_IF_NEEDED', { src, dest })
-    })
+    rename(src, dest)
+      .then(() => {
+        commit('RENAME_IF_NEEDED', { src, dest })
+      })
+      .catch((err) => {
+        notice.notify({
+          title: 'Error while renaming',
+          type: 'error',
+          message: err.message,
+        })
+      })
   },
 
   OPEN_SETTING_WINDOW() {

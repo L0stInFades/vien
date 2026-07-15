@@ -27,12 +27,12 @@ service that must own the capability.
 
 | Renderer call site | Stubbed APIs | Capability | Owning service (PLAN.md) | Status |
 | --- | --- | --- | --- | --- |
-| `src/renderer/util/fileSystem.ts` `create/paste/rename` | `fs-extra.ensureDir/outputFile/move/copy` | workspace file operations | `WorkspaceService` (WORKSPACE-001) | ⛔ stub throws — awaiting migration |
-| `src/renderer/util/fileSystem.ts` `moveToRelativeFolder/moveImageToFolder` | `fs-extra.ensureDir/move/copy/readFile/writeFile` | image relocation | `AssetService` (ASSET-001) | ⛔ stub throws — awaiting migration |
-| `src/renderer/util/fileSystem.ts` `uploadImage` (picgo/cli path) | `child_process.exec/execFile`, `fs-extra.writeFile/unlink/stat` | external uploader tools | `AssetService` upload adapters (ASSET-001) | ⛔ stub throws — awaiting migration (github uploader is fetch-based and works) |
-| `src/renderer/util/fileSystem.ts` `isFileExecutableSync` | `fs.statSync` | executable validation for custom tools | `ShellService` policy check | ⛔ stub throws → returns `false` via try/catch |
-| `src/renderer/util/pdf.ts` custom export theme | `fs.readFileSync`, `common/filesystem.isFile` | export theme read | `ExportService` (EXPORT-001) | ⛔ stub throws → custom theme skipped |
-| `src/renderer/components/exportSettings/index.vue` theme enumeration | `fs/promises.readdir`, `fs.existsSync` | export theme listing | `ExportService` (EXPORT-001) | ⛔ stub rejects — awaiting migration |
+| `src/renderer/util/fileSystem.ts` `create/paste/rename` | `fs-extra.ensureDir/outputFile/move/copy` | workspace file operations | `WorkspaceService` (WORKSPACE-001) | ✅ migrated — `window.api.workspace.*` (`mt::fs-create/paste/rename`), guarded + path-scoped |
+| `src/renderer/util/fileSystem.ts` `moveToRelativeFolder/moveImageToFolder` | `fs-extra.ensureDir/move/copy/readFile/writeFile` | image relocation | `AssetService` (ASSET-001) | ✅ migrated — `window.api.assets.*` (`mt::asset-*`), destination-scoped |
+| `src/renderer/util/fileSystem.ts` `uploadImage` (picgo/cli path) | `child_process.exec/execFile`, `fs-extra.writeFile/unlink/stat` | external uploader tools | `AssetService` upload adapters (ASSET-001) | ✅ migrated — main-side execFile (no shell), github uploader stays fetch-based via `readImageForUpload` |
+| `src/renderer/util/fileSystem.ts` `isFileExecutableSync` | `fs.statSync` | executable validation for custom tools | `ShellService` policy check | ✅ migrated — async `mt::fs-is-executable` |
+| `src/renderer/util/pdf.ts` custom export theme | `fs.readFileSync`, `common/filesystem.isFile` | export theme read | `ExportService` (EXPORT-001) | ✅ migrated — `mt::fs-read-export-theme` (getCssForOptions is async now) |
+| `src/renderer/components/exportSettings/index.vue` theme enumeration | `fs/promises.readdir`, `fs.existsSync` | export theme listing | `ExportService` (EXPORT-001) | ✅ migrated — `mt::fs-list-export-themes` |
 | `src/renderer/components/sideBar/search.vue` → `node/ripgrepSearcher.js` | `child_process.spawn` + `vscode-ripgrep.rgPath` | workspace content search | `SearchService` (SEARCH-001) | ⛔ spawn throws → structured search failure |
 | `src/renderer/commands/quickOpen.js` → `node/fileSearcher.js` | `child_process.spawn` + `vscode-ripgrep.rgPath` | file listing for quick open | `SearchService` (SEARCH-001) | ⛔ spawn throws → structured search failure |
 | `src/muya/lib/parser/render/plantuml.ts` | `zlib.deflateSync` | PlantUML encoding for remote render | browser-native `CompressionStream` + explicit remote opt-in (§5.7) | ⛔ throws (previously produced silently corrupt URLs) |

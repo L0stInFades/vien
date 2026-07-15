@@ -220,11 +220,8 @@
 
 <script>
 import { mapState } from 'vuex'
-import fs from 'node:fs'
-import fsPromises from 'node:fs/promises'
-import path from 'node:path'
-import { isDirectory, isFile } from 'common/filesystem'
 import bus from '../../bus'
+import { unwrapCapability } from '@/services/capability'
 import Bool from '@/prefComponents/common/bool'
 import CurSelect from '@/prefComponents/common/select'
 import FontTextBox from '@/prefComponents/common/fontTextBox'
@@ -405,37 +402,17 @@ export default {
     onSelectChange(key, value) {
       this[key] = value
     },
-    loadThemesFromDisk() {
-      const { userDataPath } = window.marktext.paths
-      const themeDir = path.join(userDataPath, 'themes/export')
-
-      // Search for dictionaries on filesystem.
-      if (isDirectory(themeDir)) {
-        fs.readdirSync(themeDir).forEach(async (filename) => {
-          const fullname = path.join(themeDir, filename)
-          if (/.+\.css$/i.test(filename) && isFile(fullname)) {
-            try {
-              const content = await fsPromises.readFile(fullname, 'utf8')
-
-              // Match comment with theme name in first line only.
-              const match = content.match(/^(?:\/\*+[ \t]*([A-z0-9 -]+)[ \t]*(?:\*+\/|[\n\r])?)/)
-
-              let label
-              if (match?.[1]) {
-                label = match[1]
-              } else {
-                label = filename
-              }
-
-              this.themeList.push({
-                value: filename,
-                label,
-              })
-            } catch (e) {
-              console.error('loadThemesFromDisk failed:', e)
-            }
-          }
-        })
+    async loadThemesFromDisk() {
+      try {
+        const { themes } = await unwrapCapability(window.api.exportThemes.list())
+        for (const { name, label } of themes) {
+          this.themeList.push({
+            value: name,
+            label,
+          })
+        }
+      } catch (e) {
+        console.error('loadThemesFromDisk failed:', e)
       }
     },
   },

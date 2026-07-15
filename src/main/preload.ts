@@ -1,5 +1,8 @@
 import { contextBridge, ipcRenderer, clipboard, shell, webFrame, nativeImage } from 'electron'
 import type { PreloadApi, SideBarContextMenuPayload, TabContextMenuPayload } from '../common/types/preload'
+import { WorkspaceChannels } from '../common/contracts/workspace'
+import { AssetChannels } from '../common/contracts/assets'
+import { ExportChannels } from '../common/contracts/export'
 
 /** Listener with an optional attached wrapped version (event-stripped) for ipcRenderer.on/off symmetry */
 type WrappedIpcListener = ((...args: unknown[]) => void) & {
@@ -176,6 +179,15 @@ const isDynamicChannel = (channel: string): boolean => {
   return channel.startsWith('mt::response-of-image-path-')
 }
 
+/**
+ * Capability invoke: returns the ServiceResult envelope as plain data.
+ * contextBridge structured-clones thrown values down to bare messages, so
+ * typed errors (code/details) must cross as data — the renderer-side
+ * wrapper (src/renderer/services/capability.ts) unwraps and rethrows
+ * ServiceError instances.
+ */
+const invokeCapability = (channel: string, payload: unknown) => ipcRenderer.invoke(channel, payload)
+
 const api: PreloadApi = {
   window: {
     close: () => ipcRenderer.send('mt::window-close'),
@@ -224,6 +236,28 @@ const api: PreloadApi = {
   fonts: {
     getAvailableFamilies: (onlyMonospace = false) =>
       ipcRenderer.invoke('mt::get-available-font-families', onlyMonospace),
+  },
+
+  workspace: {
+    create: (pathname: string, kind: 'file' | 'directory') =>
+      invokeCapability(WorkspaceChannels.create, { pathname, kind }),
+    paste: (src: string, dest: string, kind: 'copy' | 'cut') =>
+      invokeCapability(WorkspaceChannels.paste, { src, dest, kind }),
+    rename: (src: string, dest: string) => invokeCapability(WorkspaceChannels.rename, { src, dest }),
+    isExecutable: (pathname: string) => invokeCapability(WorkspaceChannels.isExecutable, { pathname }),
+  },
+
+  assets: {
+    copyImageToFolder: (request: unknown) => invokeCapability(AssetChannels.copyImageToFolder, request),
+    moveToRelativeFolder: (request: unknown) => invokeCapability(AssetChannels.moveToRelativeFolder, request),
+    uploadByCommand: (request: unknown) => invokeCapability(AssetChannels.uploadByCommand, request),
+    uploaderAvailable: (uploader: string) => invokeCapability(AssetChannels.uploaderAvailable, { uploader }),
+    readImageForUpload: (request: unknown) => invokeCapability(AssetChannels.readImageForUpload, request),
+  },
+
+  exportThemes: {
+    list: () => invokeCapability(ExportChannels.listThemes, {}),
+    read: (name: string) => invokeCapability(ExportChannels.readTheme, { name }),
   },
 
   // Trigger a receive-channel listener locally (renderer-to-renderer, no main process).

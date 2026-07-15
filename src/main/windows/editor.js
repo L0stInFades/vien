@@ -450,6 +450,10 @@ class EditorWindow extends BaseWindow {
     return this._openedRootDirectory
   }
 
+  get openedFiles() {
+    return this._openedFiles || []
+  }
+
   updateDocumentState(documentState = {}) {
     if (!isOsx || !this.browserWindow || this.browserWindow.isDestroyed()) {
       return

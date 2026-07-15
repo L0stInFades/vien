@@ -71,9 +71,8 @@
 <script>
 import services, { isValidService } from './services.js'
 import legalNoticesCheckbox from './legalNoticesCheckbox'
-import { isFileExecutableSync } from '@/util/fileSystem'
+import { isFileExecutable } from '@/util/fileSystem'
 import CurSelect from '@/prefComponents/common/select'
-import commandExists from 'command-exists'
 import notice from '@/services/notification'
 import { usePreferencesStore } from '@/store/pinia/preferences'
 
@@ -98,6 +97,7 @@ export default {
         branch: '',
       },
       cliScript: '',
+      cliScriptExecutable: false,
       picgoExists: true,
       uploadServices: services,
       legalNoticesErrorStates: {
@@ -128,7 +128,7 @@ export default {
       if (!this.cliScript) {
         return true
       }
-      return !isFileExecutableSync(this.cliScript)
+      return !this.cliScriptExecutable
     },
   },
   watch: {
@@ -139,6 +139,22 @@ export default {
     },
   },
   created() {
+    this.$watch(
+      'cliScript',
+      (value) => {
+        if (!value) {
+          this.cliScriptExecutable = false
+          return
+        }
+        isFileExecutable(value).then((executable) => {
+          // Ignore stale answers after further edits.
+          if (this.cliScript === value) {
+            this.cliScriptExecutable = executable
+          }
+        })
+      },
+      { immediate: true },
+    )
     this.$nextTick(() => {
       this.github = this.imageBedConfig.github
       this.githubToken = this.prefGithubToken
@@ -201,7 +217,14 @@ export default {
     },
 
     testPicgo() {
-      this.picgoExists = commandExists.sync('picgo')
+      window.api.assets
+        .uploaderAvailable('picgo')
+        .then((result) => {
+          this.picgoExists = !!(result?.ok && result.value.available)
+        })
+        .catch(() => {
+          this.picgoExists = false
+        })
     },
 
     validate(value) {

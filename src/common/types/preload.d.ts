@@ -63,6 +63,59 @@ export interface ShellApi {
   showItemInFolder(fullPath: string): void
 }
 
+/** ServiceResult envelope from capability IPC (see src/common/contracts). */
+export type CapabilityResult<T> =
+  | { ok: true; value: T }
+  | { ok: false; error: { code: string; message: string; details?: Record<string, unknown> } }
+
+export interface WorkspaceApi {
+  create(pathname: string, kind: 'file' | 'directory'): Promise<CapabilityResult<{ pathname: string }>>
+  paste(src: string, dest: string, kind: 'copy' | 'cut'): Promise<CapabilityResult<{ pathname: string }>>
+  rename(src: string, dest: string): Promise<CapabilityResult<{ pathname: string }>>
+  isExecutable(pathname: string): Promise<CapabilityResult<{ executable: boolean }>>
+}
+
+export interface AssetCopyImageRequestPayload {
+  docPathname: string
+  outputDir: string
+  imagePath?: string
+  imageBytes?: Uint8Array
+  imageName?: string
+}
+
+export interface AssetMoveRelativeRequestPayload {
+  cwd: string
+  relativeName: string
+  docPathname: string
+  imagePath: string
+}
+
+export interface AssetUploadByCommandRequestPayload {
+  uploader: 'picgo' | 'cliScript'
+  cliScript?: string
+  imagePath?: string
+  imageBytes?: Uint8Array
+}
+
+export interface AssetsApi {
+  copyImageToFolder(request: AssetCopyImageRequestPayload): Promise<CapabilityResult<{ pathname: string }>>
+  moveToRelativeFolder(
+    request: AssetMoveRelativeRequestPayload,
+  ): Promise<CapabilityResult<{ relativePath: string; pathname: string }>>
+  uploadByCommand(request: AssetUploadByCommandRequestPayload): Promise<CapabilityResult<{ url: string }>>
+  uploaderAvailable(uploader: 'picgo'): Promise<CapabilityResult<{ available: boolean }>>
+  readImageForUpload(request: {
+    docPathname: string
+    imagePath: string
+    maxBytes?: number
+  }): Promise<CapabilityResult<{ bytes: Uint8Array; filename: string }>>
+}
+
+export interface ExportThemesApi {
+  list(): Promise<CapabilityResult<{ themes: { name: string; label: string }[] }>>
+  read(name: string): Promise<CapabilityResult<{ css: string }>>
+}
+
 export interface FontsApi {
   getAvailableFamilies(onlyMonospace?: boolean): Promise<string[]>
 }
@@ -88,6 +141,9 @@ export interface PreloadApi {
   clipboard: ClipboardApi
   shell: ShellApi
   fonts: FontsApi
+  workspace: WorkspaceApi
+  assets: AssetsApi
+  exportThemes: ExportThemesApi
   /** Trigger a receive-channel listener locally (renderer → renderer, no main process roundtrip). */
   localEmit(channel: string, ...args: unknown[]): void
   ipc: IpcApi
