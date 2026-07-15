@@ -1,5 +1,6 @@
 import Renderer from './renderer'
 import { normal, breaks, gfm, pedantic } from './inlineRules'
+import type { InlineRules } from './inlineRules'
 import defaultOptions from './options'
 // biome-ignore lint/suspicious/noShadowRestrictedNames: intentional import naming
 import { escape, findClosingBracket, getUniqueId, rtrim } from './utils'
@@ -20,7 +21,7 @@ interface InlineLexerContext {
   options: Record<string, unknown>
   links: Record<string, { href: string; title: string }>
   footnotes: Record<string, FootnoteInfo>
-  rules: Record<string, RegExp>
+  rules: InlineRules
   renderer: Record<string, unknown> & { options?: Record<string, unknown> }
   highPriorityEmpRules: Record<string, RegExp>
   highPriorityLinkRules: Record<string, RegExp>
@@ -38,7 +39,9 @@ function InlineLexer(
   this.links = links
   this.footnotes = footnotes
   this.rules = normal
-  this.renderer = this.options.renderer || new (Renderer as unknown as new () => Record<string, unknown>)()
+  this.renderer =
+    (this.options.renderer as InlineLexerContext['renderer']) ||
+    new (Renderer as unknown as new () => Record<string, unknown>)()
   this.renderer.options = this.options
 
   if (!this.links) {

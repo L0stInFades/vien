@@ -1,13 +1,13 @@
 <template>
   <section class="pref-range-item" :class="{'ag-underdevelop': disable}">
     <div class="description">
-      <span>{{description}}:</span> <span class="value" v-if="selectValue">{{selectValue}} <span v-if="unit">{{unit}}</span></span>
+      <span>{{description}}:</span> <span class="value" v-if="localValue">{{localValue}} <span v-if="unit">{{unit}}</span></span>
       <i class="el-icon-info" v-if="more"
         @click="handleMoreClick"
       ></i>
     </div>
     <el-slider
-      v-model="selectValue"
+      v-model="localValue"
       @change="select"
       :min="min"
       :max="max"
@@ -21,7 +21,7 @@
 export default {
   data() {
     return {
-      selectValue: this.currentValue,
+      localValue: this.currentValue,
     }
   },
   props: {
@@ -39,9 +39,9 @@ export default {
     },
   },
   watch: {
-    currentValue: function (value, oldValue) {
+    '$props.currentValue': function (value, oldValue) {
       if (value !== oldValue) {
-        this.selectValue = value
+        this.localValue = value
       }
     },
   },

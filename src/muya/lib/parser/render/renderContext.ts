@@ -37,11 +37,11 @@ export interface MuyaInstance {
   contentState: {
     cursor: Cursor
     selectedBlock: Block | null
-    selectedTableCells: { cells: Block[] } | null
+    selectedTableCells: { cells: Array<{ key: string; [key: string]: unknown }> } | null
     selectedImage: {
       key: string
-      token: { attrs: { src: string }; range: TokenRange }
-      imageId: string
+      token: { attrs?: Record<string, string>; range: TokenRange }
+      imageId?: string
     } | null
     [k: string]: unknown
   }

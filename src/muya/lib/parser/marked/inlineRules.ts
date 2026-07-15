@@ -9,7 +9,7 @@ import { edit, noop } from './utils'
 
 type Noop = typeof noop
 
-interface InlineRules {
+export interface InlineRules extends Record<string, RegExp | string | Noop> {
   escape: RegExp
   autolink: RegExp
   url: RegExp | Noop

@@ -39,7 +39,7 @@ export const getLogLevel = (): LogLevel => {
   if (
     !(global as unknown as { MARKTEXT_DEBUG_VERBOSE: unknown }).MARKTEXT_DEBUG_VERBOSE ||
     typeof (global as unknown as { MARKTEXT_DEBUG_VERBOSE: unknown }).MARKTEXT_DEBUG_VERBOSE !== 'number' ||
-    ((global as unknown as { MARKTEXT_DEBUG_VERBOSE: number }).MARKTEXT_DEBUG_VERBOSE) <= 0
+    (global as unknown as { MARKTEXT_DEBUG_VERBOSE: number }).MARKTEXT_DEBUG_VERBOSE <= 0
   ) {
     return process.env.NODE_ENV === 'development' ? 'debug' : 'info'
   } else if ((global as unknown as { MARKTEXT_DEBUG_VERBOSE: number }).MARKTEXT_DEBUG_VERBOSE === 1) {

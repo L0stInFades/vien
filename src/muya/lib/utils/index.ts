@@ -111,7 +111,7 @@ export const debounce = <T extends (...args: unknown[]) => unknown>(func: T, wai
 export const deepCopyArray = <T>(array: T[]): T[] => {
   const result: T[] = []
   const len = array.length
-  let i
+  let i = 0
   for (i = 0; i < len; i++) {
     if (typeof array[i] === 'object' && array[i] !== null) {
       if (Array.isArray(array[i])) {

@@ -10,7 +10,7 @@
       class="input"
       :class="{error: invalidInput}"
       :placeholder="defaultValue"
-      v-model="inputText"
+      v-model="localText"
       @input="handleInput"
       size="small"
       clearable>
@@ -26,7 +26,7 @@ export default {
   data() {
     this.inputTimer = null
     return {
-      inputText: this.textValue,
+      localText: this.textValue,
       invalidInput: false,
     }
   },
@@ -56,9 +56,9 @@ export default {
     },
   },
   watch: {
-    textValue: function (value, oldValue) {
+    '$props.textValue': function (value, oldValue) {
       if (value !== oldValue) {
-        this.inputText = value
+        this.localText = value
       }
     },
   },

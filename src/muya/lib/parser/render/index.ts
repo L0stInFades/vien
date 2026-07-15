@@ -32,8 +32,12 @@ interface MuyaInstance {
   contentState: {
     cursor: Cursor
     selectedBlock: Block | null
-    selectedTableCells: { cells: Block[] } | null
-    selectedImage: { key: string; token: { attrs: { src: string }; range: TokenRange }; imageId: string } | null
+    selectedTableCells: { cells: Array<{ key: string; [key: string]: unknown }> } | null
+    selectedImage: {
+      key: string
+      token: { attrs?: Record<string, string>; range: TokenRange }
+      imageId?: string
+    } | null
     [k: string]: unknown
   }
   options: Record<string, unknown>
@@ -300,8 +304,8 @@ class StateRender {
           }
 
           target.innerHTML = renderedSvg.markup
-          target.style.setProperty('--ag-mermaid-preview-width', `${renderedSvg.intrinsicWidth}px`)
-          target.style.setProperty('--ag-mermaid-preview-height', `${renderedSvg.intrinsicHeight}px`)
+          ;(target as HTMLElement).style.setProperty('--ag-mermaid-preview-width', `${renderedSvg.intrinsicWidth}px`)
+          ;(target as HTMLElement).style.setProperty('--ag-mermaid-preview-height', `${renderedSvg.intrinsicHeight}px`)
         } catch (_err) {
           target.innerHTML = '< Invalid Mermaid Codes >'
           target.classList.add(CLASS_OR_ID.AG_MATH_ERROR)

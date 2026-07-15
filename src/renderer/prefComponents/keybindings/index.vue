@@ -40,7 +40,7 @@
       <el-button size="medium" @click="dumpKeyboardInformation">Dump keyboard information</el-button>
     </section>
     <key-input-dialog
-      :showWithId="selectedShortcutId"
+      :visibleShortcutId="selectedShortcutId"
       :onCommit="onKeybinding"
     ></key-input-dialog>
   </div>

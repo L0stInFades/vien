@@ -372,7 +372,7 @@ const updateCtrl = (ContentState: { prototype: IContentState }) => {
         offset: Math.max(0, end.offset - marker.length),
       },
     }
-    return taskListWrapper || grandpa
+    return taskListWrapper || grandpa || undefined
   }
 
   // ATX heading doesn't support soft line break and hard line break.

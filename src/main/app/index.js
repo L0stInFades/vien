@@ -90,6 +90,14 @@ class App {
       }
     })
 
+    app.on('before-quit', () => {
+      for (const watcher of watchers.values()) {
+        watcher.close()
+      }
+      this._windowManager.closeWatcher()
+      this._windowManager.removeIpcListeners()
+    })
+
     app.on('activate', () => {
       // macOS only
       // On macOS re-activating the app should always reveal an existing window

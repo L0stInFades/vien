@@ -7,7 +7,7 @@ const sideBarWidth = typeof +width === 'number' ? Math.max(+width, 220) : 280
 const state = {
   rightColumn: 'files',
   showSideBar: false,
-  showTabBar: false,
+  showTabBar: true,
   sideBarWidth,
 }
 

@@ -12,13 +12,9 @@ export default function loadImageAsync(
 ) {
   const { src, isUnknownType } = imageInfo
   let id: string | undefined
-  // biome-ignore lint/suspicious/noImplicitAnyLet: legacy renderer pattern
-  let isSuccess
-  // biome-ignore lint/suspicious/noImplicitAnyLet: legacy renderer pattern
+  let isSuccess: boolean | undefined
   let w: number | undefined
-  // biome-ignore lint/suspicious/noImplicitAnyLet: legacy renderer pattern
   let domsrc: string | undefined
-  // biome-ignore lint/suspicious/noImplicitAnyLet: legacy renderer pattern
   let h: number | undefined
 
   let reload = false

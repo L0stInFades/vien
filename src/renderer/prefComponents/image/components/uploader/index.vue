@@ -75,6 +75,7 @@ import { isFileExecutableSync } from '@/util/fileSystem'
 import CurSelect from '@/prefComponents/common/select'
 import commandExists from 'command-exists'
 import notice from '@/services/notification'
+import { usePreferencesStore } from '@/store/pinia/preferences'
 
 export default {
   components: {
@@ -105,25 +106,20 @@ export default {
     }
   },
   computed: {
-    currentUploader: {
-      get: function () {
-        return this.$store.state.preferences.currentUploader
-      },
+    preferencesStore() {
+      return usePreferencesStore()
     },
-    imageBed: {
-      get: function () {
-        return this.$store.state.preferences.imageBed
-      },
+    currentUploader() {
+      return this.preferencesStore.currentUploader
     },
-    prefGithubToken: {
-      get: function () {
-        return this.$store.state.preferences.githubToken
-      },
+    imageBedConfig() {
+      return this.preferencesStore.imageBed
     },
-    prefCliScript: {
-      get: function () {
-        return this.$store.state.preferences.cliScript
-      },
+    prefGithubToken() {
+      return this.preferencesStore.githubToken
+    },
+    prefCliScript() {
+      return this.preferencesStore.cliScript
     },
     githubDisable() {
       return !this.githubToken || !this.github.owner || !this.github.repo
@@ -136,7 +132,7 @@ export default {
     },
   },
   watch: {
-    imageBed: function (value, oldValue) {
+    imageBedConfig(value, oldValue) {
       if (value !== oldValue) {
         this.github = value.github
       }
@@ -144,7 +140,7 @@ export default {
   },
   created() {
     this.$nextTick(() => {
-      this.github = this.imageBed.github
+      this.github = this.imageBedConfig.github
       this.githubToken = this.prefGithubToken
       this.cliScript = this.prefCliScript
       this.testPicgo()
@@ -172,19 +168,19 @@ export default {
       if (!this.validate(type)) {
         return
       }
-      const newImageBedConfig = Object.assign({}, this.imageBed, { [type]: this[type] })
-      this.$store.dispatch('SET_USER_DATA', {
+      const newImageBedConfig = Object.assign({}, this.imageBedConfig, { [type]: this[type] })
+      this.preferencesStore.setUserData({
         type: 'imageBed',
         value: newImageBedConfig,
       })
       if (type === 'github') {
-        this.$store.dispatch('SET_USER_DATA', {
+        this.preferencesStore.setUserData({
           type: 'githubToken',
           value: this.githubToken,
         })
       }
       if (type === 'cliScript') {
-        this.$store.dispatch('SET_USER_DATA', {
+        this.preferencesStore.setUserData({
           type: 'cliScript',
           value: this.cliScript,
         })
@@ -201,7 +197,7 @@ export default {
 
     setCurrentUploader(value) {
       const type = 'currentUploader'
-      this.$store.dispatch('SET_USER_DATA', { type, value })
+      this.preferencesStore.setUserData({ type, value })
     },
 
     testPicgo() {

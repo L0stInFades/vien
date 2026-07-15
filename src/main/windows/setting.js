@@ -42,7 +42,8 @@ class SettingWindow extends BaseWindow {
 
     winOptions.backgroundColor = this._getPreferredBackgroundColor(theme)
 
-    let win = (this.browserWindow = new BrowserWindow(winOptions))
+    let win = new BrowserWindow(winOptions)
+    this.browserWindow = win
     this.id = win.id
 
     // Create a menu for the current window

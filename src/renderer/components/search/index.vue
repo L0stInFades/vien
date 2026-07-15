@@ -230,7 +230,8 @@ export default {
 
     emptySearch(selectHighlight = false) {
       this.showSearch = false
-      const searchValue = (this.searchValue = '')
+      this.searchValue = ''
+      const searchValue = this.searchValue
       this.replaceValue = ''
       bus.emit('searchValue', searchValue, { selectHighlight })
     },

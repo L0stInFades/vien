@@ -27,7 +27,7 @@ const mutations = {
 }
 
 const actions = {
-  LINTEN_WIN_STATUS({ commit, state }) {
+  LINTEN_WIN_STATUS({ commit }) {
     window.api.ipc.on('mt::window-active-status', ({ status }) => {
       commit('SET_WIN_STATUS', status)
     })

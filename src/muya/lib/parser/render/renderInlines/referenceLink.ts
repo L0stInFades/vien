@@ -20,15 +20,17 @@ export default function referenceLink(
   const MARKER = '['
   const key = (label + backlash.second).toLowerCase()
   const backlashStart = start + MARKER.length + anchor.length
-  // biome-ignore lint/performance/noAccumulatingSpread: performance warning, acceptable in this context
-  const content = [
-    ...children.reduce((acc: unknown[], to: Record<string, unknown>) => {
-      const method = this[snakeToCamel(to.type as string)] as InlineRenderMethod
-      const chunk = method.call(this, h, cursor, block, to as unknown as Token, className)
-      return Array.isArray(chunk) ? [...acc, ...chunk] : [...acc, chunk]
-    }, []),
-    ...this.backlashInToken(h, backlash.first, className, backlashStart, token),
-  ]
+  const content = children.reduce((acc: unknown[], to: Record<string, unknown>) => {
+    const method = this[snakeToCamel(to.type as string)] as InlineRenderMethod
+    const chunk = method.call(this, h, cursor, block, to as unknown as Token, className)
+    if (Array.isArray(chunk)) {
+      acc.push(...chunk)
+    } else {
+      acc.push(chunk)
+    }
+    return acc
+  }, [])
+  content.push(...this.backlashInToken(h, backlash.first, className, backlashStart, token))
 
   const labelResult = this.labels.get(key)
   const href = labelResult?.href ?? ''

@@ -289,13 +289,19 @@ class Watcher {
       }
     }
     if (watchers.length) {
-      watchIds.forEach((id) => delete this.watchers[id])
-      watchers.forEach((watcher) => watcher.close())
+      for (const id of watchIds) {
+        delete this.watchers[id]
+      }
+      for (const watcher of watchers) {
+        watcher.close()
+      }
     }
   }
 
   close() {
-    Object.keys(this.watchers).forEach((id) => this.watchers[id].close())
+    for (const id of Object.keys(this.watchers)) {
+      this.watchers[id].close()
+    }
     this.watchers = {}
     this._ignoreChangeEvents = []
   }

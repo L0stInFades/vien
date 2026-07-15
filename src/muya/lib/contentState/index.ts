@@ -9,6 +9,7 @@ import type {
   Cursor as CursorInterface,
   IDragInfo,
   ICellSelectInfo,
+  SelectedImage,
 } from '../types'
 import { getUniqueId, deepCopy } from '../utils'
 import selection from '../selection'
@@ -116,7 +117,7 @@ const prototypes = [
 
 // biome-ignore lint/suspicious/noUnsafeDeclarationMerging: ContentState methods are composed via runtime mixins below.
 class ContentState {
-  _selectedImage: unknown
+  _selectedImage: SelectedImage | null
   _selectedTableCells: {
     tableId: string
     row: number
@@ -200,7 +201,7 @@ class ContentState {
     return this._selectedTableCells
   }
 
-  set selectedImage(image) {
+  set selectedImage(image: SelectedImage | null) {
     const oldSelectedImage = this._selectedImage
     // if there is no selected image, remove selected status of current selected image.
     if (!image && oldSelectedImage) {
@@ -212,7 +213,7 @@ class ContentState {
     this._selectedImage = image
   }
 
-  get selectedImage() {
+  get selectedImage(): SelectedImage | null {
     return this._selectedImage
   }
 

@@ -1,79 +1,7 @@
 <template>
   <div>
-    <div
-      class="title-bar-editor-bg"
-      :class="{ 'tabs-visible': showTabBar }"
-    ></div>
-    <div
-      class="title-bar"
-      :class="[{ 'active': active }, { 'tabs-visible': showTabBar }, { 'frameless': titleBarStyle === 'custom' }, { 'isOsx': isOsx }]"
-    >
-      <div class="title" @dblclick.stop="toggleMaxmizeOnMacOS">
-        <span v-if="!filename" class="brand-title">
-          <img class="brand-mark" :src="brandLogo" alt="Vien logo" />
-          <span class="brand-copy">
-            <span class="brand-name">Vien</span>
-            <span v-if="projectName" class="brand-context">{{ projectName }}</span>
-          </span>
-        </span>
-        <span v-else>
-          <span
-            v-for="(path, index) of paths"
-            :key="index"
-          >
-            {{ path }}
-            <svg class="icon" aria-hidden="true">
-              <use xlink:href="#icon-arrow-right"></use>
-            </svg>
-          </span>
-          <span
-            class="filename"
-            :class="{'isOsx': platform === 'darwin'}"
-            @click="rename"
-          >
-            {{ filename }}
-          </span>
-          <span class="save-dot" :class="{'show': !isSaved}"></span>
-        </span>
-      </div>
-      <div :class="showCustomTitleBar ? 'left-toolbar title-no-drag' : 'right-toolbar'">
-        <div
-          v-if="showCustomTitleBar"
-          class="frameless-titlebar-menu title-no-drag"
-          @click.stop="handleMenuClick"
-        >
-          <span class="text-center-vertical">&#9776;</span>
-        </div>
-        <el-tooltip
-          v-if="wordCount"
-          class="item"
-          placement="bottom-end"
-        >
-          <template #content>
-            <div class="title-item">
-              <span class="front">Words:</span><span class="text">{{wordCount['word']}}</span>
-            </div>
-            <div class="title-item">
-              <span class="front">Characters:</span><span class="text">{{wordCount['character']}}</span>
-            </div>
-            <div class="title-item">
-              <span class="front">Paragraphs:</span><span class="text">{{wordCount['paragraph']}}</span>
-            </div>
-          </template>
-          <div
-            class="word-count"
-            :class="[{ 'title-no-drag': platform !== 'darwin' }]"
-            @click.stop="handleWordClick"
-          >
-            <span class="text-center-vertical">{{ `${HASH[show].short} ${wordCount[show]}` }}</span>
-          </div>
-        </el-tooltip>
-      </div>
-      <div
-        v-if="titleBarStyle === 'custom' && !isFullScreen && !isOsx"
-        class="right-toolbar"
-        :class="[{ 'title-no-drag': titleBarStyle === 'custom' }]"
-      >
+    <template v-if="variant === 'preferences'">
+      <div class="title-bar title-bar-preferences">
         <div class="frameless-titlebar-button frameless-titlebar-close" @click.stop="handleCloseClick">
           <div>
             <svg width="10" height="10">
@@ -81,32 +9,118 @@
             </svg>
           </div>
         </div>
-        <div class="frameless-titlebar-button frameless-titlebar-toggle" @click.stop="handleMaximizeClick">
-          <div>
-            <svg width="10" height="10">
-              <path v-show="!isMaximized" :d="windowIconMaximize" />
-              <path v-show="isMaximized" :d="windowIconRestore" />
-            </svg>
-          </div>
+      </div>
+    </template>
+    <template v-else>
+      <div
+        class="title-bar-editor-bg"
+        :class="{ 'tabs-visible': showTabBar }"
+      ></div>
+      <div
+        class="title-bar"
+        :class="[{ 'active': active }, { 'tabs-visible': showTabBar }, { 'frameless': titleBarStyle === 'custom' }, { 'isOsx': isOsx }]"
+      >
+        <div class="title" @dblclick.stop="toggleMaxmizeOnMacOS">
+          <span v-if="!filename" class="brand-title">
+            <img class="brand-mark" :src="brandLogo" alt="Vien logo" />
+            <span class="brand-copy">
+              <span class="brand-name">Vien</span>
+              <span v-if="projectName" class="brand-context">{{ projectName }}</span>
+            </span>
+          </span>
+          <span v-else>
+            <span
+              v-for="(path, index) of paths"
+              :key="index"
+            >
+              {{ path }}
+              <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-arrow-right"></use>
+              </svg>
+            </span>
+            <span
+              class="filename"
+              :class="{'isOsx': platform === 'darwin'}"
+              @click="rename"
+            >
+              {{ filename }}
+            </span>
+            <span class="save-dot" :class="{'show': !isSaved}"></span>
+          </span>
         </div>
-        <div class="frameless-titlebar-button frameless-titlebar-minimize" @click.stop="handleMinimizeClick">
-          <div>
-            <svg width="10" height="10">
-              <path :d="windowIconMinimize" />
-            </svg>
+        <div :class="showCustomTitleBar ? 'left-toolbar title-no-drag' : 'right-toolbar'">
+          <div
+            v-if="showCustomTitleBar"
+            class="frameless-titlebar-menu title-no-drag"
+            @click.stop="handleMenuClick"
+          >
+            <span class="text-center-vertical">&#9776;</span>
+          </div>
+          <el-tooltip
+            v-if="wordCount"
+            class="item"
+            placement="bottom-end"
+          >
+            <template #content>
+              <div class="title-item">
+                <span class="front">Words:</span><span class="text">{{wordCount['word']}}</span>
+              </div>
+              <div class="title-item">
+                <span class="front">Characters:</span><span class="text">{{wordCount['character']}}</span>
+              </div>
+              <div class="title-item">
+                <span class="front">Paragraphs:</span><span class="text">{{wordCount['paragraph']}}</span>
+              </div>
+            </template>
+            <div
+              class="word-count"
+              :class="[{ 'title-no-drag': platform !== 'darwin' }]"
+              @click.stop="handleWordClick"
+            >
+              <span class="text-center-vertical">{{ `${HASH[show].short} ${wordCount[show]}` }}</span>
+            </div>
+          </el-tooltip>
+        </div>
+        <div
+          v-if="titleBarStyle === 'custom' && !isFullScreen && !isOsx"
+          class="right-toolbar"
+          :class="[{ 'title-no-drag': titleBarStyle === 'custom' }]"
+        >
+          <div class="frameless-titlebar-button frameless-titlebar-close" @click.stop="handleCloseClick">
+            <div>
+              <svg width="10" height="10">
+                <path :d="windowIconClose" />
+              </svg>
+            </div>
+          </div>
+          <div class="frameless-titlebar-button frameless-titlebar-toggle" @click.stop="handleMaximizeClick">
+            <div>
+              <svg width="10" height="10">
+                <path v-show="!isMaximized" :d="windowIconMaximize" />
+                <path v-show="isMaximized" :d="windowIconRestore" />
+              </svg>
+            </div>
+          </div>
+          <div class="frameless-titlebar-button frameless-titlebar-minimize" @click.stop="handleMinimizeClick">
+            <div>
+              <svg width="10" height="10">
+                <path :d="windowIconMinimize" />
+              </svg>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 
 <script>
-import { mapState } from 'vuex'
 import { minimizePath, restorePath, maximizePath, closePath } from '../../assets/window-controls.js'
 import { PATH_SEPARATOR } from '../../config'
 import { isOsx } from '@/util'
 import VienLogo from '@/assets/images/logo.png'
+import { useLayoutStore } from '@/store/pinia/layout'
+import { usePreferencesStore } from '@/store/pinia/preferences'
 
 export default {
   data() {
@@ -142,6 +156,10 @@ export default {
     window.api.ipc.on('mt::window-leave-full-screen', this.onLeaveFullScreen)
   },
   props: {
+    variant: {
+      type: String,
+      default: 'editor',
+    },
     project: Object,
     filename: String,
     pathname: String,
@@ -151,10 +169,12 @@ export default {
     isSaved: Boolean,
   },
   computed: {
-    ...mapState({
-      titleBarStyle: (state) => state.preferences.titleBarStyle,
-      showTabBar: (state) => state.layout.showTabBar,
-    }),
+    titleBarStyle() {
+      return usePreferencesStore().titleBarStyle
+    },
+    showTabBar() {
+      return useLayoutStore().showTabBar
+    },
     paths() {
       if (!this.pathname) return []
       const pathnameToken = this.pathname.split(PATH_SEPARATOR).filter((i) => i)

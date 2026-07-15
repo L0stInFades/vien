@@ -207,7 +207,7 @@
   color: var(--editorColor70);
 }
 
-.ag-image-selector .des a::hover {
+.ag-image-selector .des a:hover {
   color: var(--themeColor);
 }
 

@@ -75,7 +75,8 @@ class EditorWindow extends BaseWindow {
       winOptions.webPreferences.spellcheck = false
     }
 
-    let win = (this.browserWindow = new BrowserWindow(winOptions))
+    let win = new BrowserWindow(winOptions)
+    this.browserWindow = win
     this.id = win.id
     this.resetDocumentState()
 

@@ -7,7 +7,7 @@ const getters = {}
 const mutations = {}
 
 const actions = {
-  LISTEN_FOR_NOTIFICATION({ commit }) {
+  LISTEN_FOR_NOTIFICATION() {
     const DEFAULT_OPTS = {
       title: 'Infomation',
       type: 'primary',

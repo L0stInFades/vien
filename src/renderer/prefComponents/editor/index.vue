@@ -165,14 +165,13 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
 import Compound from '../common/compound'
 import FontTextBox from '../common/fontTextBox'
 import Range from '../common/range'
 import CurSelect from '../common/select'
 import Bool from '../common/bool'
-import Separator from '../common/separator'
 import TextBox from '../common/textBox'
+import { usePreferencesStore } from '@/store/pinia/preferences'
 import {
   tabSizeOptions,
   endOfLineOptions,
@@ -188,7 +187,6 @@ export default {
     Range,
     CurSelect,
     Bool,
-    Separator,
     TextBox,
   },
   data() {
@@ -200,32 +198,73 @@ export default {
     return {}
   },
   computed: {
-    ...mapState({
-      fontSize: (state) => state.preferences.fontSize,
-      editorFontFamily: (state) => state.preferences.editorFontFamily,
-      lineHeight: (state) => state.preferences.lineHeight,
-      autoPairBracket: (state) => state.preferences.autoPairBracket,
-      autoPairMarkdownSyntax: (state) => state.preferences.autoPairMarkdownSyntax,
-      autoPairQuote: (state) => state.preferences.autoPairQuote,
-      tabSize: (state) => state.preferences.tabSize,
-      endOfLine: (state) => state.preferences.endOfLine,
-      textDirection: (state) => state.preferences.textDirection,
-      codeFontSize: (state) => state.preferences.codeFontSize,
-      codeFontFamily: (state) => state.preferences.codeFontFamily,
-      codeBlockLineNumbers: (state) => state.preferences.codeBlockLineNumbers,
-      trimUnnecessaryCodeBlockEmptyLines: (state) => state.preferences.trimUnnecessaryCodeBlockEmptyLines,
-      hideQuickInsertHint: (state) => state.preferences.hideQuickInsertHint,
-      hideLinkPopup: (state) => state.preferences.hideLinkPopup,
-      autoCheck: (state) => state.preferences.autoCheck,
-      editorLineWidth: (state) => state.preferences.editorLineWidth,
-      defaultEncoding: (state) => state.preferences.defaultEncoding,
-      autoGuessEncoding: (state) => state.preferences.autoGuessEncoding,
-      trimTrailingNewline: (state) => state.preferences.trimTrailingNewline,
-    }),
+    preferencesStore() {
+      return usePreferencesStore()
+    },
+    fontSize() {
+      return this.preferencesStore.fontSize
+    },
+    editorFontFamily() {
+      return this.preferencesStore.editorFontFamily
+    },
+    lineHeight() {
+      return this.preferencesStore.lineHeight
+    },
+    autoPairBracket() {
+      return this.preferencesStore.autoPairBracket
+    },
+    autoPairMarkdownSyntax() {
+      return this.preferencesStore.autoPairMarkdownSyntax
+    },
+    autoPairQuote() {
+      return this.preferencesStore.autoPairQuote
+    },
+    tabSize() {
+      return this.preferencesStore.tabSize
+    },
+    endOfLine() {
+      return this.preferencesStore.endOfLine
+    },
+    textDirection() {
+      return this.preferencesStore.textDirection
+    },
+    codeFontSize() {
+      return this.preferencesStore.codeFontSize
+    },
+    codeFontFamily() {
+      return this.preferencesStore.codeFontFamily
+    },
+    codeBlockLineNumbers() {
+      return this.preferencesStore.codeBlockLineNumbers
+    },
+    trimUnnecessaryCodeBlockEmptyLines() {
+      return this.preferencesStore.trimUnnecessaryCodeBlockEmptyLines
+    },
+    hideQuickInsertHint() {
+      return this.preferencesStore.hideQuickInsertHint
+    },
+    hideLinkPopup() {
+      return this.preferencesStore.hideLinkPopup
+    },
+    autoCheck() {
+      return this.preferencesStore.autoCheck
+    },
+    editorLineWidth() {
+      return this.preferencesStore.editorLineWidth
+    },
+    defaultEncoding() {
+      return this.preferencesStore.defaultEncoding
+    },
+    autoGuessEncoding() {
+      return this.preferencesStore.autoGuessEncoding
+    },
+    trimTrailingNewline() {
+      return this.preferencesStore.trimTrailingNewline
+    },
   },
   methods: {
     onSelectChange(type, value) {
-      this.$store.dispatch('SET_SINGLE_PREFERENCE', { type, value })
+      this.preferencesStore.setSinglePreference({ type, value })
     },
   },
 }

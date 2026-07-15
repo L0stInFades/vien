@@ -32,10 +32,10 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
 import themeMd from './theme.md'
 import { autoSwitchThemeOptions, themes } from './config'
 import markdownToHtml from '@/util/markdownToHtml'
+import { usePreferencesStore } from '@/store/pinia/preferences'
 import CurSelect from '../common/select'
 import Separator from '../common/separator'
 
@@ -51,10 +51,15 @@ export default {
     }
   },
   computed: {
-    ...mapState({
-      autoSwitchTheme: (state) => state.preferences.autoSwitchTheme,
-      theme: (state) => state.preferences.theme,
-    }),
+    preferencesStore() {
+      return usePreferencesStore()
+    },
+    autoSwitchTheme() {
+      return this.preferencesStore.autoSwitchTheme
+    },
+    theme() {
+      return this.preferencesStore.theme
+    },
   },
   created() {
     this.$nextTick(async () => {
@@ -72,7 +77,7 @@ export default {
   },
   methods: {
     onSelectChange(type, value) {
-      this.$store.dispatch('SET_SINGLE_PREFERENCE', { type, value })
+      this.preferencesStore.setSinglePreference({ type, value })
     },
   },
 }

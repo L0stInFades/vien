@@ -311,7 +311,7 @@
   "tabBarVisibility": {
     "description": "View--Whether the tabs are shown.",
     "type": "boolean",
-    "default": false
+    "default": true
   },
   "sourceCodeModeEnabled": {
     "description": "View--Whether the source-code mode is enabled by default.",

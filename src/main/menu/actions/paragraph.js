@@ -154,31 +154,34 @@ export const loadParagraphCommands = (commandManager) => {
 
 const setParagraphMenuItemStatus = (applicationMenu, bool) => {
   const paragraphMenuItem = applicationMenu.getMenuItemById('paragraphMenuEntry')
-  paragraphMenuItem.submenu.items.forEach((item) => (item.enabled = bool))
+  for (const item of paragraphMenuItem.submenu.items) {
+    item.enabled = bool
+  }
 }
 
 const setMultipleStatus = (applicationMenu, list, status) => {
   const paragraphMenuItem = applicationMenu.getMenuItemById('paragraphMenuEntry')
-  paragraphMenuItem.submenu.items
-    .filter((item) => item.id && list.includes(item.id))
-    .forEach((item) => (item.enabled = status))
+  for (const item of paragraphMenuItem.submenu.items) {
+    if (item.id && list.includes(item.id)) {
+      item.enabled = status
+    }
+  }
 }
 
 const setCheckedMenuItem = (applicationMenu, { affiliation, isTable, isLooseListItem, isTaskList }) => {
   const paragraphMenuItem = applicationMenu.getMenuItemById('paragraphMenuEntry')
-  paragraphMenuItem.submenu.items.forEach((item) => (item.checked = false))
-  paragraphMenuItem.submenu.items.forEach((item) => {
-    if (!item.id) {
-      return false
-    } else if (item.id === 'looseListItemMenuItem') {
+  for (const item of paragraphMenuItem.submenu.items) {
+    item.checked = false
+  }
+
+  for (const item of paragraphMenuItem.submenu.items) {
+    if (item.id === 'looseListItemMenuItem') {
       item.checked = !!isLooseListItem
     } else if (
+      item.id &&
       Object.keys(affiliation).some((b) => {
         if (b === 'ul' && isTaskList) {
-          if (item.id === 'taskListMenuItem') {
-            return true
-          }
-          return false
+          return item.id === 'taskListMenuItem'
         } else if (isTable && item.id === 'tableMenuItem') {
           return true
         } else if (item.id === 'codeFencesMenuItem' && /code$/.test(b)) {
@@ -189,7 +192,7 @@ const setCheckedMenuItem = (applicationMenu, { affiliation, isTable, isLooseList
     ) {
       item.checked = true
     }
-  })
+  }
 }
 
 /**
@@ -211,7 +214,9 @@ export const updateSelectionMenus = (applicationMenu, state) => {
 
   // Reset format menu.
   const formatMenuItem = applicationMenu.getMenuItemById('formatMenuItem')
-  formatMenuItem.submenu.items.forEach((item) => (item.enabled = true))
+  formatMenuItem.submenu.items.forEach((item) => {
+    item.enabled = true
+  })
 
   // Handle menu checked.
   setCheckedMenuItem(applicationMenu, state)
@@ -227,7 +232,9 @@ export const updateSelectionMenus = (applicationMenu, state) => {
 
     // A code line is selected.
     if (isCodeContent) {
-      formatMenuItem.submenu.items.forEach((item) => (item.enabled = false))
+      formatMenuItem.submenu.items.forEach((item) => {
+        item.enabled = false
+      })
 
       // TODO: Allow to transform to paragraph for other code blocks too but
       //   currently not supported by Muya.
@@ -249,7 +256,9 @@ export const updateSelectionMenus = (applicationMenu, state) => {
   } else if (isMultiline) {
     formatMenuItem.submenu.items
       .filter((item) => item.id && DISABLE_LABELS.includes(item.id))
-      .forEach((item) => (item.enabled = false))
+      .forEach((item) => {
+        item.enabled = false
+      })
     setMultipleStatus(applicationMenu, DISABLE_LABELS, false)
   }
 

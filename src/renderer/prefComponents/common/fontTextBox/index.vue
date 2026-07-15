@@ -69,7 +69,7 @@ export default {
   },
 
   watch: {
-    selectedFont: function (value, oldValue) {
+    '$props.selectedFont': function (value, oldValue) {
       if (value !== oldValue) {
         this.defaultValue = value
         this.selectValue = value
@@ -100,15 +100,8 @@ export default {
       }
     },
   },
-  mounted() {
-    // Delay load native library because it's not needed for the editor and causes a delay.
-    const fontManager = require('fontmanager-redux')
-    const { onlyMonospace } = this
-    const buf = fontManager
-      .getAvailableFontsSync()
-      .filter((f) => f.family && (!onlyMonospace || (onlyMonospace && f.monospace)))
-      .map((f) => f.family)
-    this.fontFamilies = [...new Set(buf)].sort((a, b) => a.localeCompare(b))
+  async mounted() {
+    this.fontFamilies = await window.api.fonts.getAvailableFamilies(this.onlyMonospace)
   },
 }
 </script>

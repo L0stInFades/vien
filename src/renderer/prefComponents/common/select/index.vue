@@ -8,7 +8,7 @@
       ></i>
     </div>
     <el-select
-      v-model="selectValue"
+      v-model="localValue"
       @change="select"
       :disabled="disable"
     >
@@ -29,7 +29,7 @@
 export default {
   data() {
     return {
-      selectValue: this.currentValue,
+      localValue: this.currentValue,
     }
   },
   props: {
@@ -45,9 +45,9 @@ export default {
     },
   },
   watch: {
-    currentValue: function (value, oldValue) {
+    '$props.currentValue': function (value, oldValue) {
       if (value !== oldValue) {
-        this.selectValue = value
+        this.localValue = value
       }
     },
   },

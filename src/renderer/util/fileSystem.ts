@@ -34,7 +34,7 @@ export const getHash = async (
         ? content
         : new Uint8Array(content)
 
-  const digest = await globalThis.crypto.subtle.digest(type, source)
+  const digest = await globalThis.crypto.subtle.digest(type, source as BufferSource)
   return digestToHex(digest)
 }
 

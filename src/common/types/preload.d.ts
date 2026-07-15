@@ -63,6 +63,10 @@ export interface ShellApi {
   showItemInFolder(fullPath: string): void
 }
 
+export interface FontsApi {
+  getAvailableFamilies(onlyMonospace?: boolean): Promise<string[]>
+}
+
 export interface IpcApi {
   send(channel: string, ...args: unknown[]): void
   invoke(channel: string, ...args: unknown[]): Promise<unknown>
@@ -83,6 +87,7 @@ export interface PreloadApi {
   contextMenu: ContextMenuApi
   clipboard: ClipboardApi
   shell: ShellApi
+  fonts: FontsApi
   /** Trigger a receive-channel listener locally (renderer → renderer, no main process roundtrip). */
   localEmit(channel: string, ...args: unknown[]): void
   ipc: IpcApi
@@ -90,8 +95,23 @@ export interface PreloadApi {
   platform: NodeJS.Platform
 }
 
+export interface MarktextRuntime {
+  env: {
+    windowId: number
+    type: string
+    [key: string]: unknown
+  }
+  paths?: {
+    userDataPath?: string
+    [key: string]: unknown
+  }
+  initialState?: Record<string, unknown>
+  [key: string]: unknown
+}
+
 declare global {
   interface Window {
     api: PreloadApi
+    marktext: MarktextRuntime
   }
 }

@@ -45,7 +45,7 @@ export default {
     },
   },
   watch: {
-    isOn: function (value, oldValue) {
+    '$props.isOn': function (value, oldValue) {
       if (value !== oldValue) {
         this.status = value
       }

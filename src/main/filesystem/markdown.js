@@ -80,7 +80,7 @@ export const loadMarkdownFile = async (pathname, preferredEol, autoGuessEncoding
   // TODO: Use streams to not buffer the file multiple times and only guess
   //       encoding on the first 256/512 bytes.
 
-  let buffer = await fsPromises.readFile(path.resolve(pathname))
+  const buffer = await fsPromises.readFile(path.resolve(pathname))
 
   const encoding = guessEncoding(buffer, autoGuessEncoding)
   const supported = iconv.encodingExists(encoding.encoding)

@@ -43,10 +43,12 @@ import ExportSettingDialog from '@/components/exportSettings'
 import Rename from '@/components/rename'
 import Tweet from '@/components/tweet'
 import { loadingPageMixins } from '@/mixins'
-import { mapState } from 'vuex'
 import { DEFAULT_STYLE } from '@/config'
 import { useAutoUpdatesStore } from '@/store/pinia/autoUpdates'
+import { useCommandCenterStore } from '@/store/pinia/commandCenter'
+import { useLayoutStore } from '@/store/pinia/layout'
 import { useNotificationStore } from '@/store/pinia/notification'
+import { usePreferencesStore } from '@/store/pinia/preferences'
 import { useTweetStore } from '@/store/pinia/tweet'
 
 export default {
@@ -63,70 +65,95 @@ export default {
   },
   mixins: [loadingPageMixins],
   computed: {
-    ...mapState({
-      showTabBar: (state) => state.layout.showTabBar,
-      sourceCode: (state) => state.preferences.sourceCode,
-      theme: (state) => state.preferences.theme,
-      textDirection: (state) => state.preferences.textDirection,
-    }),
-    ...mapState({
-      zoom: (state) => state.preferences.zoom,
-    }),
-    ...mapState({
-      projectTree: (state) => state.project.projectTree,
-      pathname: (state) => state.editor.currentFile.pathname,
-      filename: (state) => state.editor.currentFile.filename,
-      isSaved: (state) => state.editor.currentFile.isSaved,
-      markdown: (state) => state.editor.currentFile.markdown,
-      cursor: (state) => state.editor.currentFile.cursor,
-      wordCount: (state) => state.editor.currentFile.wordCount,
-    }),
-    ...mapState(['windowActive', 'platform', 'init']),
+    layoutStore() {
+      return useLayoutStore()
+    },
+    preferencesStore() {
+      return usePreferencesStore()
+    },
+    showTabBar() {
+      return this.layoutStore.showTabBar
+    },
+    sourceCode() {
+      return this.preferencesStore.sourceCode
+    },
+    theme() {
+      return this.preferencesStore.theme
+    },
+    textDirection() {
+      return this.preferencesStore.textDirection
+    },
+    zoom() {
+      return this.preferencesStore.zoom
+    },
+    projectTree() {
+      return this.$store.state.project.projectTree
+    },
+    pathname() {
+      return this.$store.state.editor.currentFile.pathname
+    },
+    filename() {
+      return this.$store.state.editor.currentFile.filename
+    },
+    isSaved() {
+      return this.$store.state.editor.currentFile.isSaved
+    },
+    markdown() {
+      return this.$store.state.editor.currentFile.markdown
+    },
+    cursor() {
+      return this.$store.state.editor.currentFile.cursor
+    },
+    wordCount() {
+      return this.$store.state.editor.currentFile.wordCount
+    },
+    windowActive() {
+      return this.$store.state.windowActive
+    },
+    platform() {
+      return this.$store.state.platform
+    },
+    init() {
+      return this.$store.state.init
+    },
     hasCurrentFile() {
       return this.markdown !== undefined
     },
   },
-  watch: {
-    theme: (value, oldValue) => {
+  created() {
+    const { dispatch } = this.$store
+    const commandCenterStore = useCommandCenterStore()
+    const layoutStore = useLayoutStore()
+    const preferencesStore = usePreferencesStore()
+
+    if (window.marktext.initialState) {
+      preferencesStore.setUserPreference(window.marktext.initialState)
+    }
+
+    this.$watch('theme', (value, oldValue) => {
       if (value !== oldValue) {
         addThemeStyle(value)
       }
-    },
-    zoom: (zoom) => {
+    })
+    this.$watch('zoom', (zoom) => {
       window.api.localEmit('mt::window-zoom', zoom)
-    },
-  },
-  created() {
-    const { commit, dispatch } = this.$store
+    })
 
-    // Apply initial state (theme and titleBarStyle) and delay load other values.
-    if (window.marktext.initialState) {
-      commit('SET_USER_PREFERENCE', window.marktext.initialState)
-    }
-
-    // store/index.js
     dispatch('LINTEN_WIN_STATUS')
-    // module: command center
-    dispatch('LISTEN_COMMAND_CENTER_BUS')
-    // module: tweet (Pinia)
+    commandCenterStore.listen()
     useTweetStore().listen()
-    // module: layout
-    dispatch('LISTEN_FOR_LAYOUT')
-    // module: listenForMain
+    layoutStore.listen()
     dispatch('LISTEN_FOR_EDIT')
-    dispatch('LISTEN_FOR_VIEW')
+    preferencesStore.listenForView()
     dispatch('LISTEN_FOR_SHOW_DIALOG')
     dispatch('LISTEN_FOR_PARAGRAPH_INLINE_STYLE')
-    // module: project
     dispatch('LISTEN_FOR_UPDATE_PROJECT')
     dispatch('LISTEN_FOR_LOAD_PROJECT')
     dispatch('LISTEN_FOR_SIDEBAR_CONTEXT_MENU')
-    // module: autoUpdates (Pinia)
     useAutoUpdatesStore().listen()
-    // module: editor
     dispatch('LISTEN_SCREEN_SHOT')
-    dispatch('ASK_FOR_USER_PREFERENCE')
-    dispatch('LISTEN_TOGGLE_VIEW')
+    preferencesStore.askForUserPreference()
+    preferencesStore.listenToggleView()
     dispatch('LISTEN_FOR_CLOSE')
     dispatch('LISTEN_FOR_SAVE_AS')
     dispatch('LISTEN_FOR_MOVE_TO')
@@ -148,8 +175,6 @@ export default {
     dispatch('LISTEN_WINDOW_ZOOM')
     dispatch('LISTEN_FOR_RELOAD_IMAGES')
     dispatch('LISTEN_FOR_CONTEXT_MENU')
-
-    // module: notification (Pinia)
     useNotificationStore().listen()
 
     this.$nextTick(() => {

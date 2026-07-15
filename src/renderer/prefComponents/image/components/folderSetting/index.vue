@@ -29,10 +29,10 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
 import Bool from '@/prefComponents/common/bool'
 import Compound from '@/prefComponents/common/compound'
 import TextBox from '@/prefComponents/common/textBox'
+import { usePreferencesStore } from '@/store/pinia/preferences'
 
 export default {
   components: {
@@ -44,25 +44,26 @@ export default {
     return {}
   },
   computed: {
-    ...mapState({
-      imageFolderPath: (state) => state.preferences.imageFolderPath,
-      imagePreferRelativeDirectory: (state) => state.preferences.imagePreferRelativeDirectory,
-      imageRelativeDirectoryName: (state) => state.preferences.imageRelativeDirectoryName,
-    }),
-    imageInsertAction: {
-      get: function () {
-        return this.$store.state.preferences.imageInsertAction
-      },
+    preferencesStore() {
+      return usePreferencesStore()
     },
-    folderPathPlaceholder: {
-      get: function () {
-        return this.$store.state.preferences.imageFolderPath || ''
-      },
+    imageFolderPath() {
+      return this.preferencesStore.imageFolderPath
     },
-    relativeDirectoryNamePlaceholder: {
-      get: function () {
-        return this.$store.state.preferences.imageRelativeDirectoryName || 'assets'
-      },
+    imagePreferRelativeDirectory() {
+      return this.preferencesStore.imagePreferRelativeDirectory
+    },
+    imageRelativeDirectoryName() {
+      return this.preferencesStore.imageRelativeDirectoryName
+    },
+    imageInsertAction() {
+      return this.preferencesStore.imageInsertAction
+    },
+    folderPathPlaceholder() {
+      return this.preferencesStore.imageFolderPath || ''
+    },
+    relativeDirectoryNamePlaceholder() {
+      return this.preferencesStore.imageRelativeDirectoryName || 'assets'
     },
   },
   methods: {
@@ -70,10 +71,10 @@ export default {
       window.api.shell.openPath(this.imageFolderPath)
     },
     modifyImageFolderPath(value) {
-      return this.$store.dispatch('SET_IMAGE_FOLDER_PATH', value)
+      return this.preferencesStore.setImageFolderPath(value)
     },
     onSelectChange(type, value) {
-      this.$store.dispatch('SET_SINGLE_PREFERENCE', { type, value })
+      this.preferencesStore.setSinglePreference({ type, value })
     },
   },
 }

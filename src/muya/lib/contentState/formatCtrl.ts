@@ -333,7 +333,7 @@ const formatCtrl = (ContentState: { prototype: IContentState }) => {
       this.cursor = { start, end }
       this.partialRender()
     } else {
-      let nextBlock = startBlock
+      let nextBlock: Block | null = startBlock
       const formatType = type !== 'clear' ? type : undefined
       while (nextBlock && nextBlock !== endBlock) {
         this.clearBlockFormat(nextBlock, { start, end }, formatType)

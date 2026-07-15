@@ -23,6 +23,7 @@ import Separator from '../common/separator'
 import Uploader from './components/uploader'
 import CurSelect from '@/prefComponents/common/select'
 import FolderSetting from './components/folderSetting'
+import { usePreferencesStore } from '@/store/pinia/preferences'
 import { imageActions } from './config'
 
 export default {
@@ -38,15 +39,16 @@ export default {
     return {}
   },
   computed: {
-    imageInsertAction: {
-      get: function () {
-        return this.$store.state.preferences.imageInsertAction
-      },
+    preferencesStore() {
+      return usePreferencesStore()
+    },
+    imageInsertAction() {
+      return this.preferencesStore.imageInsertAction
     },
   },
   methods: {
     onSelectChange(type, value) {
-      this.$store.dispatch('SET_SINGLE_PREFERENCE', { type, value })
+      this.preferencesStore.setSinglePreference({ type, value })
     },
   },
 }

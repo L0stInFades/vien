@@ -19,7 +19,7 @@ const actions = {
     })
   },
 
-  LISTEN_FOR_SHOW_DIALOG({ commit }) {
+  LISTEN_FOR_SHOW_DIALOG() {
     window.api.ipc.on('mt::about-dialog', () => {
       bus.emit('aboutDialog')
     })

@@ -61,7 +61,7 @@ const state = {
 
   // Default values that are overwritten with the entries below.
   sideBarVisibility: false,
-  tabBarVisibility: false,
+  tabBarVisibility: true,
   sourceCodeModeEnabled: false,
 
   searchExclusions: [],
@@ -123,20 +123,20 @@ const actions = {
     })
   },
 
-  SET_SINGLE_PREFERENCE({ commit }, { type, value }) {
+  SET_SINGLE_PREFERENCE(_context, { type, value }) {
     // save to electron-store
     window.api.ipc.send('mt::set-user-preference', { [type]: value })
   },
 
-  SET_USER_DATA({ commit }, { type, value }) {
+  SET_USER_DATA(_context, { type, value }) {
     window.api.ipc.send('mt::set-user-data', { [type]: value })
   },
 
-  SET_IMAGE_FOLDER_PATH({ commit }, value) {
+  SET_IMAGE_FOLDER_PATH(_context, value) {
     window.api.ipc.send('mt::ask-for-modify-image-folder-path', value)
   },
 
-  SELECT_DEFAULT_DIRECTORY_TO_OPEN({ commit }) {
+  SELECT_DEFAULT_DIRECTORY_TO_OPEN() {
     window.api.ipc.send('mt::select-default-directory-to-open')
   },
 

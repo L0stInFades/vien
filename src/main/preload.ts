@@ -164,6 +164,7 @@ const ALLOWED_INVOKE_CHANNELS = [
   'mt::clipboard-get-files',
   'mt::clipboard-guess-file-path',
   'mt::ask-for-image-path',
+  'mt::get-available-font-families',
 ] as const
 
 const sendChannelSet = new Set<string>(ALLOWED_SEND_CHANNELS)
@@ -218,6 +219,11 @@ const api: PreloadApi = {
     openExternal: (url: string) => shell.openExternal(url),
     openPath: (path: string) => shell.openPath(path),
     showItemInFolder: (fullPath: string) => shell.showItemInFolder(fullPath),
+  },
+
+  fonts: {
+    getAvailableFamilies: (onlyMonospace = false) =>
+      ipcRenderer.invoke('mt::get-available-font-families', onlyMonospace),
   },
 
   // Trigger a receive-channel listener locally (renderer-to-renderer, no main process).

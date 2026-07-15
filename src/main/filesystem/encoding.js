@@ -38,7 +38,7 @@ const checkSequence = (buffer, sequence) => {
  * @returns {Encoding}
  */
 export const guessEncoding = (buffer, autoGuessEncoding) => {
-  let isBom = false
+  const isBom = false
   let encoding = 'utf8'
 
   // Detect UTF8- and UTF16-BOM encodings.

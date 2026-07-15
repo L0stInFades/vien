@@ -115,9 +115,9 @@
 <script>
 import Compound from '../common/compound'
 import Separator from '../common/separator'
-import { mapState } from 'vuex'
 import Bool from '../common/bool'
 import CurSelect from '../common/select'
+import { usePreferencesStore } from '@/store/pinia/preferences'
 import {
   bulletListMarkerOptions,
   orderListDelimiterOptions,
@@ -144,23 +144,46 @@ export default {
     return {}
   },
   computed: {
-    ...mapState({
-      preferLooseListItem: (state) => state.preferences.preferLooseListItem,
-      bulletListMarker: (state) => state.preferences.bulletListMarker,
-      orderListDelimiter: (state) => state.preferences.orderListDelimiter,
-      preferHeadingStyle: (state) => state.preferences.preferHeadingStyle,
-      listIndentation: (state) => state.preferences.listIndentation,
-      frontmatterType: (state) => state.preferences.frontmatterType,
-      superSubScript: (state) => state.preferences.superSubScript,
-      footnote: (state) => state.preferences.footnote,
-      isHtmlEnabled: (state) => state.preferences.isHtmlEnabled,
-      isGitlabCompatibilityEnabled: (state) => state.preferences.isGitlabCompatibilityEnabled,
-      sequenceTheme: (state) => state.preferences.sequenceTheme,
-    }),
+    preferencesStore() {
+      return usePreferencesStore()
+    },
+    preferLooseListItem() {
+      return this.preferencesStore.preferLooseListItem
+    },
+    bulletListMarker() {
+      return this.preferencesStore.bulletListMarker
+    },
+    orderListDelimiter() {
+      return this.preferencesStore.orderListDelimiter
+    },
+    preferHeadingStyle() {
+      return this.preferencesStore.preferHeadingStyle
+    },
+    listIndentation() {
+      return this.preferencesStore.listIndentation
+    },
+    frontmatterType() {
+      return this.preferencesStore.frontmatterType
+    },
+    superSubScript() {
+      return this.preferencesStore.superSubScript
+    },
+    footnote() {
+      return this.preferencesStore.footnote
+    },
+    isHtmlEnabled() {
+      return this.preferencesStore.isHtmlEnabled
+    },
+    isGitlabCompatibilityEnabled() {
+      return this.preferencesStore.isGitlabCompatibilityEnabled
+    },
+    sequenceTheme() {
+      return this.preferencesStore.sequenceTheme
+    },
   },
   methods: {
     onSelectChange(type, value) {
-      this.$store.dispatch('SET_SINGLE_PREFERENCE', { type, value })
+      this.preferencesStore.setSinglePreference({ type, value })
     },
   },
 }

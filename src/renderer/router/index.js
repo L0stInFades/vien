@@ -22,63 +22,64 @@ const parseSettingsPage = (type) => {
   return '/preference'
 }
 
-const routes = (type) => createRouter({
-  history: createWebHashHistory(),
-  routes: [
-    {
-      path: '/',
-      redirect: type === 'editor' ? '/editor' : parseSettingsPage(type),
-    },
-    {
-      path: '/editor',
-      component: App,
-    },
-    {
-      path: '/preference',
-      component: Preference,
-      children: [
-        {
-          path: '',
-          component: General,
-        },
-        {
-          path: 'general',
-          component: General,
-          name: 'general',
-        },
-        {
-          path: 'editor',
-          component: Editor,
-          name: 'editor',
-        },
-        {
-          path: 'markdown',
-          component: Markdown,
-          name: 'markdown',
-        },
-        {
-          path: 'spelling',
-          component: SpellChecker,
-          name: 'spelling',
-        },
-        {
-          path: 'theme',
-          component: Theme,
-          name: 'theme',
-        },
-        {
-          path: 'image',
-          component: Image,
-          name: 'image',
-        },
-        {
-          path: 'keybindings',
-          component: Keybindings,
-          name: 'keybindings',
-        },
-      ],
-    },
-  ],
-})
+const routes = (type) =>
+  createRouter({
+    history: createWebHashHistory(),
+    routes: [
+      {
+        path: '/',
+        redirect: type === 'editor' ? '/editor' : parseSettingsPage(type),
+      },
+      {
+        path: '/editor',
+        component: App,
+      },
+      {
+        path: '/preference',
+        component: Preference,
+        children: [
+          {
+            path: '',
+            component: General,
+          },
+          {
+            path: 'general',
+            component: General,
+            name: 'general',
+          },
+          {
+            path: 'editor',
+            component: Editor,
+            name: 'editor',
+          },
+          {
+            path: 'markdown',
+            component: Markdown,
+            name: 'markdown',
+          },
+          {
+            path: 'spelling',
+            component: SpellChecker,
+            name: 'spelling',
+          },
+          {
+            path: 'theme',
+            component: Theme,
+            name: 'theme',
+          },
+          {
+            path: 'image',
+            component: Image,
+            name: 'image',
+          },
+          {
+            path: 'keybindings',
+            component: Keybindings,
+            name: 'keybindings',
+          },
+        ],
+      },
+    ],
+  })
 
 export default routes

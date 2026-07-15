@@ -60,14 +60,14 @@ export default {
 
   props: {
     onCommit: Function,
-    showWithId: {
+    visibleShortcutId: {
       type: String,
       default: null,
     },
   },
 
   watch: {
-    showWithId: function (value, oldValue) {
+    '$props.visibleShortcutId': function (value, oldValue) {
       if (value !== oldValue) {
         if (value) {
           this.handleShow()

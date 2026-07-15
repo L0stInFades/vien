@@ -53,7 +53,7 @@ import { sideBarIcons, sideBarBottomIcons } from './help'
 import Tree from './tree.vue'
 import SideBarSearch from './search.vue'
 import Toc from './toc.vue'
-import { mapState } from 'vuex'
+import { useLayoutStore } from '@/store/pinia/layout'
 
 export default {
   data() {
@@ -70,13 +70,24 @@ export default {
     Toc,
   },
   computed: {
-    ...mapState({
-      rightColumn: (state) => state.layout.rightColumn,
-      showSideBar: (state) => state.layout.showSideBar,
-      projectTree: (state) => state.project.projectTree,
-      sideBarWidth: (state) => state.layout.sideBarWidth,
-      tabs: (state) => state.editor.tabs,
-    }),
+    layoutStore() {
+      return useLayoutStore()
+    },
+    rightColumn() {
+      return this.layoutStore.rightColumn
+    },
+    showSideBar() {
+      return this.layoutStore.showSideBar
+    },
+    projectTree() {
+      return this.$store.state.project.projectTree
+    },
+    sideBarWidth() {
+      return this.layoutStore.sideBarWidth
+    },
+    tabs() {
+      return this.$store.state.editor.tabs
+    },
     finalSideBarWidth() {
       const { showSideBar, rightColumn, sideBarViewWidth } = this
       if (!showSideBar) return 0
@@ -96,7 +107,7 @@ export default {
       const mouseUpHandler = (_event) => {
         document.removeEventListener('mousemove', mouseMoveHandler, false)
         document.removeEventListener('mouseup', mouseUpHandler, false)
-        this.$store.dispatch('CHANGE_SIDE_BAR_WIDTH', sideBarWidth < 260 ? 260 : sideBarWidth)
+        this.layoutStore.changeSideBarWidth(sideBarWidth < 260 ? 260 : sideBarWidth)
       }
 
       const mouseMoveHandler = (event) => {
@@ -118,14 +129,14 @@ export default {
   methods: {
     handleLeftIconClick(name) {
       if (this.rightColumn === name) {
-        this.$store.commit('SET_LAYOUT', { rightColumn: '' })
-        this.$store.dispatch('CHANGE_SIDE_BAR_WIDTH', this.finalSideBarWidth)
+        this.layoutStore.setLayout({ rightColumn: '' })
+        this.layoutStore.changeSideBarWidth(this.finalSideBarWidth)
       } else {
         const needDispatch = this.rightColumn === ''
-        this.$store.commit('SET_LAYOUT', { rightColumn: name })
+        this.layoutStore.setLayout({ rightColumn: name })
         this.sideBarViewWidth = +this.sideBarWidth
         if (needDispatch) {
-          this.$store.dispatch('CHANGE_SIDE_BAR_WIDTH', this.finalSideBarWidth)
+          this.layoutStore.changeSideBarWidth(this.finalSideBarWidth)
         }
       }
     },
@@ -219,57 +230,6 @@ export default {
         background: rgba(255, 255, 255, 0.5);
         transform: translateY(-1px);
       }
-      &.active > svg {
-        fill: var(--themeColor);
-      }
-      &.active {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.46));
-        box-shadow:
-          inset 0 0 0 1px var(--themeColor20),
-          0 10px 18px rgba(118, 94, 68, 0.08);
-      }
-    }
-  }
-
-  .side-bar:hover .left-column ul li svg {
-    opacity: 1;
-  }
-  .right-column {
-    flex: 1;
-    min-width: 0;
-    width: calc(100% - 72px);
-    overflow: hidden;
-    border-radius: 30px;
-    border: 1px solid var(--sideBarPanelBorderColor);
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.52)),
-      var(--sideBarPanelBgColor);
-    box-shadow: var(--sideBarPanelShadow);
-  }
-  .drag-bar {
-    position: absolute;
-    top: 22px;
-    right: 0;
-    bottom: 22px;
-    height: auto;
-    width: 12px;
-    cursor: col-resize;
-    &:hover {
-      &::after {
-        opacity: 1;
-      }
-    }
-    &::after {
-      content: '';
-      position: absolute;
-      top: 18px;
-      right: 4px;
-      bottom: 18px;
-      width: 3px;
-      border-radius: 999px;
-      background: linear-gradient(180deg, rgba(96, 182, 126, 0.32), rgba(73, 118, 206, 0.22));
-      opacity: 0;
-      transition: opacity .2s ease;
     }
   }
 </style>

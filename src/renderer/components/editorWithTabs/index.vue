@@ -1,29 +1,27 @@
 <template>
-    <div
-      class="editor-with-tabs"
-      :style="{'max-width': showSideBar ? `calc(100vw - ${sideBarWidth}px` : '100vw' }"
-    >
-      <tabs v-show="showTabBar"></tabs>
-      <div class="container">
-        <editor
-          :markdown="markdown"
-          :cursor="cursor"
-          :text-direction="textDirection"
-          :platform="platform"
-        ></editor>
-        <source-code
-          v-if="sourceCode"
-          :markdown="markdown"
-          :cursor="cursor"
-          :text-direction="textDirection"
-        ></source-code>
-      </div>
-      <tab-notifications></tab-notifications>
+  <div class="editor-with-tabs">
+    <tabs v-if="showTabBar"></tabs>
+    <tab-notifications></tab-notifications>
+    <div class="container">
+      <source-code
+        v-if="sourceCode"
+        :markdown="markdown"
+        :cursor="cursor"
+        :text-direction="textDirection"
+      ></source-code>
+      <editor
+        v-else
+        :markdown="markdown"
+        :cursor="cursor"
+        :text-direction="textDirection"
+        :platform="platform"
+      ></editor>
     </div>
+  </div>
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { useLayoutStore } from '@/store/pinia/layout'
 import Tabs from './tabs.vue'
 import Editor from './editor.vue'
 import SourceCode from './sourceCode.vue'
@@ -65,10 +63,15 @@ export default {
     TabNotifications,
   },
   computed: {
-    ...mapState({
-      showSideBar: (state) => state.layout.showSideBar,
-      sideBarWidth: (state) => state.layout.sideBarWidth,
-    }),
+    layoutStore() {
+      return useLayoutStore()
+    },
+    showSideBar() {
+      return this.layoutStore.showSideBar
+    },
+    sideBarWidth() {
+      return this.layoutStore.sideBarWidth
+    },
   },
 }
 </script>

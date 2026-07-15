@@ -4,6 +4,22 @@ import plist from 'plist'
 const isOsx = process.platform === 'darwin'
 const isWindows = process.platform === 'win32'
 
+let cachedFonts = null
+
+const getAvailableFontFamilies = async (onlyMonospace = false) => {
+  if (!cachedFonts) {
+    const fontManagerModule = await import('fontmanager-redux')
+    const fontManager = fontManagerModule.default || fontManagerModule
+    cachedFonts = fontManager.getAvailableFontsSync()
+  }
+
+  const families = cachedFonts
+    .filter((font) => font.family && (!onlyMonospace || font.monospace))
+    .map((font) => font.family)
+
+  return [...new Set(families)].sort((a, b) => a.localeCompare(b))
+}
+
 /**
  * Register IPC handlers that replace @electron/remote window operations.
  * These handlers allow the renderer to perform window management
@@ -156,4 +172,11 @@ export const registerWindowBridgeHandlers = () => {
     }
     return ''
   })
+
+  ipcMain.handle('mt::get-available-font-families', (_event, onlyMonospace = false) =>
+    getAvailableFontFamilies(!!onlyMonospace).catch((error) => {
+      console.warn('[main] Unable to enumerate fonts:', error)
+      return []
+    }),
+  )
 }

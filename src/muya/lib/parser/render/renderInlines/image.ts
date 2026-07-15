@@ -92,7 +92,7 @@ export default function image(
   if (this.urlMap.has(src)) {
     // fix: it will generate a new id if the image is not loaded.
     const { selectedImage } = this.muya.contentState
-    if (selectedImage && selectedImage.token.attrs.src === src && selectedImage.imageId !== id) {
+    if (selectedImage && selectedImage.token.attrs?.src === src && selectedImage.imageId !== id) {
       selectedImage.imageId = id!
     }
     src = this.urlMap.get(src) ?? ''

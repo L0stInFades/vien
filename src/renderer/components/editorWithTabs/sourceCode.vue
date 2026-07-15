@@ -9,10 +9,10 @@
 <script>
 import codeMirror, { setMode, setCursorAtLastLine, setTextDirection } from '../../codeMirror'
 import { wordCount as getWordCount } from 'muya/lib/utils'
-import { mapState } from 'vuex'
 import { adjustCursor } from '../../util'
 import bus from '../../bus'
 import { oneDarkThemes, railscastsThemes } from '@/config'
+import { usePreferencesStore } from '@/store/pinia/preferences'
 
 export default {
   props: {
@@ -25,11 +25,18 @@ export default {
   },
 
   computed: {
-    ...mapState({
-      theme: (state) => state.preferences.theme,
-      sourceCode: (state) => state.preferences.sourceCode,
-      currentTab: (state) => state.editor.currentFile,
-    }),
+    preferencesStore() {
+      return usePreferencesStore()
+    },
+    preferenceTheme() {
+      return this.preferencesStore.theme
+    },
+    sourceCode() {
+      return this.preferencesStore.sourceCode
+    },
+    currentTab() {
+      return this.$store.state.editor.currentFile
+    },
   },
 
   data() {
@@ -43,7 +50,7 @@ export default {
   },
 
   watch: {
-    textDirection: function (value, oldValue) {
+    '$props.textDirection': function (value, oldValue) {
       const { editor } = this
       if (value !== oldValue && editor) {
         setTextDirection(editor, value)
@@ -55,7 +62,7 @@ export default {
     this.$nextTick(() => {
       // TODO: Should we load markdown from the tab or mapped vue property?
       const { id } = this.currentTab
-      const { markdown = '', theme, cursor, textDirection } = this
+      const { markdown = '', preferenceTheme, cursor, textDirection } = this
       const container = this.$refs.sourceCode
       const codeMirrorConfig = {
         value: markdown,
@@ -80,14 +87,15 @@ export default {
       }
 
       // Set theme
-      if (railscastsThemes.includes(theme)) {
+      if (railscastsThemes.includes(preferenceTheme)) {
         codeMirrorConfig.theme = 'railscasts'
-      } else if (oneDarkThemes.includes(theme)) {
+      } else if (oneDarkThemes.includes(preferenceTheme)) {
         codeMirrorConfig.theme = 'one-dark'
       }
 
       // Init CodeMirror
-      const editor = (this.editor = codeMirror(container, codeMirrorConfig))
+      const editor = codeMirror(container, codeMirrorConfig)
+      this.editor = editor
 
       bus.on('file-loaded', this.handleFileChange)
       bus.on('invalidate-image-cache', this.handleInvalidateImageCache)

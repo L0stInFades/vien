@@ -23,7 +23,9 @@ class MarkdownPrint {
         if (rawSrc) {
           try {
             image.src = getImageInfo(rawSrc).src
-          } catch (_) { /* keep original src */ }
+          } catch (_) {
+            /* keep original src */
+          }
         }
       }
     }
@@ -36,6 +38,7 @@ class MarkdownPrint {
   clearup() {
     if (this.container) {
       this.container.remove()
+      this.container = null
     }
   }
 }

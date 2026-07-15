@@ -35,15 +35,13 @@ class Selection {
 
   findMatchingSelectionParent(testElementFunction: (el: Element) => boolean, contentWindow: Window) {
     const selection = contentWindow.getSelection()
-    let range: Range | undefined
-    let current: Node | undefined
 
     if (!selection || selection.rangeCount === 0) {
       return false
     }
 
-    range = selection.getRangeAt(0)
-    current = range.commonAncestorContainer
+    const range = selection.getRangeAt(0)
+    const current = range.commonAncestorContainer
 
     return traverseUp(current, testElementFunction)
   }
@@ -335,9 +333,6 @@ class Selection {
    *  @return {Object} 'left' and 'right' attributes contain offsets from beginning and end of Element
    */
   getCaretOffsets(element: Node, range?: Range) {
-    let preCaretRange: Range | undefined
-    let postCaretRange: Range | undefined
-
     if (!range) {
       const sel = window.getSelection()
       if (!sel || sel.rangeCount === 0) {
@@ -346,8 +341,8 @@ class Selection {
       range = sel.getRangeAt(0)
     }
 
-    preCaretRange = range.cloneRange()
-    postCaretRange = range.cloneRange()
+    const preCaretRange = range.cloneRange()
+    const postCaretRange = range.cloneRange()
 
     preCaretRange.selectNodeContents(element)
     preCaretRange.setEnd(range.endContainer, range.endOffset)

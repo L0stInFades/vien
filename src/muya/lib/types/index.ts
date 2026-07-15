@@ -196,6 +196,17 @@ export interface Token extends Record<string, unknown> {
   hrefAndTitle?: string
 }
 
+export interface SelectedImage extends Record<string, unknown> {
+  key: string
+  token: {
+    raw: string
+    range: TokenRange
+    attrs?: Record<string, string>
+    [key: string]: unknown
+  }
+  imageId?: string
+}
+
 // ---------------------------------------------------------------------------
 // SelectionInfo — return type of selectionChange()
 // ---------------------------------------------------------------------------
@@ -355,7 +366,7 @@ export interface IContentState {
   cursor: Cursor
 
   // Selected state
-  selectedImage: unknown
+  selectedImage: SelectedImage | null
   selectedTableCells: {
     tableId: string
     row: number
@@ -473,7 +484,7 @@ export interface IContentState {
   // Backspace / delete (backspaceCtrl, deleteCtrl)
   deleteSelectedTableCells(isCopy?: boolean): void
   isSelectAll(): boolean
-  updateToParagraph(block: Block, line?: Block): Block | void
+  updateToParagraph(block: Block, line?: Block): Block | undefined
   checkBackspaceCase(): unknown
   checkInlineUpdate(block: Block): boolean | Block
 
@@ -504,7 +515,7 @@ export interface IContentState {
   chopBlock(block: Block): Block
   createTaskItemBlock(block: Block | null, checked: boolean): Block
   createBlockLi(block?: Block | null): Block
-  updateFootnote(parent: Block, block: Block): Block | void
+  updateFootnote(parent: Block, block: Block): Block | undefined
   createRow(row: Block, isHeader?: boolean): Block
   chopBlockByCursor(block: Block, key: string, offset: number): Block
   enterInEmptyParagraph(block: Block): void
@@ -524,8 +535,8 @@ export interface IContentState {
   checkQuickInsert(block: Block): unknown
 
   // Paragraph (paragraphCtrl)
-  updateList(block: Block, listType: string, marker?: string, line?: Block): Block | void
-  updateTaskListItem(block: Block, listType?: string, tasklist?: unknown): void
+  updateList(block: Block, listType: string, marker?: string, line?: Block): Block | undefined
+  updateTaskListItem(block: Block, listType?: string, tasklist?: unknown): Block | undefined
   getCommonParent(): { parent: Block | null; startIndex: number; endIndex: number }
   markdownToState(markdown: string): Block[]
   createContainerBlock(functionType: string, value: string): Block
@@ -581,11 +592,11 @@ export interface IContentState {
   setSelectedCellsStyle(): void
 
   // Update (updateCtrl)
-  updateThematicBreak(block: Block, hr: unknown, line: Block): Block | void
-  updateAtxHeader(block: Block, atxHeader: unknown, line: Block): Block | void
-  updateSetextHeader(block: Block, setextHeader: unknown, line: Block): Block | void
-  updateBlockQuote(block: Block, line: Block): Block | void
-  updateIndentCode(block: Block, line: Block): Block | void
+  updateThematicBreak(block: Block, hr: unknown, line: Block): Block | undefined
+  updateAtxHeader(block: Block, atxHeader: unknown, line: Block): Block | undefined
+  updateSetextHeader(block: Block, setextHeader: unknown, line: Block): Block | undefined
+  updateBlockQuote(block: Block, line: Block): Block | undefined
+  updateIndentCode(block: Block, line: Block): Block | undefined
   checkSameMarkerOrDelimiter(block: Block, delimiter: string): boolean
 
   // init (from contentState/index.ts)

@@ -40,7 +40,8 @@ const loadMore = (CodeMirror) => {
     const script = document.createElement('script')
     script.src = file
     const others = document.getElementsByTagName('script')[0]
-    const list = (loading[mode] = [cont])
+    const list = [cont]
+    loading[mode] = list
     CodeMirror.on(script, 'load', () => {
       ensureDeps(mode, () => {
         for (let i = 0; i < list.length; ++i) {

@@ -6,6 +6,7 @@ import { PATH_SEPARATOR } from '../config'
 import notice from '../services/notification'
 import { getFileStateFromData } from './help'
 import { hasMarkdownExtension } from '../../common/filesystem/paths'
+import { useLayoutStore } from './pinia/layout'
 
 const state = {
   activeItem: {},
@@ -73,15 +74,16 @@ const mutations = {
 }
 
 const actions = {
-  LISTEN_FOR_LOAD_PROJECT({ commit, dispatch }) {
+  LISTEN_FOR_LOAD_PROJECT({ commit }) {
     window.api.ipc.on('mt::open-directory', (pathname) => {
+      const layoutStore = useLayoutStore()
       commit('SET_ROOT_DIRECTORY', pathname)
-      commit('SET_LAYOUT', {
+      layoutStore.setLayout({
         rightColumn: 'files',
         showSideBar: true,
         showTabBar: true,
       })
-      dispatch('DISPATCH_LAYOUT_MENU_ITEMS')
+      layoutStore.dispatchLayoutMenuItems()
     })
   },
   LISTEN_FOR_UPDATE_PROJECT({ commit, state, dispatch }) {
@@ -123,7 +125,7 @@ const actions = {
   CHANGE_CLIPBOARD({ commit }, data) {
     commit('SET_CLIPBOARD', data)
   },
-  ASK_FOR_OPEN_PROJECT({ commit }) {
+  ASK_FOR_OPEN_PROJECT() {
     window.api.ipc.send('mt::ask-for-open-project-in-sidebar')
   },
   LISTEN_FOR_SIDEBAR_CONTEXT_MENU({ commit, state }) {

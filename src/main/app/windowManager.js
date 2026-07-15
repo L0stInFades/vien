@@ -3,6 +3,7 @@ import EventEmitter from 'node:events'
 import log from 'electron-log'
 import Watcher, { WATCHER_STABILITY_THRESHOLD, WATCHER_STABILITY_POLL_INTERVAL } from '../filesystem/watcher'
 import { WindowType } from '../windows/base'
+import ipcListenerRegistry from '../ipc/listenerRegistry'
 
 class WindowActivityList {
   constructor() {
@@ -94,6 +95,7 @@ class WindowManager extends EventEmitter {
     window.on('window-closed', () => {
       this.remove(windowId)
       this._watcher.unwatchByWindowId(windowId)
+      ipcListenerRegistry.removeByWindowId(windowId)
     })
   }
 
@@ -288,6 +290,10 @@ class WindowManager extends EventEmitter {
 
   closeWatcher() {
     this._watcher.close()
+  }
+
+  removeIpcListeners() {
+    ipcListenerRegistry.removeAll()
   }
 
   /**

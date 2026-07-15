@@ -1,6 +1,6 @@
 import { URL_REG, DATA_URL_REG } from '../config'
 import { correctImageSrc } from '../utils/getImageInfo'
-import type { IContentState, Block, Token } from '../types'
+import type { IContentState, Token } from '../types'
 
 const imageCtrl = (ContentState: { prototype: IContentState }) => {
   /**

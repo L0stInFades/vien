@@ -2,9 +2,8 @@
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
 const multiplexMode = (CodeMirror) => {
-  CodeMirror.multiplexingMode = function (outer /*, others */) {
+  CodeMirror.multiplexingMode = (outer, ...others) => {
     // Others should be {open, close, mode [, delimStyle] [, innerStyle]} objects
-    const others = Array.prototype.slice.call(arguments, 1)
 
     function indexOf(string, pattern, from, returnEnd) {
       if (typeof pattern === 'string') {

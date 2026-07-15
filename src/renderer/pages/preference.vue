@@ -1,6 +1,6 @@
 <template>
   <div class="pref-container">
-    <title-bar v-if="showCustomTitleBar"></title-bar>
+    <title-bar v-if="showCustomTitleBar" variant="preferences"></title-bar>
     <side-bar></side-bar>
     <div
       class="pref-content"
@@ -13,12 +13,12 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
-import TitleBar from '@/prefComponents/common/titlebar'
+import TitleBar from '@/components/titleBar'
 import SideBar from '@/prefComponents/sideBar'
 import { loadingPageMixins } from '@/mixins'
 import { addThemeStyle } from '@/util/theme'
 import { DEFAULT_STYLE } from '@/config'
+import { usePreferencesStore } from '@/store/pinia/preferences'
 import { isOsx } from '@/util'
 
 export default {
@@ -32,27 +32,31 @@ export default {
     SideBar,
   },
   computed: {
-    ...mapState({
-      theme: (state) => state.preferences.theme,
-      titleBarStyle: (state) => state.preferences.titleBarStyle,
-    }),
+    preferencesStore() {
+      return usePreferencesStore()
+    },
+    currentTheme() {
+      return this.preferencesStore.theme
+    },
+    titleBarStyle() {
+      return this.preferencesStore.titleBarStyle
+    },
     showCustomTitleBar() {
       return this.titleBarStyle === 'custom' && !this.isOsx
     },
   },
-  watch: {
-    theme: (value, oldValue) => {
+  created() {
+    this.$watch('currentTheme', (value, oldValue) => {
       if (value !== oldValue) {
         addThemeStyle(value)
       }
-    },
-  },
-  created() {
+    })
+
     this.$nextTick(() => {
       const state = window.marktext.initialState || DEFAULT_STYLE
       addThemeStyle(state.theme)
 
-      this.$store.dispatch('ASK_FOR_USER_PREFERENCE')
+      usePreferencesStore().askForUserPreference()
       this.hideLoadingPage()
     })
   },
@@ -137,7 +141,6 @@ export default {
     }
   }
   & .pref-content.frameless .pref-setting {
-    /* Move the scrollbar below the titlebar */
     margin-top: var(--titleBarHeight);
     padding-top: 34px;
   }

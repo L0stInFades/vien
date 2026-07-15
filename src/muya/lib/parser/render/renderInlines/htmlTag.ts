@@ -3,6 +3,7 @@ import { snakeToCamel } from '../../../utils'
 import sanitize, { isValidAttribute } from '../../../utils/dompurify'
 import type { Block, Token } from '../../types'
 import type { Cursor, InlineRenderMethod, StateRenderContext } from '../renderContext'
+import type { VNodeChildElement, VNodeChildren } from 'snabbdom'
 
 export default function htmlTag(
   this: StateRenderContext,
@@ -19,17 +20,14 @@ export default function htmlTag(
   const openContent = this.highlight(h, block, start, start + openTag.length, token)
   const closeContent = closeTag ? this.highlight(h, block, end - closeTag.length, end, token) : ''
 
-  let anchor: unknown[] | '' = ''
+  let anchor: VNodeChildren = ''
   if (Array.isArray(children) && tag !== 'ruby') {
-    anchor = []
+    const renderedChildren: VNodeChildElement[] = []
     for (const to of children) {
       const chunk = (this[snakeToCamel(to.type)] as InlineRenderMethod).call(this, h, cursor, block, to, className)
-      if (Array.isArray(chunk)) {
-        anchor.push(...chunk)
-      } else {
-        anchor.push(chunk)
-      }
+      renderedChildren.push(...chunk)
     }
+    anchor = renderedChildren
   }
 
   switch (tag) {

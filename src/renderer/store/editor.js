@@ -267,7 +267,14 @@ const mutations = {
     let tabIndex = 0
     tabIdList.forEach((id) => {
       const index = state.tabs.findIndex((f) => f.id === id)
-      const { pathname } = state.tabs[index]
+      const tab = state.tabs[index]
+      const { pathname } = tab
+
+      if (tab.id && autoSaveTimers.has(tab.id)) {
+        const timer = autoSaveTimers.get(tab.id)
+        clearTimeout(timer)
+        autoSaveTimers.delete(tab.id)
+      }
 
       // Notify main process to remove the file from the window and free resources.
       if (pathname) {
@@ -358,18 +365,18 @@ const actions = {
     }
   },
 
-  FORMAT_LINK_CLICK({ commit }, { data, dirname }) {
+  FORMAT_LINK_CLICK(_context, { data, dirname }) {
     window.api.ipc.send('mt::format-link-click', { data, dirname })
   },
 
-  LISTEN_SCREEN_SHOT({ commit }) {
+  LISTEN_SCREEN_SHOT() {
     window.api.ipc.on('mt::screenshot-captured', () => {
       bus.emit('screenshot-captured')
     })
   },
 
   // image path auto complement
-  ASK_FOR_IMAGE_AUTO_PATH({ commit, state }, src) {
+  ASK_FOR_IMAGE_AUTO_PATH({ state }, src) {
     const { pathname } = state.currentFile
     if (pathname) {
       let rs
@@ -391,7 +398,7 @@ const actions = {
     commit('SET_SEARCH', value)
   },
 
-  SHOW_IMAGE_DELETION_URL({ commit }, deletionUrl) {
+  SHOW_IMAGE_DELETION_URL(_context, deletionUrl) {
     notice
       .notify({
         title: 'Image deletion URL',
@@ -429,7 +436,7 @@ const actions = {
     }
   },
 
-  CLOSE_UNSAVED_TAB({ commit, state }, file) {
+  CLOSE_UNSAVED_TAB(_context, file) {
     const { id, pathname, filename, markdown } = file
     const options = getOptionsFromState(file)
 
@@ -604,7 +611,7 @@ const actions = {
     })
   },
 
-  LISTEN_FOR_RENAME({ commit, state, dispatch }) {
+  LISTEN_FOR_RENAME({ dispatch }) {
     window.api.ipc.on('mt::editor-rename-file', () => {
       dispatch('RESPONSE_FOR_RENAME')
     })
@@ -631,7 +638,7 @@ const actions = {
   },
 
   // ask for main process to rename this file to a new name `newFilename`
-  RENAME({ commit, state }, newFilename) {
+  RENAME({ state }, newFilename) {
     const { id, pathname, filename } = state.currentFile
     if (typeof filename === 'string' && filename !== newFilename) {
       const newPathname = path.join(path.dirname(pathname), newFilename)
@@ -653,7 +660,7 @@ const actions = {
   },
 
   // This events are only used during window creation.
-  LISTEN_FOR_BOOTSTRAP_WINDOW({ commit, state, dispatch, rootState }) {
+  LISTEN_FOR_BOOTSTRAP_WINDOW({ commit, dispatch, rootState }) {
     // Delay load runtime commands and initialize commands.
     setTimeout(() => {
       bus.emit('cmd::register-command', new FileEncodingCommand(rootState.editor))
@@ -717,7 +724,7 @@ const actions = {
     })
   },
 
-  LISTEN_FOR_CLOSE_TAB({ commit, state, dispatch }) {
+  LISTEN_FOR_CLOSE_TAB({ state, dispatch }) {
     window.api.ipc.on('mt::editor-close-tab', () => {
       const file = state.currentFile
       if (!hasKeys(file)) return
@@ -725,7 +732,7 @@ const actions = {
     })
   },
 
-  LISTEN_FOR_TAB_CYCLE({ commit, state, dispatch }) {
+  LISTEN_FOR_TAB_CYCLE({ dispatch }) {
     window.api.ipc.on('mt::tabs-cycle-left', () => {
       dispatch('CYCLE_TABS', false)
     })
@@ -734,7 +741,7 @@ const actions = {
     })
   },
 
-  LISTEN_FOR_SWITCH_TABS({ commit, state, dispatch }) {
+  LISTEN_FOR_SWITCH_TABS({ dispatch }) {
     window.api.ipc.on('mt::switch-tab-by-index', (index) => {
       dispatch('SWITCH_TAB_BY_INDEX', index)
     })
@@ -1025,7 +1032,7 @@ const actions = {
     }
   },
 
-  HANDLE_AUTO_SAVE({ commit, state, rootState }, { id, filename, pathname, markdown, options }) {
+  HANDLE_AUTO_SAVE({ state, rootState }, { id, filename, pathname, markdown, options }) {
     if (!id || !pathname) {
       throw new Error('HANDLE_AUTO_SAVE: Invalid tab.')
     }
@@ -1119,8 +1126,8 @@ const actions = {
     })
   },
 
-  LINTEN_FOR_EXPORT_SUCCESS({ commit }) {
-    window.api.ipc.on('mt::export-success', ({ type, filePath }) => {
+  LINTEN_FOR_EXPORT_SUCCESS() {
+    window.api.ipc.on('mt::export-success', ({ filePath }) => {
       notice
         .notify({
           title: 'Exported successfully',
@@ -1133,11 +1140,11 @@ const actions = {
     })
   },
 
-  PRINT_RESPONSE({ commit }) {
+  PRINT_RESPONSE() {
     window.api.ipc.send('mt::response-print')
   },
 
-  LINTEN_FOR_PRINT_SERVICE_CLEARUP({ commit }) {
+  LINTEN_FOR_PRINT_SERVICE_CLEARUP() {
     window.api.ipc.on('mt::print-service-clearup', () => {
       bus.emit('print-service-clearup')
     })
@@ -1236,7 +1243,7 @@ const actions = {
     })
   },
 
-  async ASK_FOR_IMAGE_PATH({ commit }) {
+  async ASK_FOR_IMAGE_PATH() {
     return await window.api.ipc.invoke('mt::ask-for-image-path')
   },
 
