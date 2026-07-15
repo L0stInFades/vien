@@ -82,20 +82,7 @@ import log from 'electron-log'
 import { mapState } from 'vuex'
 // import ViewImage from 'view-image'
 import { isChildOfDirectory } from 'common/filesystem/paths'
-import Muya from 'muya/lib'
-import TablePicker from 'muya/lib/ui/tablePicker'
-import QuickInsert from 'muya/lib/ui/quickInsert'
-import CodePicker from 'muya/lib/ui/codePicker'
-import EmojiPicker from 'muya/lib/ui/emojiPicker'
-import ImagePathPicker from 'muya/lib/ui/imagePicker'
-import ImageSelector from 'muya/lib/ui/imageSelector'
-import ImageToolbar from 'muya/lib/ui/imageToolbar'
-import Transformer from 'muya/lib/ui/transformer'
-import FormatPicker from 'muya/lib/ui/formatPicker'
-import LinkTools from 'muya/lib/ui/linkTools'
-import FootnoteTool from 'muya/lib/ui/footnoteTool'
-import TableBarTools from 'muya/lib/ui/tableTools'
-import FrontMenu from 'muya/lib/ui/frontMenu'
+import { createMuyaEngine } from '@/editor/muyaAdapter'
 import Search from '../search'
 import bus from '@/bus'
 import { DEFAULT_EDITOR_FONT_FAMILY } from '@/config'
@@ -495,26 +482,6 @@ export default {
         autoCheck,
       } = this
 
-      // use muya UI plugins
-      Muya.use(TablePicker)
-      Muya.use(QuickInsert)
-      Muya.use(CodePicker)
-      Muya.use(EmojiPicker)
-      Muya.use(ImagePathPicker)
-      Muya.use(ImageSelector, {
-        unsplashAccessKey: process.env.UNSPLASH_ACCESS_KEY,
-        photoCreatorClick: this.photoCreatorClick,
-      })
-      Muya.use(Transformer)
-      Muya.use(ImageToolbar)
-      Muya.use(FormatPicker)
-      Muya.use(FrontMenu)
-      Muya.use(LinkTools, {
-        jumpClick: this.jumpClick,
-      })
-      Muya.use(FootnoteTool)
-      Muya.use(TableBarTools)
-
       const options = {
         focusMode,
         markdown,
@@ -558,7 +525,10 @@ export default {
         })
       }
 
-      const editor = new Muya(ele, options)
+      const editor = createMuyaEngine(ele, options, {
+        photoCreatorClick: this.photoCreatorClick,
+        jumpClick: this.jumpClick,
+      })
       this.editor = editor
       const { container } = editor
 
@@ -850,7 +820,7 @@ export default {
 
     replaceMisspelling({ word, replacement }) {
       if (this.editor) {
-        this.editor._replaceCurrentWordInlineUnsafe(word, replacement)
+        this.editor.replaceCurrentWordInline(word, replacement)
       }
     },
 
@@ -871,7 +841,7 @@ export default {
         return
       }
 
-      if (this.editor && (this.editor.hasFocus() || this.editor.contentState.selectedTableCells)) {
+      if (this.editor && (this.editor.hasFocus() || this.editor.hasSelectedTableCells())) {
         this.editor.selectAll()
       } else {
         const activeElement = document.activeElement
