@@ -33,9 +33,9 @@ service that must own the capability.
 | `src/renderer/util/fileSystem.ts` `isFileExecutableSync` | `fs.statSync` | executable validation for custom tools | `ShellService` policy check | ✅ migrated — async `mt::fs-is-executable` |
 | `src/renderer/util/pdf.ts` custom export theme | `fs.readFileSync`, `common/filesystem.isFile` | export theme read | `ExportService` (EXPORT-001) | ✅ migrated — `mt::fs-read-export-theme` (getCssForOptions is async now) |
 | `src/renderer/components/exportSettings/index.vue` theme enumeration | `fs/promises.readdir`, `fs.existsSync` | export theme listing | `ExportService` (EXPORT-001) | ✅ migrated — `mt::fs-list-export-themes` |
-| `src/renderer/components/sideBar/search.vue` → `node/ripgrepSearcher.js` | `child_process.spawn` + `vscode-ripgrep.rgPath` | workspace content search | `SearchService` (SEARCH-001) | ⛔ spawn throws → structured search failure |
-| `src/renderer/commands/quickOpen.js` → `node/fileSearcher.js` | `child_process.spawn` + `vscode-ripgrep.rgPath` | file listing for quick open | `SearchService` (SEARCH-001) | ⛔ spawn throws → structured search failure |
-| `src/muya/lib/parser/render/plantuml.ts` | `zlib.deflateSync` | PlantUML encoding for remote render | browser-native `CompressionStream` + explicit remote opt-in (§5.7) | ⛔ throws (previously produced silently corrupt URLs) |
+| `src/renderer/components/sideBar/search.vue` → `node/ripgrepSearcher.js` | `child_process.spawn` + `vscode-ripgrep.rgPath` | workspace content search | `SearchService` (SEARCH-001) | ✅ migrated — main-process ripgrep, streaming `mt::search-*`, renderer facade `services/searchClient.ts`; legacy searcher files deleted |
+| `src/renderer/commands/quickOpen.js` → `node/fileSearcher.js` | `child_process.spawn` + `vscode-ripgrep.rgPath` | file listing for quick open | `SearchService` (SEARCH-001) | ✅ migrated — `mt::search-files-*`; vscode-ripgrep stub + alias deleted (renderer import now fails the build) |
+| `src/muya/lib/parser/render/plantuml.ts` | `zlib.deflateSync` | PlantUML encoding for remote render | browser-native `CompressionStream` + explicit remote opt-in (§5.7) | ⛔ throws loudly (previously produced silently corrupt URLs); offline/opt-in policy pending Phase 6 |
 | `src/common/filesystem/index.ts` + `paths.ts` (shared with main) | `fs.existsSync/lstatSync/...` | path validation helpers | renderer callers must switch to service answers; main keeps real fs | ⚠️ renderer calls return `false` via try/catch — audit call sites during WORKSPACE-001 |
 
 ## Rules

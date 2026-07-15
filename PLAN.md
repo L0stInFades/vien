@@ -1141,3 +1141,41 @@ M3 “功能完整 RC”在此结束。
 - 每个 RC 重新跑完整仓库审计，确认本文引用的路径、状态和风险没有失真。
 
 最终验收标准很简单：用户可以把唯一一份重要 Markdown 交给 Vien，在写作、崩溃、重启、外部修改、导出和升级之后，仍然相信它。只有达到这个信任级别，“Typora 级”才不是一句界面宣传语。
+
+---
+
+## 17. 进度日志（§16 维护规则要求）
+
+### 2026-07-16 — Phase 0 完成 + Phase 1/2 核心工作包落地
+
+**已完成工作包**（每项均带回归测试并通过完整验证循环：unit + tsc + biome + build + Electron E2E）：
+
+| 工作包 | 交付 | 证据 |
+| --- | --- | --- |
+| BASE-000 | 基线验证复现（审计结论确认） | 提交 1261d409 |
+| BASE-001 | pnpm 11 唯一包管理器、CI 重写（Node 22/actions v4）、`verify` 聚合命令、删除 yarn.lock | 22b56485 |
+| BASE-002 | stub 抛结构化 `CapabilityUnavailableError`（禁止假成功）+ 能力清单 | 627ebd62，docs/capability-inventory.md |
+| BASE-003 | 无损语料 35 fixtures + 双向棘轮测试；基线 12/35 lossy | 62ab1a75，test/corpus/known-lossy.json |
+| BASE-004 | ADR-001/002/003 | 43def8d4，docs/adr/ |
+| BOUNDARY-001 | contracts + 运行时校验 + ipcGuard（sender/schema/envelope）+ pathPolicy（symlink 防逃逸） | 33 tests |
+| BOUNDARY-002 | `webSecurity: true`、CSP（无内联脚本）、`vien-asset://` 受控图片协议 | E2E 8/8 含 XSS 语料 |
+| WORKSPACE-001 + ASSET-001 + EXPORT-001 | 文件/图片/导出主题全部主进程化；修复 create 截断与 copy 覆盖两个数据丢失 bug；uploader 去 shell 注入 | 28 tests 真实文件系统 |
+| SEARCH-001 | 主进程 ripgrep SearchService（流式/可取消/窗口隔离）；renderer 搜索器文件删除 | 11 tests 真实 rg 二进制 |
+| SAFE-001 | DocumentSession revision 状态机（旧 ack 不清新 dirty） | document-session.spec |
+| SAFE-002 | 原子保存（temp+fsync+rename+dir fsync；失败保留原文件）— 消除 safeSaveDocuments TODO | atomic-save.spec |
+| SAFE-003 | DiskVersion CAS（外部修改返回 E_CONFLICT，绝不覆盖） | atomic-save.spec |
+| SAFE-004 | Recovery journal v1（RPO ≤1.5s；崩溃后自动恢复进标签页；坏 journal 不阻启动） | recovery-service.spec |
+| WATCH-001 | watcher origin token（精确 DiskVersion 对比取代时间窗口猜测） | watcher-origin-token.spec |
+| CORE-001 | `EditorEngine` 契约 + `MuyaAdapter`（shell 零直接 Muya/ContentState 依赖） | editor.vue 14→1 imports |
+| CORE-003 | getBlock O(1) 自愈索引（父链附着验证）+ inputCtrl 实例级计时器 | muya-block-index.spec |
+| CORE-002 切片1 | fence marker/闭合 ATX 无损保持；棘轮 12/35 → **10/35** lossy | corpus-roundtrip.spec |
+
+**测试规模**：557 → **725** unit tests（+168），Playwright E2E 8/8，CommonMark/GFM specs 全绿。
+
+**未完成例外**（按 §16 记录）：
+- CORE-002 剩余 lossy 类（blockquote 懒续行、紧列表松化、表格重排、混合 EOL、多尾行、tab）需要完整 source-span 投影——Phase 3 主体工作，受 ADR-002 timebox 约束；
+- CORE-004（transaction history）、QUALITY-001（fault/IME/perf nightly）未启动；
+- SAFE-005 恢复中心完整 UI（预览/另存/丢弃选择器）待做——v1 采用自动恢复进标签页 + 通知；
+- preload 仍暴露旧通用 `ipc.send/invoke/on`（白名单内）——各能力迁完后按 ADR-003 收口删除；
+- renderer sandbox 保持显式 `false`（preload 的 clipboard/shell/webFrame 依赖需先迁 IPC，见 config.js 注释）；
+- 一处已知偶发：asset-service uploadByCommand 测试在全量并行跑时偶发失败（单跑稳定），疑与 tmpdir 并发有关，待加隔离。
