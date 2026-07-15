@@ -19,6 +19,7 @@ import EditorWindow from '../windows/editor'
 import SettingWindow from '../windows/setting'
 import { parseSecondInstanceArgv } from './parseSecondInstanceArgv'
 import { revealOrCreateWindow } from './revealOrCreateWindow'
+import { registerAssetProtocolHandler } from '../security/assetProtocol'
 
 class App {
   /**
@@ -128,6 +129,10 @@ class App {
   ready = () => {
     const { _args: args, _openFilesCache } = this
     const { preferences } = this._accessor
+
+    // Serve local document images through the controlled vien-asset://
+    // protocol (webSecurity stays enabled).
+    registerAssetProtocolHandler()
 
     if (args._.length) {
       for (const pathname of args._) {

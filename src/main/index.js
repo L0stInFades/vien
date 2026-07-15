@@ -9,6 +9,7 @@ import Accessor from './app/accessor'
 import setupEnvironment from './app/env'
 import { getLogLevel } from './utils'
 import { registerWindowBridgeHandlers } from './ipc/windowBridge'
+import { registerAssetSchemePrivileges } from './security/assetProtocol'
 
 const initializeLogger = (appEnvironment) => {
   log.transports.console.level = process.env.NODE_ENV === 'development' ? 'info' : 'error'
@@ -22,6 +23,9 @@ const initializeLogger = (appEnvironment) => {
 // -----------------------------------------------
 
 app.setName('Vien')
+
+// Custom protocol privileges must be declared before the app is ready.
+registerAssetSchemePrivileges()
 
 // NOTE: We only support Linux, macOS and Windows but not BSD nor SunOS.
 if (!/^(darwin|win32|linux)$/i.test(process.platform)) {

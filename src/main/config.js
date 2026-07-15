@@ -19,7 +19,15 @@ export const editorWinOptions = Object.freeze({
     // enable it always and set the HTML spelling attribute to false.
     spellcheck: true,
     nodeIntegration: false,
-    webSecurity: false,
+    // BOUNDARY-002: same-origin policy stays ON. Local document images load
+    // through the controlled vien-asset:// protocol, never by disabling
+    // webSecurity.
+    webSecurity: true,
+    // Explicitly locked (PLAN.md §5.7). sandbox:true requires moving the
+    // preload's clipboard/shell/webFrame/nativeImage usage behind main-
+    // process IPC first — tracked as a Phase 1 follow-up; do not flip this
+    // without that migration.
+    sandbox: false,
   },
   useContentSize: true,
   show: true,
@@ -39,7 +47,9 @@ export const preferencesWinOptions = Object.freeze({
     // Always true to access native spellchecker.
     spellcheck: true,
     nodeIntegration: false,
-    webSecurity: false,
+    // BOUNDARY-002: same-origin policy stays ON (see editorWinOptions).
+    webSecurity: true,
+    sandbox: false,
   },
   fullscreenable: false,
   fullscreen: false,

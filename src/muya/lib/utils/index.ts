@@ -1,5 +1,6 @@
 import runSanitize from './dompurify'
 import { URL_REG, DATA_URL_REG, IMAGE_EXT_REG } from '../config'
+import { toDisplaySrc } from './assetDisplay'
 import type { Block } from '../types'
 export { getUniqueId, getLongUniqueId } from './random'
 
@@ -160,7 +161,9 @@ export const loadImage = async (url: string, detectContentType = false) => {
     image.onerror = (err) => {
       reject(err)
     }
-    image.src = url
+    // Local file URLs are probed through the controlled asset protocol
+    // (webSecurity stays enabled); remote/data URLs load as-is.
+    image.src = toDisplaySrc(url)
   })
 }
 

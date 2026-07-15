@@ -1,5 +1,6 @@
 import type { StateRenderContext } from '../renderContext'
 import { getUniqueId, loadImage } from '../../../utils'
+import { toDisplaySrc } from '../../../utils/assetDisplay'
 import { insertAfter, operateClassName } from '../../../utils/domManipulate'
 import { CLASS_OR_ID } from '../../../config'
 
@@ -36,7 +37,9 @@ export default function loadImageAsync(
         const dispMsec = Date.now()
         const touchMsec = dispMsec
         if (/^file:\/\//.test(src)) {
-          domsrc = `${url}?msec=${dispMsec}`
+          // Local files load through the controlled vien-asset protocol so
+          // webSecurity can stay enabled; msec busts the renderer cache.
+          domsrc = `${toDisplaySrc(url)}?msec=${dispMsec}`
         } else {
           domsrc = url
         }
