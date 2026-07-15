@@ -110,7 +110,10 @@ const handleResponseForPrint = (e) => {
   })
 }
 
-const handleResponseForSave = async (e, { id, filename, markdown, pathname, options, defaultPath }) => {
+const handleResponseForSave = async (
+  e,
+  { id, filename, markdown, pathname, options, defaultPath, revision, diskVersion },
+) => {
   const win = BrowserWindow.fromWebContents(e.sender)
   let recommendFilename = getRecommendTitleFromMarkdownString(markdown)
   if (!recommendFilename) {
@@ -144,23 +147,29 @@ const handleResponseForSave = async (e, { id, filename, markdown, pathname, opti
   if (!filePath.endsWith(extension)) {
     filePath += extension
   }
-  return writeMarkdownFile(filePath, markdown, options, win)
-    .then(() => {
+  // Compare-and-swap only when overwriting the tracked document (SAFE-003).
+  const expectedDiskVersion = alreadyExistOnDisk ? (diskVersion ?? null) : null
+  return writeMarkdownFile(filePath, markdown, options, expectedDiskVersion)
+    .then((newDiskVersion) => {
+      const ack = { savedRevision: revision ?? null, diskVersion: newDiskVersion }
       if (!alreadyExistOnDisk) {
         ipcMain.emit('window-add-file-path', win.id, filePath)
         ipcMain.emit('menu-add-recently-used', filePath)
 
         const filename = path.basename(filePath)
-        win.webContents.send('mt::set-pathname', { id, pathname: filePath, filename })
+        win.webContents.send('mt::set-pathname', { id, pathname: filePath, filename, ...ack })
       } else {
         ipcMain.emit('window-file-saved', win.id, filePath)
-        win.webContents.send('mt::tab-saved', id)
+        win.webContents.send('mt::tab-saved', id, ack)
       }
       return id
     })
     .catch((err) => {
       log.error('Error while saving:', err)
-      win.webContents.send('mt::tab-save-failure', id, err.message)
+      win.webContents.send('mt::tab-save-failure', id, err.message, {
+        code: err.code === 'E_CONFLICT' ? 'E_CONFLICT' : 'E_IO',
+        actualDiskVersion: err.actualDiskVersion ?? null,
+      })
     })
 }
 
@@ -242,49 +251,58 @@ ipcMain.on('mt::save-and-close-tabs', async (e, unsavedFiles) => {
   }
 })
 
-ipcMain.on('mt::response-file-save-as', async (e, { id, filename, markdown, pathname, options, defaultPath }) => {
-  const win = BrowserWindow.fromWebContents(e.sender)
-  let recommendFilename = getRecommendTitleFromMarkdownString(markdown)
-  if (!recommendFilename) {
-    recommendFilename = filename || 'Untitled'
-  }
+ipcMain.on(
+  'mt::response-file-save-as',
+  async (e, { id, filename, markdown, pathname, options, defaultPath, revision, diskVersion }) => {
+    const win = BrowserWindow.fromWebContents(e.sender)
+    let recommendFilename = getRecommendTitleFromMarkdownString(markdown)
+    if (!recommendFilename) {
+      recommendFilename = filename || 'Untitled'
+    }
 
-  // If the file doesn't exist on disk add it to the recently used documents later
-  // and execute file from filesystem watcher for a short time. The file may exists
-  // on disk nevertheless but is already tracked by MarkText.
-  const alreadyExistOnDisk = !!pathname
+    // If the file doesn't exist on disk add it to the recently used documents later
+    // and execute file from filesystem watcher for a short time. The file may exists
+    // on disk nevertheless but is already tracked by MarkText.
+    const alreadyExistOnDisk = !!pathname
 
-  let { filePath, canceled } = await dialog.showSaveDialog(win, {
-    defaultPath: pathname || path.join(defaultPath || getPath('documents'), `${recommendFilename}.md`),
-  })
+    let { filePath, canceled } = await dialog.showSaveDialog(win, {
+      defaultPath: pathname || path.join(defaultPath || getPath('documents'), `${recommendFilename}.md`),
+    })
 
-  if (filePath && !canceled) {
-    filePath = path.resolve(filePath)
-    writeMarkdownFile(filePath, markdown, options, win)
-      .then(() => {
-        if (!alreadyExistOnDisk) {
-          ipcMain.emit('window-add-file-path', win.id, filePath)
-          ipcMain.emit('menu-add-recently-used', filePath)
+    if (filePath && !canceled) {
+      filePath = path.resolve(filePath)
+      // CAS only applies when overwriting the same tracked path.
+      const expectedDiskVersion = alreadyExistOnDisk && pathname === filePath ? (diskVersion ?? null) : null
+      writeMarkdownFile(filePath, markdown, options, expectedDiskVersion)
+        .then((newDiskVersion) => {
+          const ack = { savedRevision: revision ?? null, diskVersion: newDiskVersion }
+          if (!alreadyExistOnDisk) {
+            ipcMain.emit('window-add-file-path', win.id, filePath)
+            ipcMain.emit('menu-add-recently-used', filePath)
 
-          const filename = path.basename(filePath)
-          win.webContents.send('mt::set-pathname', { id, pathname: filePath, filename })
-        } else if (pathname !== filePath) {
-          // Update window file list and watcher.
-          ipcMain.emit('window-change-file-path', win.id, filePath, pathname)
+            const filename = path.basename(filePath)
+            win.webContents.send('mt::set-pathname', { id, pathname: filePath, filename, ...ack })
+          } else if (pathname !== filePath) {
+            // Update window file list and watcher.
+            ipcMain.emit('window-change-file-path', win.id, filePath, pathname)
 
-          const filename = path.basename(filePath)
-          win.webContents.send('mt::set-pathname', { id, pathname: filePath, filename })
-        } else {
-          ipcMain.emit('window-file-saved', win.id, filePath)
-          win.webContents.send('mt::tab-saved', id)
-        }
-      })
-      .catch((err) => {
-        log.error('Error while save as:', err)
-        win.webContents.send('mt::tab-save-failure', id, err.message)
-      })
-  }
-})
+            const filename = path.basename(filePath)
+            win.webContents.send('mt::set-pathname', { id, pathname: filePath, filename, ...ack })
+          } else {
+            ipcMain.emit('window-file-saved', win.id, filePath)
+            win.webContents.send('mt::tab-saved', id, ack)
+          }
+        })
+        .catch((err) => {
+          log.error('Error while save as:', err)
+          win.webContents.send('mt::tab-save-failure', id, err.message, {
+            code: err.code === 'E_CONFLICT' ? 'E_CONFLICT' : 'E_IO',
+            actualDiskVersion: err.actualDiskVersion ?? null,
+          })
+        })
+    }
+  },
+)
 
 ipcMain.on('mt::close-window-confirm', async (e, unsavedFiles) => {
   const win = BrowserWindow.fromWebContents(e.sender)

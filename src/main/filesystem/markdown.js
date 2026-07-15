@@ -5,7 +5,8 @@ import iconv from 'iconv-lite'
 import { LINE_ENDING_REG, LF_LINE_ENDING_REG, CRLF_LINE_ENDING_REG } from '../config'
 import { isDirectory2 } from 'common/filesystem'
 import { isMarkdownFile } from 'common/filesystem/paths'
-import { normalizeAndResolvePath, writeFile } from '../filesystem'
+import { normalizeAndResolvePath } from '../filesystem'
+import { atomicWriteFile, getDiskVersion, isSameDiskVersion } from './atomicWrite'
 import { guessEncoding } from './encoding'
 
 const getLineEnding = (lineEnding) => {
@@ -46,25 +47,53 @@ export const normalizeMarkdownPath = (pathname) => {
 }
 
 /**
- * Write the content into a file.
+ * Error thrown when the on-disk version changed since the renderer last
+ * loaded/saved the document (SAFE-003). The caller must surface a conflict,
+ * never overwrite silently.
+ */
+export class DiskVersionConflictError extends Error {
+  constructor(pathname, expectedDiskVersion, actualDiskVersion) {
+    super(`The file on disk changed since it was loaded: ${pathname}`)
+    this.name = 'DiskVersionConflictError'
+    this.code = 'E_CONFLICT'
+    this.pathname = pathname
+    this.expectedDiskVersion = expectedDiskVersion
+    this.actualDiskVersion = actualDiskVersion
+  }
+}
+
+/**
+ * Write the content into a file (atomic replace, SAFE-002).
  *
  * @param {string} pathname The path to the file.
  * @param {string} content The buffer to save.
  * @param {IMarkdownDocumentOptions} options The markdown document options
+ * @param {{mtimeMs: number, size: number}|null} [expectedDiskVersion] When
+ * given and the file exists with a different version, the write is refused
+ * with DiskVersionConflictError (SAFE-003 compare-and-swap).
+ * @returns {Promise<{mtimeMs: number, size: number}>} The new disk version.
  */
-export const writeMarkdownFile = (pathname, content, options) => {
+export const writeMarkdownFile = async (pathname, content, options, expectedDiskVersion = null) => {
   const { adjustLineEndingOnSave, lineEnding } = options
   const { encoding, isBom } = options.encoding
   const extension = path.extname(pathname) || '.md'
+  if (!pathname.endsWith(extension)) {
+    pathname = `${pathname}${extension}`
+  }
+
+  if (expectedDiskVersion) {
+    const actualDiskVersion = await getDiskVersion(pathname)
+    if (actualDiskVersion && !isSameDiskVersion(expectedDiskVersion, actualDiskVersion)) {
+      throw new DiskVersionConflictError(pathname, expectedDiskVersion, actualDiskVersion)
+    }
+  }
 
   if (adjustLineEndingOnSave) {
     content = convertLineEndings(content, lineEnding)
   }
 
   const buffer = iconv.encode(content, encoding, { addBOM: isBom })
-
-  // TODO(@fxha): "safeSaveDocuments" using temporary file and rename syscall.
-  return writeFile(pathname, buffer, extension, undefined)
+  return atomicWriteFile(pathname, buffer)
 }
 
 /**
@@ -81,6 +110,7 @@ export const loadMarkdownFile = async (pathname, preferredEol, autoGuessEncoding
   //       encoding on the first 256/512 bytes.
 
   const buffer = await fsPromises.readFile(path.resolve(pathname))
+  const diskVersion = await getDiskVersion(path.resolve(pathname))
 
   const encoding = guessEncoding(buffer, autoGuessEncoding)
   const supported = iconv.encodingExists(encoding.encoding)
@@ -144,5 +174,6 @@ export const loadMarkdownFile = async (pathname, preferredEol, autoGuessEncoding
 
     // raw file information
     isMixedLineEndings,
+    diskVersion,
   }
 }

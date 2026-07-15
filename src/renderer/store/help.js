@@ -1,4 +1,5 @@
 import { getUniqueId, cloneObj } from '../util'
+import { initialSessionFields } from './documentSession'
 
 /**
  * Default internel markdown document with editor options.
@@ -8,6 +9,9 @@ import { getUniqueId, cloneObj } from '../util'
 export const defaultFileState = {
   // Indicates whether there are unsaved changes.
   isSaved: true,
+  // DocumentSession revision state (SAFE-001): monotonic edit counter,
+  // last revision known on disk, and the believed on-disk version.
+  ...initialSessionFields(),
   // Full path to the file or empty. If the value is empty the file doesn't exist on disk.
   pathname: '',
   filename: 'Untitled-1',
@@ -97,7 +101,7 @@ export const getSingleFileState = ({ id = getUniqueId(), markdown, filename, pat
   // TODO(refactor:renderer/editor): Replace this function with `createDocumentState`.
 
   const fileState = cloneObj(defaultFileState, true)
-  const { encoding, lineEnding, adjustLineEndingOnSave, trimTrailingNewline } = options
+  const { encoding, lineEnding, adjustLineEndingOnSave, trimTrailingNewline, diskVersion = null } = options
 
   assertLineEnding(adjustLineEndingOnSave, lineEnding)
 
@@ -110,6 +114,7 @@ export const getSingleFileState = ({ id = getUniqueId(), markdown, filename, pat
     lineEnding,
     adjustLineEndingOnSave,
     trimTrailingNewline,
+    diskVersion,
   })
 }
 
@@ -131,6 +136,7 @@ export const createDocumentState = (markdownDocument, id = getUniqueId()) => {
     adjustLineEndingOnSave,
     trimTrailingNewline,
     cursor = null,
+    diskVersion = null,
   } = markdownDocument
 
   assertLineEnding(adjustLineEndingOnSave, lineEnding)
@@ -145,6 +151,7 @@ export const createDocumentState = (markdownDocument, id = getUniqueId()) => {
     cursor,
     adjustLineEndingOnSave,
     trimTrailingNewline,
+    diskVersion,
   })
 }
 

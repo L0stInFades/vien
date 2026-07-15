@@ -7,6 +7,7 @@ import listToTree from '../util/listToTree'
 import { createDocumentState, getOptionsFromState, getSingleFileState, getBlankFileState } from './help'
 import notice from '../services/notification'
 import { FileEncodingCommand, LineEndingCommand, QuickOpenCommand, TrailingNewlineCommand } from '../commands'
+import { markEdited, saveSnapshotFields, applySaveAck } from './documentSession'
 
 const autoSaveTimers = new Map()
 
@@ -194,17 +195,28 @@ const mutations = {
     }
 
     if (tab) {
-      Object.assign(tab, { filename, pathname, isSaved: true })
+      Object.assign(tab, { filename, pathname })
+      // set-pathname doubles as the save ack for newly created files —
+      // apply it revision-aware so a stale ack never clears newer edits.
+      applySaveAck(tab, fileInfo)
     }
   },
   SET_SAVE_STATUS_BY_TAB(_state, { tab, status }) {
-    if (hasKeys(tab)) {
-      tab.isSaved = status
+    if (tab) {
+      if (status === false) {
+        markEdited(tab)
+      } else {
+        tab.isSaved = status
+      }
     }
   },
   SET_SAVE_STATUS(state, status) {
     if (hasKeys(state.currentFile)) {
-      state.currentFile.isSaved = status
+      if (status === false) {
+        markEdited(state.currentFile)
+      } else {
+        state.currentFile.isSaved = status
+      }
     }
   },
   SET_SAVE_STATUS_WHEN_REMOVE(state, { pathname }) {
@@ -441,7 +453,9 @@ const actions = {
     const options = getOptionsFromState(file)
 
     // Save the file content via main process and send a close tab response.
-    window.api.ipc.send('mt::save-and-close-tabs', [{ id, pathname, filename, markdown, options }])
+    window.api.ipc.send('mt::save-and-close-tabs', [
+      { id, pathname, filename, markdown, options, ...saveSnapshotFields(file) },
+    ])
   },
 
   // need pass some data to main process when `save` menu item clicked
@@ -458,6 +472,7 @@ const actions = {
           markdown,
           options,
           defaultPath,
+          ...saveSnapshotFields(state.currentFile),
         })
       }
     })
@@ -477,6 +492,7 @@ const actions = {
           markdown,
           options,
           defaultPath,
+          ...saveSnapshotFields(state.currentFile),
         })
       }
     })
@@ -501,11 +517,13 @@ const actions = {
       commit('SET_PATHNAME', { tab, fileInfo })
     })
 
-    window.api.ipc.on('mt::tab-saved', (tabId) => {
+    window.api.ipc.on('mt::tab-saved', (tabId, ack) => {
       const { tabs } = state
       const tab = tabs.find((f) => f.id === tabId)
       if (tab) {
-        Object.assign(tab, { isSaved: true })
+        // Revision-aware ack (SAFE-001): a stale ack — the user edited
+        // after this save snapshot was serialized — must NOT clear dirty.
+        applySaveAck(tab, ack)
       }
     })
 
@@ -566,7 +584,7 @@ const actions = {
       .map((file) => {
         const { id, filename, pathname, markdown } = file
         const options = getOptionsFromState(file)
-        return { id, filename, pathname, markdown, options }
+        return { id, filename, pathname, markdown, options, ...saveSnapshotFields(file) }
       })
 
     if (closeTabs) {
@@ -603,6 +621,7 @@ const actions = {
           markdown,
           options,
           defaultPath,
+          ...saveSnapshotFields(state.currentFile),
         })
       } else {
         // if not, move to a new(maybe) folder
@@ -631,6 +650,7 @@ const actions = {
         markdown,
         options,
         defaultPath,
+        ...saveSnapshotFields(state.currentFile),
       })
     } else {
       bus.emit('rename')
@@ -1027,12 +1047,15 @@ const actions = {
           pathname,
           markdown,
           options,
+          // Snapshot the revision of THIS markdown; the timer must ack the
+          // content it serializes, not whatever is current when it fires.
+          ...saveSnapshotFields(state.currentFile),
         })
       }
     }
   },
 
-  HANDLE_AUTO_SAVE({ state, rootState }, { id, filename, pathname, markdown, options }) {
+  HANDLE_AUTO_SAVE({ state, rootState }, { id, filename, pathname, markdown, options, revision, diskVersion }) {
     if (!id || !pathname) {
       throw new Error('HANDLE_AUTO_SAVE: Invalid tab.')
     }
@@ -1064,6 +1087,8 @@ const actions = {
           markdown,
           options,
           defaultPath,
+          revision,
+          diskVersion: tab.diskVersion ?? diskVersion ?? null,
         })
       }
     }, autoSaveDelay)
