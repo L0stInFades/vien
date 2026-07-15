@@ -1,13 +1,23 @@
 packages:
   - '.'
 
-onlyBuiltDependencies:
-  - ced
-  - electron
-  - esbuild
-  - fontmanager-redux
-  - highlight.js
-  - keytar
-  - native-keymap
-  - vscode-ripgrep
-  - vue-demi
+# node-abi / node-addon-api pins keep native module rebuilds (keytar, ced,
+# native-keymap) working against Electron's ABI.
+# "@marktext/file-icons>file-icons" is a github: git subdep only used at that
+# package's own build time (its published build/index.js has no runtime
+# require) — removed so blockExoticSubdeps can stay enabled.
+overrides:
+  node-abi: ^3.8.0
+  node-addon-api: ^4.3.0
+  '@marktext/file-icons>file-icons': '-'
+
+allowBuilds:
+  ced: true
+  electron: true
+  esbuild: true
+  fontmanager-redux: true
+  highlight.js: true
+  keytar: true
+  native-keymap: true
+  vscode-ripgrep: true
+  vue-demi: true

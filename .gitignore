@@ -17,3 +17,5 @@ thumbs.db
 .eslintcache
 .serena/
 test-results/
+test/specs/commonMark/compare.marked.md
+test/specs/gfm/compare.marked.md

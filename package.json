@@ -5,7 +5,12 @@
   "description": "Calm Markdown for long-form writing",
   "license": "MIT",
   "main": "./dist/electron/main.js",
+  "packageManager": "pnpm@11.12.0",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
+    "verify": "pnpm run lint && pnpm run typecheck && pnpm run unit && pnpm run test:specs && pnpm run electron:build",
     "dev": "electron-vite dev",
     "build": "electron-vite build && electron-builder",
     "build:dir": "electron-vite build && electron-builder --dir",
@@ -151,10 +156,6 @@
     "vue-html-loader": "^1.2.4",
     "webpack": "^5.72.0",
     "webpack-cli": "^4.9.2"
-  },
-  "resolutions": {
-    "node-abi": "^3.8.0",
-    "node-addon-api": "^4.3.0"
   },
   "repository": {
     "type": "git",
