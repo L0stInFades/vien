@@ -443,3 +443,35 @@ export const getDefer = <T = unknown>(): Deferred<T> => {
 export const deepClone = <T>(obj: T): T => {
   return JSON.parse(JSON.stringify(obj))
 }
+
+/**
+ * Structural clone with JSON semantics (drops undefined/function values,
+ * plain objects/arrays only) but without the JSON string round-trip —
+ * used for history snapshots where the O(doc) stringify/parse cost showed
+ * up as input-time hitches on large documents (PLAN.md CORE-004).
+ * Parity with deepClone is pinned by muya-history-clone.spec.js.
+ */
+export const cloneHistoryValue = <T>(value: T): T => {
+  if (value === null || typeof value !== 'object') {
+    return value
+  }
+  if (Array.isArray(value)) {
+    const out = new Array(value.length)
+    let write = 0
+    for (let i = 0; i < value.length; i++) {
+      const item = value[i]
+      // JSON serializes undefined/function array items as null.
+      out[write++] = item === undefined || typeof item === 'function' ? null : cloneHistoryValue(item)
+    }
+    return out as unknown as T
+  }
+  const out: Record<string, unknown> = {}
+  for (const key of Object.keys(value as Record<string, unknown>)) {
+    const item = (value as Record<string, unknown>)[key]
+    if (item === undefined || typeof item === 'function') {
+      continue // JSON drops undefined/function properties.
+    }
+    out[key] = cloneHistoryValue(item)
+  }
+  return out as T
+}

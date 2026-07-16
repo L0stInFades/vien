@@ -226,7 +226,8 @@ class ContentState {
   private _isAttachedToTree(block: Block): boolean {
     let current = block
     for (let depth = 0; depth < 1000; depth++) {
-      if (current.parent == null) {
+      // Root blocks carry parent '' (empty string), not null.
+      if (!current.parent) {
         return this._rootSet!.has(current)
       }
       const parent = this._blockIndex!.get(current.parent)
@@ -741,7 +742,7 @@ class ContentState {
     }
     if (this._blockIndex) {
       this._indexBlockTree(newBlock)
-      if (newBlock.parent == null) {
+      if (!newBlock.parent) {
         this._rootSet?.add(newBlock)
       }
     }
@@ -763,7 +764,7 @@ class ContentState {
     }
     if (this._blockIndex) {
       this._indexBlockTree(newBlock)
-      if (newBlock.parent == null) {
+      if (!newBlock.parent) {
         this._rootSet?.add(newBlock)
       }
     }

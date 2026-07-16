@@ -1,4 +1,4 @@
-import { deepClone } from '../utils'
+import { cloneHistoryValue } from '../utils'
 import { UNDO_DEPTH } from '../config'
 import type { IContentState, IHistoryState as HistoryState } from '../types'
 
@@ -19,7 +19,7 @@ class History {
     if (this.index > 0) {
       this.index = this.index - 1
 
-      const state = deepClone(this.stack[this.index])
+      const state = cloneHistoryValue(this.stack[this.index])
       const { blocks, cursor, renderRange } = state
       cursor.noHistory = true
       this.contentState.blocks = blocks
@@ -38,7 +38,7 @@ class History {
     const len = stack.length
     if (index < len - 1) {
       this.index = index + 1
-      const state = deepClone(stack[this.index])
+      const state = cloneHistoryValue(stack[this.index])
       const { blocks, cursor, renderRange } = state
       cursor.noHistory = true
       this.contentState.blocks = blocks
@@ -51,7 +51,7 @@ class History {
   push(state: HistoryState) {
     this.pending = null
     this.stack.splice(this.index + 1)
-    const copyState = deepClone(state)
+    const copyState = cloneHistoryValue(state)
     this.stack.push(copyState)
     if (this.stack.length > UNDO_DEPTH) {
       this.stack.shift()
