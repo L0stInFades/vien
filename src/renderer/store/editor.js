@@ -777,7 +777,7 @@ const actions = {
     })
   },
 
-  async RESTORE_RECOVERY_SNAPSHOTS({ dispatch, state }) {
+  async RESTORE_RECOVERY_SNAPSHOTS(_context) {
     if (!window.api?.recovery) {
       return
     }
@@ -790,45 +790,37 @@ const actions = {
       if (snapshots.length === 0 && corrupt === 0) {
         return
       }
-
-      for (const snapshot of snapshots) {
-        dispatch('NEW_UNTITLED_TAB', { markdown: snapshot.markdown, selected: false })
-        // The restored content lives in a NEW tab: find it (last added),
-        // mark it dirty and re-journal it under the new tab id before the
-        // old snapshot file is removed — a crash right now must not lose it.
-        const restoredTab = state.tabs[state.tabs.length - 1]
-        if (restoredTab) {
-          restoredTab.isSaved = false
-          window.api.recovery
-            .snapshot({
-              tabId: restoredTab.id,
-              pathname: null,
-              filename: snapshot.filename || restoredTab.filename || '',
-              markdown: snapshot.markdown,
-              revision: restoredTab.revision ?? 0,
-            })
-            .catch(() => {})
-        }
-        window.api.recovery.discard(snapshot.tabId).catch(() => {})
-      }
-
-      const parts = []
-      if (snapshots.length > 0) {
-        parts.push(
-          `Restored ${snapshots.length} unsaved ${snapshots.length === 1 ? 'document' : 'documents'} from the previous session.`,
-        )
-      }
-      if (corrupt > 0) {
-        parts.push(`${corrupt} recovery ${corrupt === 1 ? 'entry was' : 'entries were'} unreadable.`)
-      }
-      notice.notify({
-        title: 'Crash recovery',
-        type: snapshots.length > 0 ? 'primary' : 'warning',
-        time: 20000,
-        message: parts.join(' '),
-      })
+      // SAFE-005: the recovery center lets the user preview and decide
+      // (restore / discard / keep for later) instead of auto-restoring.
+      bus.emit('show-recovery-center', { snapshots, corrupt })
     } catch (_error) {
       // Recovery must never block startup.
+    }
+  },
+
+  /** Restore one snapshot chosen in the recovery center (SAFE-005). */
+  RESTORE_RECOVERY_SNAPSHOT({ dispatch, state }, snapshot) {
+    dispatch('NEW_UNTITLED_TAB', { markdown: snapshot.markdown, selected: true })
+    // The restored content lives in a NEW tab: mark it dirty and re-journal
+    // it under the new tab id BEFORE the old snapshot is removed — a crash
+    // right now must not lose it.
+    const restoredTab = state.tabs[state.tabs.length - 1]
+    if (restoredTab) {
+      restoredTab.isSaved = false
+      if (window.api?.recovery) {
+        window.api.recovery
+          .snapshot({
+            tabId: restoredTab.id,
+            pathname: null,
+            filename: snapshot.filename || restoredTab.filename || '',
+            markdown: snapshot.markdown,
+            revision: restoredTab.revision ?? 0,
+          })
+          .catch(() => {})
+      }
+    }
+    if (window.api?.recovery) {
+      window.api.recovery.discard(snapshot.tabId).catch(() => {})
     }
   },
 

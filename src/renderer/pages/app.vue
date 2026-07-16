@@ -28,6 +28,7 @@
       <export-setting-dialog></export-setting-dialog>
       <rename></rename>
       <tweet></tweet>
+      <recovery-center></recovery-center>
     </div>
   </div>
 </template>
@@ -42,6 +43,7 @@ import CommandPalette from '@/components/commandPalette'
 import ExportSettingDialog from '@/components/exportSettings'
 import Rename from '@/components/rename'
 import Tweet from '@/components/tweet'
+import RecoveryCenter from '@/components/recoveryCenter'
 import { loadingPageMixins } from '@/mixins'
 import { DEFAULT_STYLE } from '@/config'
 import { useAutoUpdatesStore } from '@/store/pinia/autoUpdates'
@@ -62,6 +64,7 @@ export default {
     Rename,
     Tweet,
     CommandPalette,
+    RecoveryCenter,
   },
   mixins: [loadingPageMixins],
   computed: {
