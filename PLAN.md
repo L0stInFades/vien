@@ -1179,3 +1179,19 @@ M3 “功能完整 RC”在此结束。
 - preload 仍暴露旧通用 `ipc.send/invoke/on`（白名单内）——各能力迁完后按 ADR-003 收口删除；
 - renderer sandbox 保持显式 `false`（preload 的 clipboard/shell/webFrame 依赖需先迁 IPC，见 config.js 注释）；
 - 一处已知偶发：asset-service uploadByCommand 测试在全量并行跑时偶发失败（单跑稳定），疑与 tmpdir 并发有关，待加隔离。
+
+### 2026-07-16（第二波）— Phase 3-8 剩余项推进
+
+| 工作包 | 交付 | 证据 |
+| --- | --- | --- |
+| CORE-002 切片2 | 列表无损三连修：紧列表松化（lexer loose 状态跨列表泄漏+回溯污染）、有序编号保持（1.3.7 不再被重排）、相邻列表分隔保持（内联 split/顶层重匹配/backpedal 三条路径全覆盖）、合并松列表内紧段落保持（每项级 blankLineBefore） | markers/loose-tight/numbering 三个 fixture 翻绿 |
+| CORE-002 切片3 | 文档尾部多余空行保持（import 记录→export 重放） | multiple-trailing-newlines 翻绿；**棘轮 12/35 → 6/35** |
+| Sandbox 启用 | `sandbox: true` 双窗口；clipboard/shell/nativeImage 迁 preloadBridge（openExternal 仅 http(s)/mailto，路径操作校验绝对路径—此前任意 URL/路径直通 OS） | E2E 8/8 沙箱下全绿 |
+| SAFE-005 | 恢复中心 UI：预览（文件名/路径/时间/摘录）+ 单项/全部 恢复/丢弃 + 留待下次；恢复先重记 journal 再删旧条目 | recoveryCenter 组件 |
+| IPC 收口一期 | 通道白名单冻结为 `common/ipcChannels.ts`（50/60/18 计数上限进 CI）；动态通道逃逸删除（image-auto-path 改 invoke）；去重 | ipc-channel-freeze.spec |
+| QUALITY-001 | nightly.yml 全量矩阵 + `pnpm run perf` 基准（100KB/300KB import/export/lookup/historyClone，commit+平台戳产物）；1MB 档 PERF_LARGE 门控 | perf-results.json 产物 |
+| CORE-004 切片 | history 快照弃 JSON 往返改结构克隆（语义奇偶+undo 回环测试锁定）；100KB 克隆 7.4ms | muya-history-clone.spec |
+
+**基准即时回报**：首跑即暴露 CORE-003 索引验证把所有块判为脱附（muya 根块 parent 为 `''` 非 null）——正确性由自愈兜底但查找退化为二次方；修复后全键查找 **4051ms→13.6ms（100KB）/ 65970ms→39ms（300KB）**。
+
+**测试规模**：725 → **735**。剩余 lossy 6/35：blockquote 懒续行/空行前缀、表格列宽重排、嵌套列表、edge-blocks、混合 EOL（策略性归一+通知）、tabs——均需完整 source-span 投影（Phase 3 主体）。
