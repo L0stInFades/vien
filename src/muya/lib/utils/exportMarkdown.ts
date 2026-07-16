@@ -198,7 +198,11 @@ class ExportMarkdown {
 
   insertLineBreak(result: string[], indent: string) {
     if (!result.length) return
-    result.push(`${indent}\n`)
+    // A separator line whose indent is pure whitespace (list indentation)
+    // is emitted bare: parse-equivalent, and byte-faithful to sources that
+    // never contain trailing spaces on blank lines (ADR-001). Blockquote
+    // indents contain '>' and stay — there the prefix carries semantics.
+    result.push(/^\s*$/.test(indent) ? '\n' : `${indent}\n`)
   }
 
   normalizeParagraphText(block: Block, indent: string): string {

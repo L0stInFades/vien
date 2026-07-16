@@ -11,10 +11,6 @@
       "note": "first byte difference at offset 39"
     },
     {
-      "fixture": "lists/nesting.md",
-      "note": "first byte difference at offset 161"
-    },
-    {
       "fixture": "pathological/edge-blocks.md",
       "note": "first byte difference at offset 37"
     },
