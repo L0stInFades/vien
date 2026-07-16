@@ -23,10 +23,6 @@
       "note": "first byte difference at offset 62"
     },
     {
-      "fixture": "whitespace-eol/multiple-trailing-newlines.md",
-      "note": "first byte difference at offset 56"
-    },
-    {
       "fixture": "whitespace-eol/tabs.md",
       "note": "first byte difference at offset 8"
     }

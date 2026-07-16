@@ -132,7 +132,12 @@ const roundtripBuffer = (buffer) => {
   // ---- editor (import → export, no edits) ----
   const ctx = createMuyaContext({ endOfLine: 'lf' })
   ctx.contentState.importMarkdown(markdown)
-  let output = new ExportMarkdown(ctx.contentState.getBlocks()).generate()
+  let output = new ExportMarkdown(
+    ctx.contentState.getBlocks(),
+    undefined,
+    false,
+    ctx.contentState._sourceTrailingNewlines ?? 0,
+  ).generate()
 
   // ---- save side ----
   output = adjustTrailingNewlines(output, trimMode)

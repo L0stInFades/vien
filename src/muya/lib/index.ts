@@ -173,7 +173,9 @@ class Muya {
     const blocks = this.contentState.getBlocks()
     const isGitlabCompatibilityEnabled = this.contentState.isGitlabCompatibilityEnabled as boolean | undefined
     const listIndentation = this.contentState.listIndentation as string | number | undefined
-    return new ExportMarkdown(blocks, listIndentation, isGitlabCompatibilityEnabled).generate()
+    const trailingNewlines = (this.contentState as unknown as { _sourceTrailingNewlines?: number })
+      ._sourceTrailingNewlines
+    return new ExportMarkdown(blocks, listIndentation, isGitlabCompatibilityEnabled, trailingNewlines ?? 0).generate()
   }
 
   getHistory() {

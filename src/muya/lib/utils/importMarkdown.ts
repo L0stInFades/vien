@@ -690,6 +690,10 @@ const importRegister = (ContentState: any) => {
   }
 
   ContentState.prototype.importMarkdown = function (this: ContentStateInstance, markdown: string) {
+    // Extra trailing newlines beyond the standard single one — replayed at
+    // export so blank lines at the end of a document survive (ADR-001).
+    const trailingMatch = markdown.match(/\n+$/)
+    this._sourceTrailingNewlines = trailingMatch ? Math.max(0, trailingMatch[0].length - 1) : 0
     this.blocks = this.markdownToState(markdown)
   }
 

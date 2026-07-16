@@ -23,12 +23,20 @@ class ExportMarkdown {
   listIndentation: 'number' | 'dfm'
   listIndentationCount: number
   listType: ListInfo[]
-  constructor(blocks: Block[], listIndentation: number | string = 1, isGitlabCompatibilityEnabled = false) {
+  trailingNewlines: number
+  constructor(
+    blocks: Block[],
+    listIndentation: number | string = 1,
+    isGitlabCompatibilityEnabled = false,
+    trailingNewlines = 0,
+  ) {
     this.blocks = blocks
     this.listType = [] // 'ul' or 'ol'
     // helper to translate the first tight item in a nested list
     this.isLooseParentList = true
     this.isGitlabCompatibilityEnabled = !!isGitlabCompatibilityEnabled
+    // Extra trailing newlines from the source document (ADR-001).
+    this.trailingNewlines = Number.isInteger(trailingNewlines) && trailingNewlines > 0 ? trailingNewlines : 0
 
     // set and validate settings
     this.listIndentation = 'number'
@@ -43,7 +51,7 @@ class ExportMarkdown {
   }
 
   generate(): string {
-    return this.translateBlocks2Markdown(this.blocks)
+    return this.translateBlocks2Markdown(this.blocks) + '\n'.repeat(this.trailingNewlines)
   }
 
   translateBlocks2Markdown(blocks: Block[], indent = '', listIndent = ''): string {
