@@ -11,20 +11,8 @@
       "note": "first byte difference at offset 39"
     },
     {
-      "fixture": "lists/loose-tight.md",
-      "note": "first byte difference at offset 12"
-    },
-    {
-      "fixture": "lists/markers.md",
-      "note": "first byte difference at offset 12"
-    },
-    {
       "fixture": "lists/nesting.md",
-      "note": "first byte difference at offset 52"
-    },
-    {
-      "fixture": "lists/numbering.md",
-      "note": "first byte difference at offset 7"
+      "note": "first byte difference at offset 161"
     },
     {
       "fixture": "pathological/edge-blocks.md",

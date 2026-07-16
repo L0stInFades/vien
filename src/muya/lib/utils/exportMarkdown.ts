@@ -109,7 +109,10 @@ class ExportMarkdown {
           break
         }
         case 'li': {
-          const insertNewLine = block.isLooseListItem
+          // Prefer the preserved source blank-line placement (ADR-001);
+          // items created in the editor fall back to loose/tight semantics.
+          const insertNewLine =
+            typeof block.blankLineBefore === 'boolean' ? block.blankLineBefore : block.isLooseListItem
 
           // helper variable to correct the first tight item in a nested list
           this.isLooseParentList = !!insertNewLine
@@ -127,7 +130,9 @@ class ExportMarkdown {
           // Start a new list without separation due changing the bullet or ordered list delimiter starts a new list.
           const { bulletMarkerOrDelimiter } = block.children[0]
           if (lastListBullet && lastListBullet !== bulletMarkerOrDelimiter) {
-            insertNewLine = false
+            // Compact splits stay compact; blank-separated sources keep
+            // their blank line (ADR-001 lossless round-trip).
+            insertNewLine = block.precededByBlankLine === true
           }
           lastListBullet = bulletMarkerOrDelimiter as string
           if (insertNewLine) {
@@ -146,7 +151,9 @@ class ExportMarkdown {
           // Start a new list without separation due changing the bullet or ordered list delimiter starts a new list.
           const { bulletMarkerOrDelimiter } = block.children[0]
           if (lastListBullet && lastListBullet !== bulletMarkerOrDelimiter) {
-            insertNewLine = false
+            // Compact splits stay compact; blank-separated sources keep
+            // their blank line (ADR-001 lossless round-trip).
+            insertNewLine = block.precededByBlankLine === true
           }
           lastListBullet = bulletMarkerOrDelimiter as string
           if (insertNewLine) {
@@ -400,11 +407,14 @@ class ExportMarkdown {
     } else {
       // NOTE: GitHub and Bitbucket limit the list count to 99 but this is nowhere defined.
       //  We limit the number to 99 for Daring Fireball Markdown to prevent indentation issues.
-      let n = listInfo.listCount!
+      // Replay the original source number when present (ADR-001); items
+      // created in the editor fall back to the sequential counter.
+      const preservedNumber = block.listItemNumber as number | undefined
+      let n = typeof preservedNumber === 'number' ? preservedNumber : listInfo.listCount!
       if ((this.listIndentation === 'dfm' && n > 99) || n > 999999999) {
         n = 1
       }
-      listInfo.listCount!++
+      listInfo.listCount = n + 1
 
       const delimiter = bulletMarkerOrDelimiter || '.'
       itemMarker = `${n}${delimiter} `

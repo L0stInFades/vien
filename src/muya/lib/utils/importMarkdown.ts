@@ -439,7 +439,13 @@ const importRegister = (ContentState: any) => {
 
         case 'list_start': {
           const { ordered, listType, start } = token
-          block = this.createBlock(ordered === true ? 'ol' : 'ul')
+          block = this.createBlock(ordered === true ? 'ol' : 'ul', {
+            listType,
+          })
+          if (token.blankLineBefore === true) {
+            // Original blank-line separation between adjacent lists (ADR-001).
+            block.precededByBlankLine = true
+          }
           block.listType = listType
           if (listType === 'order') {
             block.start = /^\d+$/.test(start) ? start : 1
@@ -462,6 +468,14 @@ const importRegister = (ContentState: any) => {
             bulletMarkerOrDelimiter,
             isLooseListItem: type === 'loose_item_start',
           })
+          if (typeof token.blankLineBefore === 'boolean') {
+            // Source blank-line placement for lossless export (ADR-001).
+            block.blankLineBefore = token.blankLineBefore
+          }
+          if (typeof token.listItemNumber === 'number' && !Number.isNaN(token.listItemNumber)) {
+            // Original ordered number for lossless round-trips (ADR-001).
+            block.listItemNumber = token.listItemNumber
+          }
 
           if (checked !== undefined) {
             const input = this.createBlock('input', {

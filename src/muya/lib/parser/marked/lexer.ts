@@ -340,19 +340,31 @@ Lexer.prototype.token = function (src: string, top: boolean) {
       // biome-ignore lint/suspicious/noImplicitAnyLet: legacy lexer pattern with dynamic variable usage
       let checked
       src = src.substring(cap[0].length)
+      const rawListCapture = cap[0]
       bull = cap[2]
       let isOrdered = bull.length > 1
+      const lastToken = this.tokens[this.tokens.length - 1]
+      const blankBeforeTopList =
+        lastToken?.type === 'space' || (lastToken?.type === 'list_end' && this._blankAfterLastList === true)
       this.tokens.push({
         type: 'list_start',
         ordered: isOrdered,
         listType: bull.length > 1 ? 'order' : /^( {0,3})([-*+]) \[[xX ]\]/.test(cap[0]) ? 'task' : 'bullet',
         start: isOrdered ? +bull.slice(0, -1) : '',
+        // A preceding blank line means this list was blank-separated from
+        // the previous block in the source (ADR-001). The blank may have
+        // been consumed by the previous list's own capture.
+        ...(blankBeforeTopList ? { blankLineBefore: true } : {}),
       })
 
       let next = false
       let prevNext = true
       let listItemIndices = []
       let isTaskList = false
+      // When the loop backpedals (next item belongs to a different list
+      // kind), remember whether a blank line sat at that boundary — the
+      // raw capture tail is useless because the blank is mid-capture.
+      let backpedaledBlankBefore = null
 
       // Get each top-level item.
       cap = cap[0].match(this.rules.item)
@@ -363,6 +375,7 @@ Lexer.prototype.token = function (src: string, top: boolean) {
         const itemWithBullet = cap[i]
         item = itemWithBullet
         let newIsTaskListItem = false
+        let startedNewList = false
 
         // Remove the list item's bullet so it is seen as the next token.
         space = item.length
@@ -413,11 +426,21 @@ Lexer.prototype.token = function (src: string, top: boolean) {
           bull = newBull
           isOrdered = newIsOrdered
           isTaskList = newIsTaskListItem
+          startedNewList = true
+          // Loose/tight state is per-list: the blank line (if any) before
+          // this item separated two LISTS, not items within one list, and
+          // the previous list's looseness must not leak into this one.
+          next = false
+          prevNext = true
+          listItemIndices = []
           this.tokens.push({
             type: 'list_start',
             ordered: isOrdered,
             listType: bull.length > 1 ? 'order' : /^( {0,3})([-*+]) \[[xX ]\]/.test(itemWithBullet) ? 'task' : 'bullet',
             start: isOrdered ? +bull.slice(0, -1) : '',
+            // Whether the source had a blank line between the two lists —
+            // the exporter reproduces the original separation (ADR-001).
+            ...(cap[i - 1].charAt(cap[i - 1].length - 1) === '\n' ? { blankLineBefore: true } : {}),
           })
         }
 
@@ -436,6 +459,9 @@ Lexer.prototype.token = function (src: string, top: boolean) {
           b = this.rules.bullet.exec(cap[i + 1])[0]
           if (bull.length > 1 ? b.length === 1 : b.length > 1 || (this.options.smartLists && b !== bull)) {
             src = cap.slice(i + 1).join('\n') + src
+            // The current (now last) item's trailing newline marks a blank
+            // line between this list and the backpedaled one (ADR-001).
+            backpedaledBlankBefore = itemWithBullet.charAt(itemWithBullet.length - 1) === '\n'
             i = l - 1
           }
         }
@@ -453,8 +479,16 @@ Lexer.prototype.token = function (src: string, top: boolean) {
         // or if any of its constituent list items directly contain two block-level elements with a blank line between them.
         // loose = next = next || /^ *([*+-]|\d{1,9}(?:\.|\)))( +\S+\n\n(?!\s*$)|\n\n(?!\s*$))/.test(itemWithBullet)
         loose = next = next || /\n\n(?!\s*$)/.test(item)
-        // Check if previous line ends with a new line.
-        if (!loose && (i !== 0 || l > 1) && prevItem.length !== 0 && prevItem.charAt(prevItem.length - 1) === '\n') {
+        // Check if previous line ends with a new line — but only within the
+        // SAME list: at a list boundary the trailing newline belongs to the
+        // blank line between lists and must not force looseness.
+        if (
+          !loose &&
+          !startedNewList &&
+          (i !== 0 || l > 1) &&
+          prevItem.length !== 0 &&
+          prevItem.charAt(prevItem.length - 1) === '\n'
+        ) {
           loose = next = true
         }
 
@@ -476,6 +510,16 @@ Lexer.prototype.token = function (src: string, top: boolean) {
           checked,
           listItemType: bull.length > 1 ? 'order' : isTaskList ? 'task' : 'bullet',
           bulletMarkerOrDelimiter: isOrderedListItem ? bull.slice(-1) : bull.charAt(0),
+          // Original ordered number (e.g. 3 for "3.") — preserved so
+          // non-sequential numbering round-trips byte-identical (ADR-001).
+          ...(isOrderedListItem && !Number.isNaN(Number.parseInt(newBull, 10))
+            ? { listItemNumber: Number.parseInt(newBull, 10) }
+            : {}),
+          // Whether the SOURCE had a blank line before this item within the
+          // same list — lets the exporter reproduce tight runs inside loose
+          // lists (ADR-001). Editor-created items lack the field and fall
+          // back to loose/tight semantics.
+          blankLineBefore: i > 0 && !startedNewList && cap[i - 1].charAt(cap[i - 1].length - 1) === '\n',
           type: loose ? 'loose_item_start' : 'list_item_start',
         })
 
@@ -497,6 +541,9 @@ Lexer.prototype.token = function (src: string, top: boolean) {
       this.tokens.push({
         type: 'list_end',
       })
+      // Whether a blank line separates this list from what follows —
+      // consulted when the NEXT top-level list starts (see blankLineBefore).
+      this._blankAfterLastList = backpedaledBlankBefore !== null ? backpedaledBlankBefore : /\n\n$/.test(rawListCapture)
       continue
     }
 
