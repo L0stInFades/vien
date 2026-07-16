@@ -215,6 +215,14 @@ export default {
     display: flex;
     flex-direction: column;
     flex: 1;
+    /* A row-flex item defaults to min-width:auto, so its automatic minimum
+       tracks the content's min-content width. Wide blocks (e.g. a table
+       whose min-content exceeds the window) would blow the whole editor
+       column past the viewport, pushing centered previews (mermaid) mostly
+       off-screen: blank left slice, diagram shifted right, clipped right.
+       min-width: 0 keeps the column at viewport width; wide tables/code
+       already scroll inside their own blocks. */
+    min-width: 0;
     min-height: 100vh;
     position: relative;
     background: var(--editorBgColor);
