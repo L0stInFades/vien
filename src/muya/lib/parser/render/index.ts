@@ -224,10 +224,14 @@ class StateRender {
 
     svg.setAttribute('width', `${intrinsicWidth}`)
     svg.setAttribute('height', `${intrinsicHeight}`)
-    svg.setAttribute('preserveAspectRatio', 'xMinYMin meet')
-    svg.style.width = `${intrinsicWidth}px`
-    svg.style.maxWidth = 'none'
-    svg.style.height = `${intrinsicHeight}px`
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet')
+    // Fill the preview container (already min(100%, intrinsic) and centered):
+    // small diagrams render at intrinsic size, wide ones scale DOWN to fit
+    // instead of overflowing and clipping at the column edge. height:auto
+    // keeps the aspect ratio from the width/height attributes.
+    svg.style.width = '100%'
+    svg.style.maxWidth = '100%'
+    svg.style.height = 'auto'
 
     return {
       intrinsicWidth,

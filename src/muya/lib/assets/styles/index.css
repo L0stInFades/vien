@@ -803,7 +803,10 @@ figure.ag-container-block div.ag-container-preview {
 figure.ag-container-block div.ag-container-preview > svg {
   display: block;
   width: auto;
-  max-width: none;
+  /* Never overflow the editor column: wide diagrams scale down (the
+     preview container is centered at min(100%, intrinsic width)). */
+  max-width: 100%;
+  height: auto;
   margin: 0 auto;
 }
 
