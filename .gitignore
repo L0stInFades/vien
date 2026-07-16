@@ -20,3 +20,4 @@ test-results/
 test/specs/commonMark/compare.marked.md
 test/specs/gfm/compare.marked.md
 test/corpus/generated/
+perf-results.json

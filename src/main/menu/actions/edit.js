@@ -1,31 +1,27 @@
 import path from 'node:path'
-import { ipcMain, BrowserWindow } from 'electron'
+import { ipcMain } from 'electron'
 import log from 'electron-log'
 import { COMMANDS } from '../../commands'
 import { searchFilesAndDir } from '../../utils/imagePathAutoComplement'
 
 // TODO(Refactor): Move to filesystem and provide generic API to search files in directories.
-ipcMain.on('mt::ask-for-image-auto-path', (e, { pathname, src, id }) => {
-  const win = BrowserWindow.fromWebContents(e.sender)
+ipcMain.handle('mt::ask-for-image-auto-path', async (_e, { pathname, src }) => {
   if (!src || typeof src !== 'string') {
-    win.webContents.send(`mt::response-of-image-path-${id}`, [])
-    return
+    return []
   }
 
   if (src.endsWith('/') || src.endsWith('\\') || src.endsWith('.')) {
-    return win.webContents.send(`mt::response-of-image-path-${id}`, [])
+    return []
   }
   const fullPath = path.isAbsolute(src) ? src : path.join(path.dirname(pathname), src)
   const dir = path.dirname(fullPath)
   const searchKey = path.basename(fullPath)
-  searchFilesAndDir(dir, searchKey)
-    .then((files) => {
-      return win.webContents.send(`mt::response-of-image-path-${id}`, files)
-    })
-    .catch((err) => {
-      log.error(err)
-      return win.webContents.send(`mt::response-of-image-path-${id}`, [])
-    })
+  try {
+    return await searchFilesAndDir(dir, searchKey)
+  } catch (err) {
+    log.error(err)
+    return []
+  }
 })
 
 // --- Menu actions -------------------------------------------------------------

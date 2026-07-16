@@ -1,0 +1,73 @@
+name: Nightly
+
+on:
+  schedule:
+    # 03:17 UTC daily — off the :00 spike.
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  quality-matrix:
+    name: Full quality matrix (macOS)
+    runs-on: macos-14
+    timeout-minutes: 60
+    env:
+      MARKTEXT_EXIT_ON_ERROR: 1
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (Biome)
+        run: pnpm run lint
+
+      - name: Typecheck (tsc)
+        run: pnpm run typecheck
+
+      - name: Unit tests (incl. lossless corpus ratchet, fault-injection,
+              service integration on real filesystems)
+        run: pnpm run unit
+
+      - name: CommonMark and GFM specs
+        run: pnpm run test:specs
+
+      - name: Performance baseline (100KB / 1MB import+export+index)
+        run: pnpm run perf
+
+      - name: Production build (electron-vite)
+        run: pnpm run electron:build
+
+      - name: Electron end-to-end tests
+        run: pnpm exec playwright test -c test/e2e/playwright.config.js test/e2e
+
+      - name: Upload quality artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-quality-${{ github.run_id }}
+          path: |
+            perf-results.json
+            test/corpus/known-lossy.json
+          if-no-files-found: ignore
+
+      - name: Upload E2E results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-e2e-failures-${{ github.run_id }}
+          path: test-results/
+          if-no-files-found: ignore

@@ -128,6 +128,8 @@ class ContentState {
   private _blocks: Block[] = []
   /** Lazy key -> block index (CORE-003); null means "rebuild on next use". */
   private _blockIndex: Map<string, Block> | null = null
+  /** O(1) root membership for attachment verification (flat docs are huge). */
+  private _rootSet: Set<Block> | null = null
   /** Per-instance code block render throttle (was module-level, leaked across editors). */
   _renderCodeBlockTimer: ReturnType<typeof setTimeout> | null = null
   cellSelectEventIds: string[]
@@ -189,6 +191,7 @@ class ContentState {
   set blocks(value: Block[]) {
     this._blocks = value
     this._blockIndex = null
+    this._rootSet = null
   }
 
   private _indexBlockTree(block: Block): void {
@@ -208,6 +211,7 @@ class ContentState {
 
   private _rebuildBlockIndex(): void {
     this._blockIndex = new Map()
+    this._rootSet = new Set(this._blocks)
     for (const block of this._blocks) {
       this._indexBlockTree(block)
     }
@@ -223,7 +227,7 @@ class ContentState {
     let current = block
     for (let depth = 0; depth < 1000; depth++) {
       if (current.parent == null) {
-        return this._blocks.includes(current)
+        return this._rootSet!.has(current)
       }
       const parent = this._blockIndex!.get(current.parent)
       if (!parent || !parent.children.includes(current)) {
@@ -698,11 +702,16 @@ class ContentState {
         } else {
           if (blocks[i].children.length) {
             remove(blocks[i].children, b)
+            remove(blocks[i].children, b)
           }
         }
       }
     }
     remove(Array.isArray(fromBlocks) ? fromBlocks : fromBlocks.children, block)
+    if (this._blockIndex) {
+      this._unindexBlockTree(block)
+      this._rootSet?.delete(block)
+    }
   }
 
   getActiveBlocks(): Block[] {
@@ -730,6 +739,12 @@ class ContentState {
       newBlock.nextSibling = oldNextSibling.key
       oldNextSibling.preSibling = newBlock.key
     }
+    if (this._blockIndex) {
+      this._indexBlockTree(newBlock)
+      if (newBlock.parent == null) {
+        this._rootSet?.add(newBlock)
+      }
+    }
   }
 
   insertBefore(newBlock: Block, oldBlock: Block) {
@@ -745,6 +760,12 @@ class ContentState {
     if (oldPreSibling) {
       oldPreSibling.nextSibling = newBlock.key
       newBlock.preSibling = oldPreSibling.key
+    }
+    if (this._blockIndex) {
+      this._indexBlockTree(newBlock)
+      if (newBlock.parent == null) {
+        this._rootSet?.add(newBlock)
+      }
     }
   }
 
@@ -764,6 +785,9 @@ class ContentState {
       block.nextSibling = parent.children[0].key
     }
     parent.children.unshift(block)
+    if (this._blockIndex) {
+      this._indexBlockTree(block)
+    }
   }
 
   appendChild(parent: Block, block: Block) {
@@ -778,6 +802,9 @@ class ContentState {
       block.preSibling = null
     }
     block.nextSibling = null
+    if (this._blockIndex) {
+      this._indexBlockTree(block)
+    }
   }
 
   replaceBlock(newBlock: Block, oldBlock: Block) {

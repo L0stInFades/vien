@@ -2,7 +2,7 @@ import path from 'node:path'
 import equal from 'fast-deep-equal'
 import { isSamePathSync } from 'common/filesystem/paths'
 import bus from '../bus'
-import { hasKeys, getUniqueId } from '../util'
+import { hasKeys } from '../util'
 import listToTree from '../util/listToTree'
 import { createDocumentState, getOptionsFromState, getSingleFileState, getBlankFileState } from './help'
 import notice from '../services/notification'
@@ -434,16 +434,7 @@ const actions = {
   ASK_FOR_IMAGE_AUTO_PATH({ state }, src) {
     const { pathname } = state.currentFile
     if (pathname) {
-      let rs
-      const promise = new Promise((resolve, _reject) => {
-        rs = resolve
-      })
-      const id = getUniqueId()
-      window.api.ipc.once(`mt::response-of-image-path-${id}`, (files) => {
-        rs(files)
-      })
-      window.api.ipc.send('mt::ask-for-image-auto-path', { pathname, src, id })
-      return promise
+      return window.api.ipc.invoke('mt::ask-for-image-auto-path', { pathname, src }).catch(() => [])
     } else {
       return []
     }

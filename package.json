@@ -31,6 +31,7 @@
     "test:specs": "node -r ./test/specs/register-ts.js test/specs/commonMark/run.spec.js && node -r ./test/specs/register-ts.js test/specs/gfm/run.spec.js",
     "unit": "vitest run",
     "unit:watch": "vitest",
+    "perf": "vitest run --config vitest.perf.config.ts",
     "build:muya": "cd src/muya && webpack --progress --config webpack.config.js",
     "release:muya": "pnpm run build:muya && cd src/muya && pnpm publish",
     "rebuild": "electron-rebuild -f",
