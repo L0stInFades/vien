@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer, clipboard, shell, webFrame, nativeImage } from 'electron'
+import { contextBridge, ipcRenderer, webFrame } from 'electron'
 import type {
   PreloadApi,
   SideBarContextMenuPayload,
@@ -196,6 +196,12 @@ const isDynamicChannel = (channel: string): boolean => {
  */
 const invokeCapability = (channel: string, payload: unknown) => ipcRenderer.invoke(channel, payload)
 
+/** Sync bridge call for clipboard methods (sandboxed preload has no clipboard). */
+const syncBridge = <T>(channel: string, fallback: T, ...args: unknown[]): T => {
+  const result = ipcRenderer.sendSync(channel, ...args) as { ok: boolean; value?: T } | undefined
+  return result?.ok ? (result.value as T) : fallback
+}
+
 const api: PreloadApi = {
   window: {
     close: () => ipcRenderer.send('mt::window-close'),
@@ -219,26 +225,27 @@ const api: PreloadApi = {
     hasFiles: () => ipcRenderer.invoke('mt::clipboard-has-files'),
     getFiles: () => ipcRenderer.invoke('mt::clipboard-get-files'),
     guessFilePath: () => ipcRenderer.invoke('mt::clipboard-guess-file-path'),
-    readText: () => clipboard.readText(),
-    writeText: (text: string) => clipboard.writeText(text),
-    readHTML: () => clipboard.readHTML(),
-    writeHTML: (markup: string) => clipboard.writeHTML(markup),
-    readImageDataURL: () => {
-      const image = clipboard.readImage()
-      if (image.isEmpty()) return ''
-      return image.toDataURL()
+    readText: () => syncBridge('mt::clipboard-read-text-sync', ''),
+    writeText: (text: string) => {
+      syncBridge('mt::clipboard-write-text-sync', false, text)
     },
+    readHTML: () => syncBridge('mt::clipboard-read-html-sync', ''),
+    writeHTML: (markup: string) => {
+      syncBridge('mt::clipboard-write-html-sync', false, markup)
+    },
+    readImageDataURL: () => syncBridge('mt::clipboard-read-image-data-url-sync', ''),
     writeImageFromDataURL: (dataURL: string) => {
-      const image = nativeImage.createFromDataURL(dataURL)
-      clipboard.writeImage(image)
+      syncBridge('mt::clipboard-write-image-data-url-sync', false, dataURL)
     },
-    has: (format: string) => clipboard.has(format),
+    has: (format: string) => syncBridge('mt::clipboard-has-format-sync', false, format),
   },
 
   shell: {
-    openExternal: (url: string) => shell.openExternal(url),
-    openPath: (path: string) => shell.openPath(path),
-    showItemInFolder: (fullPath: string) => shell.showItemInFolder(fullPath),
+    openExternal: (url: string) => ipcRenderer.invoke('mt::shell-open-external', url),
+    openPath: (path: string) => ipcRenderer.invoke('mt::shell-open-path', path),
+    showItemInFolder: (fullPath: string) => {
+      ipcRenderer.invoke('mt::shell-show-item-in-folder', fullPath).catch(() => {})
+    },
   },
 
   fonts: {

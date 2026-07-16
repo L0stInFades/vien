@@ -23,11 +23,11 @@ export const editorWinOptions = Object.freeze({
     // through the controlled vien-asset:// protocol, never by disabling
     // webSecurity.
     webSecurity: true,
-    // Explicitly locked (PLAN.md §5.7). sandbox:true requires moving the
-    // preload's clipboard/shell/webFrame/nativeImage usage behind main-
-    // process IPC first — tracked as a Phase 1 follow-up; do not flip this
-    // without that migration.
-    sandbox: false,
+    // PLAN.md §5.7: renderer sandbox enabled. The preload uses only
+    // sandbox-available modules (ipcRenderer, contextBridge, webFrame's
+    // zoom subset); clipboard/shell/nativeImage go through the validated
+    // main-process preload bridge (src/main/ipc/preloadBridge.js).
+    sandbox: true,
   },
   useContentSize: true,
   show: true,
@@ -49,7 +49,8 @@ export const preferencesWinOptions = Object.freeze({
     nodeIntegration: false,
     // BOUNDARY-002: same-origin policy stays ON (see editorWinOptions).
     webSecurity: true,
-    sandbox: false,
+    // PLAN.md §5.7: sandbox enabled (see editorWinOptions).
+    sandbox: true,
   },
   fullscreenable: false,
   fullscreen: false,

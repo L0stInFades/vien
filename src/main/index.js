@@ -9,6 +9,7 @@ import Accessor from './app/accessor'
 import setupEnvironment from './app/env'
 import { getLogLevel } from './utils'
 import { registerWindowBridgeHandlers } from './ipc/windowBridge'
+import { registerPreloadBridgeHandlers } from './ipc/preloadBridge'
 import { registerAssetSchemePrivileges } from './security/assetProtocol'
 
 const initializeLogger = (appEnvironment) => {
@@ -83,6 +84,7 @@ log.transports.file.sync = false
 
 // Register IPC handlers for preload bridge (replaces @electron/remote)
 registerWindowBridgeHandlers()
+registerPreloadBridgeHandlers()
 
 const application = new App(accessor, args)
 application.init()
