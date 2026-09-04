@@ -1,18 +1,5 @@
 # Linux Installation Notes
 
-Vien's current official release flow is macOS-only.
+Vien is a macOS-only application. Linux is not a supported build, test, packaging, or release target, and the project does not provide Linux artifacts or Linux release commands.
 
-If you want to use Vien on Linux today, build it locally:
-
-```sh
-pnpm install
-pnpm run release:linux
-```
-
-For development builds, use:
-
-```sh
-pnpm run dev
-```
-
-Linux packaging metadata remains in [`resources/linux`](../resources/linux) for future release work, but not every release publishes Linux artifacts.
+Some historical cross-platform source may remain while the macOS application evolves; it is not a compatibility contract.

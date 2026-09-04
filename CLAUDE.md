@@ -1,4 +1,4 @@
-# Vien (Raymdtxt) — CLAUDE.md
+# Vien — CLAUDE.md
 
 Vien 是 MarkText 的现代化 fork：安静、本地优先、无损、即时响应的 Markdown
 阅读编辑器。
@@ -19,18 +19,20 @@ Vien 是 MarkText 的现代化 fork：安静、本地优先、无损、即时响
 
 ## 技术栈（当前）
 
-Electron 34 · electron-vite/Vite 7 · Vue 3.5 + Element Plus · Vuex 4 与
-Pinia 3 并存（迁移中，见 PLAN.md）· Muya 编辑内核（`src/muya/`，TypeScript）·
-CodeMirror 5（源码模式）· Vitest + Playwright + CommonMark/GFM specs ·
-Biome · pnpm 11（`packageManager` 已固定，唯一 lockfile 是 `pnpm-lock.yaml`）。
+Electron / electron-vite / Vite / Vue + Element Plus 均跟随 npm `latest` · Vuex 与
+Pinia 并存（迁移中，见 PLAN.md）· Muya 编辑内核（`src/muya/`，TypeScript）·
+CodeMirror 6（源码模式）· Vitest + Playwright + CommonMark/GFM specs ·
+Biome · pnpm `latest`。所有直接包声明都写 `latest`，唯一可复现快照是
+`pnpm-lock.yaml`，由 Dependabot 每日推进。
 
 ## 常用命令
 
 ```bash
 pnpm run dev            # electron-vite dev（HMR）
-pnpm run verify         # lint + typecheck + unit + specs + build（提交前必跑）
+pnpm run verify         # latest policy + lint + typecheck + unit + specs + build
+pnpm run deps:update    # 将 lockfile 推进到当前全部 latest
 pnpm run unit           # Vitest
-pnpm run test:specs     # CommonMark/GFM spec runners
+pnpm run test:specs     # 离线 CommonMark/GFM 已知差异棘轮
 pnpm run e2e            # 构建后跑 Playwright Electron E2E
 pnpm run lint:fix       # Biome 自动修复
 pnpm run electron:build # 生产构建（dist/electron/）
@@ -62,10 +64,10 @@ pnpm run electron:build # 生产构建（dist/electron/）
 
 ## CI
 
-- PR/push：`.github/workflows/build.yml` — Linux 跑 lint/typecheck/unit/specs/build，
-  macOS 跑 Playwright Electron E2E smoke。
+- PR/push：`.github/workflows/build.yml` — 全部质量门禁与 Electron E2E 都在
+  macOS 上运行；Vien 不以 Linux/Windows 为交付目标。
 - Release：`.github/workflows/release.yml` — tag 触发，签名 macOS 构建。
-- 本地与 CI 均使用 pnpm 11 / Node 22+（`packageManager` 字段管理版本）。
+- 本地与 CI 使用 pnpm `latest` / Node 22+；包声明禁止固定版本，锁文件负责复现。
 
 ## 历史迁移记录（已完成，简要）
 

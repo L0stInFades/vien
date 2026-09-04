@@ -13,24 +13,10 @@ Before you start developing, set up the following:
 - Current Node.js LTS
 - `pnpm`
 - Python `>=v3.6` for node-gyp
-- C++ compiler and development tools
-- Build is supported on Linux, macOS and Windows
+- Xcode Command Line Tools
+- macOS 14 or newer for the same baseline used by CI
 
-**Additional development dependencies on Linux:**
-
-- libX11 (with headers)
-- libxkbfile (with headers)
-- libsecret (with headers)
-- libfontconfig (with headers)
-
-On Debian-based Linux: `sudo apt-get install libx11-dev libxkbfile-dev libsecret-1-dev libfontconfig-dev`
-
-On Red Hat-based Linux: `sudo dnf install libX11-devel libxkbfile-devel libsecret-devel fontconfig-devel`
-
-**Additional development dependencies on Windows:**
-
-- Windows 10 SDK (only needed before Windows 10)
-- Visual Studio 2019 (preferred)
+Vien targets macOS only. Historical Linux and Windows code may remain in the tree, but those platforms are not build, test, or release contracts.
 
 ### Install and build
 
@@ -61,12 +47,11 @@ pnpm run <script>
 | ------------------- | ------------------------------------------- |
 | `dev`               | Start Vien in development mode              |
 | `electron:build`    | Build the Electron app without packaging    |
-| `build`             | Build and package for the current platform  |
+| `build`             | Build and package the macOS app              |
 | `release:mac`       | Build macOS release artifacts only          |
-| `release:linux`     | Build Linux release artifacts               |
-| `release:win`       | Build Windows release artifacts             |
+| `deps:update`       | Refresh every package to its latest release |
 | `unit`              | Run unit tests                              |
-| `test:specs`        | Run CommonMark and GFM specification checks |
+| `test:specs`        | Run offline CommonMark/GFM known-difference ratchets |
 | `e2e`               | Run Playwright Electron end-to-end tests    |
 | `lint`              | Run Biome against `src/`                    |
 | `validate-licenses` | Validate third-party license metadata       |

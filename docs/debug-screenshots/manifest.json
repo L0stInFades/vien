@@ -9,6 +9,33 @@
     }
   },
   {
+    "filename": "command-palette.png",
+    "title": "Command Palette",
+    "description": "Overlay command surface: input hairline, quiet rows, muted shortcut chips.",
+    "size": {
+      "width": 1512,
+      "height": 982
+    }
+  },
+  {
+    "filename": "chrome-sidebar.png",
+    "title": "Chrome / Sidebar + Tabs",
+    "description": "Working-window baseline: icon rail, file tree, tab strip, and title bar together.",
+    "size": {
+      "width": 1512,
+      "height": 982
+    }
+  },
+  {
+    "filename": "search-bar.png",
+    "title": "Find / Replace Bar",
+    "description": "Floating search surface over the paper: quiet toggles and hairline input.",
+    "size": {
+      "width": 1512,
+      "height": 982
+    }
+  },
+  {
     "filename": "about.png",
     "title": "About Dialog",
     "description": "Brand panel and release copy, useful for checking visual tone and spacing in overlays.",
@@ -39,6 +66,15 @@
     "filename": "editor-selection.png",
     "title": "Editor / Selection",
     "description": "Selection-state proof for the softer sage highlight used on the writing surface.",
+    "size": {
+      "width": 1512,
+      "height": 982
+    }
+  },
+  {
+    "filename": "format-picker.png",
+    "title": "Editor / Format Picker",
+    "description": "Inline formatting float on a text selection: unified radius, border, and shadow.",
     "size": {
       "width": 1512,
       "height": 982

@@ -1,9 +1,7 @@
 # Application Data Directory
 
-The per-user application data directory is located in the following directory:
+The macOS per-user application data directory is:
 
-- `%APPDATA%\\vien` on Windows
-- `$XDG_CONFIG_HOME/vien` or `~/.config/vien` on Linux
-- `~/Library/Application Support/vien` on macOS
+- `~/Library/Application Support/vien`
 
-When [portable mode](PORTABLE.md) is enabled, the directory location is either the `--user-data-dir` parameter or the `vien-user-data` directory.
+You can choose another location with the [`--user-data-dir`](PORTABLE.md) command-line option.

@@ -37,7 +37,7 @@ What Vien offers, without raising its voice:
 
 Vien is being shaped for people who like calm writing software but still want a real desktop app: local files, native behavior, keyboard depth, and an interface that does not keep asking to be looked at.
 
-It is especially focused on macOS polish, but it keeps the open-source, file-first spirit of the editor lineage it came from.
+Vien targets macOS. It keeps the open-source, file-first spirit of the editor lineage it came from without diluting its quality work across other desktop platforms.
 
 When Vien opens, it goes straight to the page. No dashboard, no drop target, no staging area. Open a file through `File > Open…`, `Open Recent`, quick open, or a CLI path and keep moving.
 
@@ -50,7 +50,9 @@ pnpm install
 pnpm run dev
 ```
 
-To package the app for your current platform:
+Every direct package declaration follows npm's `latest` dist-tag. `pnpm-lock.yaml` keeps each reviewed build reproducible, while daily dependency updates advance that snapshot and run the macOS quality gates.
+
+To package the macOS app:
 
 ```bash
 pnpm run build

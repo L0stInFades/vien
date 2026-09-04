@@ -1,9 +1,9 @@
 # Vien → Typora 级 Markdown 阅读编辑器执行计划
 
-> 状态：提案 / 可执行路线图  
-> 审计日期：2026-07-15  
-> 审计基线：`chore/pinia-migration-phase-1`，`c1de9851`（v0.17.5）及当时工作区中的迁移改动  
-> 适用范围：桌面端编辑器、工作区、文件与恢复、导出、桌面安全、质量体系和发布工程  
+> 状态：提案 / 可执行路线图
+> 审计日期：2026-07-15
+> 审计基线：`chore/pinia-migration-phase-1`，`c1de9851`（v0.17.5）及当时工作区中的迁移改动
+> 适用范围：桌面端编辑器、工作区、文件与恢复、导出、桌面安全、质量体系和发布工程
 > 产品代号：本文沿用仓库产品名 **Vien**；“Typora 级”表示质量、完整度和使用流畅度的标杆，不表示复制 Typora 的界面、代码或商业功能。
 
 这不是一张功能愿望清单，而是一份交付合同。每个阶段只有在数据、性能、测试和安全门槛同时通过后才算完成。计划首先修复会影响用户信任的基础问题，再扩展能力；不会用更多功能掩盖潜在的数据丢失、格式改写或安全债务。
@@ -32,7 +32,7 @@ Vien 已经拥有一个功能面相当丰富的起点：Muya 可视编辑、Comm
 2. 用 `EditorEngine` 适配层、无损语料和性能基准把 Muya 隔离起来；
 3. 给 Muya 四至八周的量化改造窗口；
 4. 只有它无法通过无损、IME 和大文档门槛时，才在适配层后更换编辑内核；
-5. 在可信内核上补齐工作区、恢复、导出、可访问性和跨平台打磨。
+5. 在可信内核上补齐工作区、恢复、导出、可访问性和 macOS 原生打磨。
 
 ### 1.3 里程碑与估算
 
@@ -42,7 +42,7 @@ Vien 已经拥有一个功能面相当丰富的起点：Muya 可视编辑、Comm
 | M1 可信 Alpha | 安全 IPC、文件服务、原子保存、恢复、冲突模型 | 12 | 故障注入下无静默丢失，桌面权限边界收紧 |
 | M2 日用 Beta | 无损编辑核心、IME、表格/图片/链接、性能达标 | 26 | 核心语料 100% 无损，关键编辑矩阵全绿 |
 | M3 功能完整 RC | 工作区、搜索、阅读模式、资源、导出、主题 | 38 | Typora 级核心能力矩阵无 P0/P1 缺口 |
-| M4 1.0 | 可访问性、跨平台、发布和长稳 | 47 | 全部发布闸门通过，可安全回滚和恢复 |
+| M4 1.0 | 可访问性、macOS 发布和长稳 | 47 | 全部发布闸门通过，可安全回滚和恢复 |
 
 估算基于 4–6 人稳定团队，约 9–12 个月；单人全职更现实的范围是 15–20 个月，日用 Beta 约 4–6 个月。它们是容量估算，不是日期承诺；每个阶段以退出条件而非日历宣告完成。
 
@@ -59,7 +59,7 @@ Typora 的价值不只是隐藏 Markdown 标记，而是把以下环节连成一
 - 文件树、目录、快速打开、全局搜索和最近工作区；
 - 自动保存、会话恢复、草稿和外部修改处理；
 - 图片复制/移动/上传策略、主题、打印与导出；
-- 键盘优先、专注/打字机模式、跨平台桌面行为；
+- 键盘优先、专注/打字机模式、macOS 原生桌面行为；
 - 用户不需要理解编辑器内部模型，也不会因为使用可视编辑而损坏 Markdown。
 
 Vien 1.0 应达到这一闭环，同时保留自身“Calm Markdown for long-form writing”的视觉身份。现有浅色空白页体现出的安静、留白和长文阅读感应该延续；旧式高密度 MarkText 外壳只作为功能参考，不应成为视觉回退方向。
@@ -85,7 +85,7 @@ Vien 1.0 应达到这一闭环，同时保留自身“Calm Markdown for long-for
 | 安全 | Electron 安全清单全绿；无通用 IPC/任意 shell 暴露；默认无隐式文档联网 | 静态检查 + 渗透用例 |
 | 稳定性 | Beta 群体无已知 P0；P1 崩溃/数据问题为 0；连续 8 小时 soak 无不可恢复错误 | soak、崩溃恢复、issue gate |
 
-建议的首个参考机为 MacBook Air M1/8 GB/SSD；Windows 11 与 Ubuntu 各固定一台 4 核/16 GB 机器做跨平台基线。机器、OS、电源模式和语料都要版本化，避免“在我的电脑上很快”成为性能标准。
+参考机为 MacBook Air M1/8 GB/SSD，并记录受支持的 macOS 版本。机器、OS、电源模式和语料都要版本化，避免“在我的电脑上很快”成为性能标准。
 
 ### 2.3 1.0 明确不做
 
@@ -125,7 +125,7 @@ Vien 1.0 应达到这一闭环，同时保留自身“Calm Markdown for long-for
 | --- | --- |
 | TypeScript `tsc --noEmit` | 通过 |
 | Vitest | 22 个文件、557 个测试通过 |
-| CommonMark / GFM spec runner | 通过 |
+| CommonMark / GFM spec runner | 脚本退出 0；后续审计确认旧 runner 未等待异步任务且没有回归断言，不能据此认定规范全绿 |
 | Biome | 403 个文件通过 |
 | electron-vite production build | 通过；renderer 处理约 4,457 modules |
 | Playwright Electron E2E | 8/8 通过 |
@@ -215,7 +215,7 @@ HTML 导出会再次解析 Markdown，在隐藏 DOM 中渲染图表后序列化�
 - 真实文件操作、全局搜索、快速打开的 Electron E2E；
 - 安全、可访问性、性能和长时间 soak。
 
-#### P2：产品壳、状态迁移和跨平台发布尚未收口
+#### P2：产品壳、状态迁移和 macOS 发布尚未收口
 
 Vuex/Pinia 并存、旧 CI 与新 release workflow 分裂、两个 lockfile、CodeMirror 5、历史 MarkText UI 与新的 calm surface 共存。它们都需要处理，但不能越过前述 P0 数据问题抢占优先级。
 
@@ -539,7 +539,7 @@ test/
 | 主题 | 应用/编辑/导出主题已有 | token 化、light/dark/auto、用户 CSS 沙箱与版本 | 编辑/导出一致，可回退 |
 | 导出 | HTML/PDF/Pandoc 已有 | 隔离流水线、presets、图片、页眉页脚/页码/书签 | golden 与离线测试通过 |
 | 无障碍 | 未系统验证 | 语义、焦点、键盘、对比、缩放、reduce motion | WCAG 2.2 AA 核心流程 |
-| 跨平台 | macOS-first | macOS 完整；Windows/Linux 支持矩阵与降级说明 | 三平台 smoke/release gate |
+| 平台 | macOS-only | macOS 原生菜单、窗口、文件、输入与发布完整 | macOS smoke/release gate |
 
 ### 6.2 阅读与编辑体验规格
 
@@ -588,7 +588,7 @@ test/
 
 交付：
 
-- 选择 pnpm 作为唯一包管理器，提交 `packageManager`/Corepack 版本；干净安装验证后移除 `yarn.lock`；
+- 选择 pnpm 作为唯一包管理器；所有直接包声明使用 npm `latest` dist-tag，以 `pnpm-lock.yaml` 保存经验证的可复现快照，并由每日 Dependabot PR 推进；
 - 合并或重写 CI：不再使用 Node 16、actions v2、Yarn 和不存在的 `build:bin`；
 - 建立 `verify` 聚合命令：lint、typecheck、unit、spec、renderer build；
 - 盘点所有 renderer Node import 和 Vite stub，给每一项标注“迁到何种主进程 capability”；
@@ -602,7 +602,7 @@ test/
 退出条件：
 
 - 干净 checkout 在受支持环境中一条命令安装并通过 `verify`；
-- PR CI 在 Linux 跑静态/单元/spec，在 macOS 跑 Electron smoke；Windows smoke 可在 Phase 1 结束前补齐；
+- PR CI 的静态、单元、spec、build 与 Electron smoke 全部在 macOS 运行；
 - 所有 no-op stub 都有失败测试和 owner，不再出现“UI 报成功但没有磁盘动作”；
 - 性能、无损和导出基线产物可在 CI 下载；
 - 三份 ADR 合并，产品范围与硬指标获得确认。
@@ -624,7 +624,7 @@ test/
 - 评估并显式锁定 renderer sandbox；对必须保留的 native module 给出隔离说明；
 - 禁止 renderer 构建出现 `fs`/`child_process`/`electron` 等 import 的 lint/build rule；
 - PlantUML 远程渲染改为明确 opt-in，离线时不丢源代码；
-- 补齐 macOS/Windows/Linux 的 capability contract test 与 Electron E2E。
+- 补齐 macOS capability contract test 与 Electron E2E。
 
 退出条件：
 
@@ -707,7 +707,7 @@ M1 “可信 Alpha”在此结束。只有 M1 达标后才邀请真实用户迁�
 
 退出条件：
 
-- 关键编辑矩阵在三平台、至少中/英/日/韩输入法组合通过；
+- 关键编辑矩阵在 macOS、至少中/英/日/韩输入法组合通过；
 - 任意 command 可撤销，撤销后 source、selection、资源 side effect 一致；
 - CommonMark/GFM spec 无回归，Vien 扩展有规范文档与 golden；
 - 30 分钟随机 command/property run 无 DOM/model/source divergence；
@@ -728,13 +728,13 @@ M2 “日用 Beta”在此结束。Beta 的承诺是可以每天写重要文档�
 - Outline 支持 active heading、折叠、过滤、键盘导航和滚动同步；
 - Read/Edit/Zen 模式，保留每文档滚动、折叠、选择和模式状态；
 - heading、file、URL、footnote 导航的 back/forward history；
-- “在 Finder/Explorer 显示”“复制相对路径”等平台化操作；
+- “在 Finder 显示”“复制相对路径”等 macOS 操作；
 - 大目录增量扫描、symlink/cycle policy、gitignore/Vien ignore 规则。
 
 退出条件：
 
 - 50k 文件基准达标，搜索与扫描可取消且不阻塞编辑；
-- rename/move/delete/undo 与打开文档状态在三平台一致；
+- rename/move/delete/undo 与打开文档状态在受支持的 macOS 版本一致；
 - 云盘/网络盘给出经过测试的支持级别或清晰降级，不假装完全可靠；
 - Read/Edit/Zen 切换无内容 diff，重启可恢复；
 - 键盘和读屏可完成打开工作区、找文件、搜索、导航标题和返回编辑。
@@ -759,7 +759,7 @@ M2 “日用 Beta”在此结束。Beta 的承诺是可以每天写重要文档�
 
 退出条件：
 
-- export golden corpus 在三平台无未批准差异；
+- export golden corpus 在受支持的 macOS 版本无未批准差异；
 - 断网环境下所有标记为“本地”的编辑和导出能力完整工作；
 - 自定义主题、字体缺失、超大图片、SVG/HTML 攻击样例安全失败；
 - 编辑预览与导出在语义、编号、目录、脚注和资源路径上保持一致；
@@ -796,7 +796,7 @@ M3 “功能完整 RC”在此结束。
 
 交付：
 
-- PR、nightly、beta、stable 四级流水线；三平台 smoke，目标平台签名/公证；
+- PR、nightly、beta、stable 四级流水线；macOS smoke、签名与公证；
 - 自动 updater 使用签名 metadata、staged rollout、失败回滚和最低支持版本；
 - 配置、主题、恢复 journal、session schema 的升级/降级测试；
 - SBOM、第三方许可证、依赖漏洞策略和可重现 build metadata；
@@ -809,7 +809,7 @@ M3 “功能完整 RC”在此结束。
 退出条件：
 
 - 连续两周 beta 无 P0/P1 数据问题；所有已知 P1 有明确发布阻断判断；
-- 三平台安装、升级、降级/回滚、卸载保留用户文件均通过；
+- macOS 安装、升级、降级/回滚、卸载保留用户文件均通过；
 - 签名、公证、更新 metadata、SBOM 和许可证自动验证；
 - 文档恢复和冲突流程经非开发者可用性测试；
 - 产品、工程和 QA 共同签署第 12 节发布清单。
@@ -858,8 +858,6 @@ M3 “功能完整 RC”在此结束。
 最低组合：
 
 - macOS：ABC/dead keys、简体拼音、繁体注音、日文、韩文；
-- Windows：US、Microsoft Pinyin、Japanese IME、Korean IME；
-- Linux：IBus/Fcitx 代表组合；
 - 输入位置：普通段落、粗体/链接、标题、列表、表格单元格、代码、数学、文档首尾；
 - 操作：composition 中移动/点击、撤销、回车、粘贴、切 tab、自动保存、外部变更；
 - selection：向前/向后、跨 inline/block、双击/三击、键盘 word/grapheme、鼠标拖动、表格矩形选择。
@@ -906,9 +904,9 @@ M3 “功能完整 RC”在此结束。
 | 触发 | 作业 |
 | --- | --- |
 | 每个 PR | install lock check、lint、typecheck、unit、CommonMark/GFM、contract、build、短 perf |
-| PR 标签/核心路径 | macOS/Windows/Linux Electron critical E2E、security、a11y |
+| PR 标签/核心路径 | macOS Electron critical E2E、security、a11y |
 | nightly | 全 E2E、fault injection、fuzz/property、export golden、完整 perf/memory、soak sample |
-| beta tag | 三平台打包、签名、公证、升级/恢复迁移、SBOM、license、安装 smoke |
+| beta tag | macOS 打包、签名、公证、升级/恢复迁移、SBOM、license、安装 smoke |
 | stable | 复用已验证 artifact，不重新从不同源码构建；staged rollout + rollback metadata |
 
 ### 9.2 每个变更的 Definition of Done
@@ -968,7 +966,7 @@ M3 “功能完整 RC”在此结束。
 
 | ID | 工作项 | 验收 |
 | --- | --- | --- |
-| BASE-001 | 固定 pnpm/Node/Corepack，合并 CI | 干净 clone 一条命令全绿；只有一个 lockfile |
+| BASE-001 | pnpm latest policy、Node 基线、合并 macOS CI | 干净 clone 一条命令全绿；所有包声明为 `latest`；只有一个 lockfile |
 | BASE-002 | 建立 current capability inventory | 每个 renderer Node call 有 owner/service/test |
 | BASE-003 | 无损、perf、export corpus v1 | artifact 可复现；包含 1/10 MB 文档 |
 | BASE-004 | ADR-001/002/003 | source、engine gate、IPC 决策通过 |
@@ -1039,7 +1037,7 @@ M3 “功能完整 RC”在此结束。
 - [ ] WCAG 2.2 AA 核心流程与人工读屏通过；
 - [ ] Electron security checklist 无未接受高风险；
 - [ ] renderer 无特权 import、通用 IPC 或隐式内容上传；
-- [ ] 三平台安装/升级/签名/回滚和核心 E2E 通过；
+- [ ] macOS 安装/升级/签名/回滚和核心 E2E 通过；
 - [ ] 8 小时 soak、睡眠唤醒和更新中断通过。
 
 ### 运营与支持
@@ -1064,7 +1062,7 @@ M3 “功能完整 RC”在此结束。
 | 安全收紧破坏本地资源 | 中 | 高 | 团队建议再次关闭 webSecurity | 自定义 protocol/AssetService；安全测试阻止配置回退 |
 | 图表/字体使导出不确定或联网 | 高 | 中 | CI snapshot 漂移、断网失败 | 离线固定资源、版本 pin、远程 adapter opt-in |
 | bundle/内存随功能继续膨胀 | 高 | 中 | 初始 chunk 和 RSS 连续上升 | chunk/perf budget；按需语言/图表；worker 生命周期测试 |
-| 跨平台扩大拖慢 macOS 品质 | 中 | 中 | 平台分支散落、E2E 不稳定 | 平台 adapter + 明确支持矩阵；macOS 主体验不降级 |
+| 历史跨平台分支拖慢 macOS 品质 | 中 | 中 | 非目标平台分支散落、E2E 不稳定 | 明确 macOS-only 合同；新工作不为非目标平台增加复杂度 |
 | “对标 Typora”造成无限 scope | 高 | 高 | 每周增加新语法/导出格式 | 以第 6.1 矩阵和 1.0 非目标冻结范围 |
 | 测试数量制造虚假安全感 | 中 | 高 | 单测增长但真实文件 E2E 仍少 | 风险驱动测试；每个 P0 状态转移必须有故障/桌面证据 |
 | 隐私诊断误收用户内容 | 低 | 极高 | 日志出现路径、source 或搜索词 | 默认本地/脱敏；上传预览；隐私测试与事件 schema allowlist |
@@ -1078,7 +1076,7 @@ M3 “功能完整 RC”在此结束。
 | ADR-001 | source text、语义树、DOM 谁是事实来源 | Week 2 | 无损要求、当前 roundtrip diff |
 | ADR-002 | Muya 加固还是替代，替代为何物 | Week 18–20 | corpus、IME、perf、迁移 spike |
 | ADR-003 | 版本化 capability IPC 与 schema 技术 | Week 2 | preload/main attack surface |
-| ADR-004 | 原子保存、DiskVersion、recovery journal 协议 | Week 6 | 三平台 filesystem fault tests |
+| ADR-004 | 原子保存、DiskVersion、recovery journal 协议 | Week 6 | macOS filesystem fault tests |
 | ADR-005 | watcher 路径身份与云盘支持级别 | Week 10 | APFS/NTFS/ext4/cloud matrix |
 | ADR-006 | export surface、字体和远程图表策略 | Week 30 | golden、离线、隐私测试 |
 | ADR-007 | 主题 token、用户 CSS 隔离和兼容版本 | Week 32 | edit/export theme prototype |
@@ -1170,7 +1168,7 @@ M3 “功能完整 RC”在此结束。
 | CORE-003 | getBlock O(1) 自愈索引（父链附着验证）+ inputCtrl 实例级计时器 | muya-block-index.spec |
 | CORE-002 切片1 | fence marker/闭合 ATX 无损保持；棘轮 12/35 → **10/35** lossy | corpus-roundtrip.spec |
 
-**测试规模**：557 → **725** unit tests（+168），Playwright E2E 8/8，CommonMark/GFM specs 全绿。
+**测试规模**：557 → **725** unit tests（+168），Playwright E2E 8/8；当时旧 CommonMark/GFM runner 退出 0。2026-09-05 的复核确认旧 runner 没有形成有效断言，真实兼容基线见后续记录。
 
 **未完成例外**（按 §16 记录）：
 - CORE-002 剩余 lossy 类（blockquote 懒续行、紧列表松化、表格重排、混合 EOL、多尾行、tab）需要完整 source-span 投影——Phase 3 主体工作，受 ADR-002 timebox 约束；
@@ -1195,3 +1193,18 @@ M3 “功能完整 RC”在此结束。
 **基准即时回报**：首跑即暴露 CORE-003 索引验证把所有块判为脱附（muya 根块 parent 为 `''` 非 null）——正确性由自愈兜底但查找退化为二次方；修复后全键查找 **4051ms→13.6ms（100KB）/ 65970ms→39ms（300KB）**。
 
 **测试规模**：725 → **735**。剩余 lossy 5/35：blockquote 懒续行、表格列宽重排、edge-blocks 块间紧邻、混合 EOL（策略性归一+通知）、tabs——均需完整 source-span 投影（Phase 3 主体）。
+
+### 2026-09-05 — Vien 有机融合与 latest/macOS 收口
+
+这次融合以 `vien/develop` v0.17.5 为祖先，保留 Vien 的安静界面与静态 SVG Mermaid 预览，在其上合入已经验证的编辑、桌面能力和工具链工作；不以整树覆盖替代边界审查。
+
+| 区域 | 交付 | 证据 |
+| --- | --- | --- |
+| 依赖与构建 | 82 个直接包声明统一使用 npm `latest`；lockfile 保存已审快照；每日 Dependabot 只推进 lockfile；Vite 8、Electron 44、TypeScript 7 | `deps:check-latest`、`pnpm outdated`、frozen install、production build |
+| macOS 产品边界 | CI、nightly、release 和 electron-builder 只交付 macOS；x64/arm64 原生模块分别重建 | 两个架构目录包及 Mach-O 架构核验；x64 包启动 smoke |
+| Mermaid | 保留居中、紧边界静态 SVG；改用 Mermaid `run` 导出；全局初始化与渲染串行化；异步 parse、过期结果、坏图隔离和主题恢复均有回归测试 | 单元测试 + Electron E2E（坏图后好图仍渲染并导出） |
+| 规范闸门 | 删除运行时联网、fixture 自改写和假绿退出；改为固定 CommonMark/GFM 快照与已知差异棘轮 | CommonMark 544/652（108 个已知差异），GFM 24/28（4 个已知差异），0 个新增回归 |
+| 桌面与编辑可靠性 | CM6 源码模式、沙箱 capability IPC、保存 flush、图片/搜索/截屏兼容、IME 与 Markdown 边界修复 | 53 个文件、769 个单元测试；Electron E2E 8/8 |
+| UI 基线 | 保留 Vien calm surface，刷新 9 张可重复调试截图；修复选区截图此前没有真正选中文本的问题 | `debug:ui-shots` + PNG/隐私检查 |
+
+本轮本地验收同时通过：Biome、TypeScript、生产构建、性能基线、许可证清单确定性、最低级别漏洞审计（0 已知漏洞）以及双架构打包。本地包因没有有效 Developer ID 而不签名；正式签名仍由 release workflow 和仓库 secrets 完成。

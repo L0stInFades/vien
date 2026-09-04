@@ -1,6 +1,6 @@
-<!-- Attention: please fill in the issue in the template format, including but not limited to: detailed description, reproduction steps, expected results, actual results, error screenshots (not required), MarkText and operation system version. If an issue is marked as `more detail`, stating that the issue is opened and no content has been added after one week and will be closed, thanks for your cooperation. -->
+<!-- Attention: please fill in the issue template with a detailed description, reproduction steps, expected and actual results, optional screenshots, the Vien version, and the macOS version. If an issue is marked as `more detail`, please add the missing information within one week. -->
 
-<!-- 注意：请按照 template 格式填写 issue，包括但不仅限于：详尽的描述、重现步骤、期望结果、实际结果、错误截图（非必须）、Mark Text 和 操作系统版本型号或版本号，如果一个 issue 被标记为 `more detail`，说明 issue 填写不完整，一周后仍未补充任何内容，将被关闭,谢谢合作 -->
+<!-- 注意：请按照模板填写详细描述、重现步骤、期望与实际结果、可选截图，以及 Vien 和 macOS 的版本。如果 issue 被标记为 `more detail`，请在一周内补充缺失信息。 -->
 
 <!-- Please make sure your application version is up to date -->
 
@@ -28,5 +28,5 @@
 
 ### Versions
 
-- MarkText:
-- Operating system:
+- Vien version:
+- macOS version:

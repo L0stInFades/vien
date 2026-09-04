@@ -116,6 +116,74 @@ const captureBlankEditorShot = async () => {
       description: 'Warm paper baseline for the empty writing state, without the old dashboard layer.',
       size: viewport,
     })
+
+    await app.evaluate(({ BrowserWindow }) => {
+      BrowserWindow.getAllWindows()[0].webContents.send('mt::show-command-palette')
+    })
+    await page.locator('.commands li').first().waitFor({ state: 'visible', timeout: 8000 })
+    await page.waitForTimeout(200)
+    await saveShot(page, {
+      filename: 'command-palette.png',
+      title: 'Command Palette',
+      description: 'Overlay command surface: input hairline, quiet rows, muted shortcut chips.',
+      size: viewport,
+    })
+    await page.keyboard.press('Escape')
+  } finally {
+    await closeElectron(app)
+  }
+}
+
+const captureChromeShots = async () => {
+  const workspaceDir = createTempDir()
+  writeFile(
+    path.join(workspaceDir, 'notes.md'),
+    ['# 晨间笔记', '', '今天想把界面收拾得更安静一点，像一张可以久坐的书桌。', '', '## 待办', '', '- 收敛标题栏', '- 整理侧栏层级', '- 统一浮层语言', ''].join('\n'),
+  )
+  writeFile(
+    path.join(workspaceDir, 'journal.md'),
+    ['# Journal', '', 'A quiet page kept for long-form writing.', '', '## Morning', '', 'Coffee, sunlight, and a clean sheet of paper.', ''].join('\n'),
+  )
+  writeFile(
+    path.join(workspaceDir, 'ideas', 'draft.md'),
+    ['# Draft', '', 'Work in progress.', ''].join('\n'),
+  )
+
+  const { app, page } = await launchElectron([workspaceDir])
+
+  try {
+    await page.setViewportSize(viewport)
+    await setWindowSize(app, viewport)
+    await page.locator('#ag-editor-id').waitFor({ state: 'visible' })
+    await app.evaluate(({ BrowserWindow }) => {
+      BrowserWindow.getAllWindows()[0].webContents.send('mt::set-view-layout', {
+        showSideBar: true,
+        showTabBar: true,
+      })
+    })
+    await page.locator('.project-tree').waitFor({ state: 'visible', timeout: 8000 })
+    await page.locator('.project-tree >> text=notes.md').first().click()
+    await page.locator('.project-tree >> text=journal.md').first().click()
+    await page.waitForTimeout(500)
+    await saveShot(page, {
+      filename: 'chrome-sidebar.png',
+      title: 'Chrome / Sidebar + Tabs',
+      description: 'Working-window baseline: icon rail, file tree, tab strip, and title bar together.',
+      size: viewport,
+    })
+
+    await app.evaluate(({ BrowserWindow }) => {
+      BrowserWindow.getAllWindows()[0].webContents.send('mt::execute-command-by-id', 'edit.find')
+    })
+    await page.locator('.search-bar').waitFor({ state: 'visible' })
+    await page.waitForTimeout(200)
+    await saveShot(page, {
+      filename: 'search-bar.png',
+      title: 'Find / Replace Bar',
+      description: 'Floating search surface over the paper: quiet toggles and hairline input.',
+      size: viewport,
+    })
+    await page.keyboard.press('Escape')
   } finally {
     await closeElectron(app)
   }
@@ -132,6 +200,7 @@ const captureAboutShot = async () => {
       BrowserWindow.getAllWindows()[0].webContents.send('mt::about-dialog')
     })
     await page.getByTestId('about-dialog').waitFor({ state: 'visible' })
+    await page.waitForTimeout(500)
     await saveShot(page, {
       filename: 'about.png',
       title: 'About Dialog',
@@ -214,23 +283,42 @@ const captureEditorShot = async () => {
     await page.evaluate(() => {
       const paragraphs = Array.from(document.querySelectorAll('#ag-editor-id p'))
       const target = paragraphs.find((paragraph) => paragraph.textContent?.includes('最后这一段'))
-      const textNode = target?.firstChild
+      const walker = target ? document.createTreeWalker(target, NodeFilter.SHOW_TEXT) : null
+      let textNode = walker?.nextNode() || null
+      while (textNode && !textNode.textContent?.includes('最后这一段')) {
+        textNode = walker.nextNode()
+      }
       const content = textNode?.textContent || ''
 
       if (!target || !textNode || textNode.nodeType !== Node.TEXT_NODE || !content) {
-        return
+        throw new Error('Unable to resolve selection screenshot text.')
       }
+      const highlightLength = Math.min(18, content.length)
       const highlight = document.createElement('span')
       highlight.className = 'ag-selection'
-      highlight.textContent = content.slice(0, 18)
-      target.textContent = ''
-      target.append(highlight, content.slice(18))
+      highlight.textContent = content.slice(0, highlightLength)
+      textNode.replaceWith(highlight, document.createTextNode(content.slice(highlightLength)))
     })
     await page.waitForTimeout(180)
     await saveShot(page, {
       filename: 'editor-selection.png',
       title: 'Editor / Selection',
       description: 'Selection-state proof for the softer sage highlight used on the writing surface.',
+      size: viewport,
+    })
+
+    await page.evaluate(() => {
+      const highlight = document.querySelector('#ag-editor-id .ag-selection')
+      if (highlight) highlight.replaceWith(document.createTextNode(highlight.textContent || ''))
+    })
+
+    // Triple-click a paragraph to select it and raise the inline format picker.
+    await page.locator('#ag-editor-id p', { hasText: '最后这一段' }).first().click({ clickCount: 3 })
+    await page.waitForTimeout(700)
+    await saveShot(page, {
+      filename: 'format-picker.png',
+      title: 'Editor / Format Picker',
+      description: 'Inline formatting float on a text selection: unified radius, border, and shadow.',
       size: viewport,
     })
   } finally {
@@ -241,6 +329,7 @@ const captureEditorShot = async () => {
 const main = async () => {
   ensureCleanDir(outputDir)
   await captureBlankEditorShot()
+  await captureChromeShots()
   await captureAboutShot()
   await captureSettingsShot()
   await captureEditorShot()

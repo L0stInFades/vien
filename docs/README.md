@@ -21,7 +21,7 @@ Welcome to the end-user documentation of Vien.
 - [Image uploader configuration](IMAGE_UPLOADER_CONFIGRATION.md)
 - [Installation instructions](../README.md#download-and-installation)
 - [Key bindings](KEYBINDINGS.md)
-- [Portable mode](PORTABLE.md)
+- [Custom data directory](PORTABLE.md)
 - [Preferences](PREFERENCES.md)
 - [Themes](THEMES.md)
 - [Themes for exporting](EXPORT_THEMES.md)

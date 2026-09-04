@@ -1,16 +1,9 @@
-# Portable Mode
+# Custom Data Directory
 
-Vien stores all user configuration inside the [application data directory](APPLICATION_DATA_DIRECTORY.md) that can be changed with `--user-data-dir` command-line flag.
+Vien does not ship a separate portable macOS build. You can keep its user data in a location of your choice with the `--user-data-dir` command-line option:
 
-## Linux and Windows
-
-On Linux and Windows you can also create a directory called `vien-user-data` to save all user data inside the directory. Like:
-
+```sh
+/Applications/Vien.app/Contents/MacOS/Vien --user-data-dir "$PWD/vien-user-data"
 ```
-vien-portable/
- ├── vien (Linux) or Vien.exe (Windows)
- ├── vien-user-data/
- ├── resources/
- ├── THIRD-PARTY-LICENSES.txt
- └── ...
-```
+
+Without this option, Vien uses the standard [macOS application data directory](APPLICATION_DATA_DIRECTORY.md).

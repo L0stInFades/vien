@@ -2,9 +2,7 @@
 
 ### What are the supported platforms?
 
-Vien is a desktop application that can be developed on Linux, macOS, and Windows.
-
-The current official release flow publishes macOS artifacts. Linux and Windows can still be built locally from source.
+Vien is a macOS desktop application. Development, CI, packaging, and releases target macOS only; Linux and Windows are not supported targets.
 
 ### Is Vien open-source and free?
 
@@ -23,18 +21,8 @@ Documentation is currently under development.
 
 ### Can I run a portable version of Vien?
 
-Yes, please see [here](PORTABLE.md) for further information.
+Vien does not ship a separate portable build. You can select a custom data directory; see [Custom Data Directory](PORTABLE.md).
 
 ### How can I report bugs and problems
 
 You can report bugs and problems via our [GitHub issue tracker](https://github.com/L0stInFades/vien/issues). Please provide a detailed description of the problem to better solve the issue.
-
-### I cannot launch Vien on Linux (SUID sandbox)
-
-> *The SUID sandbox helper binary was found, but is not configured correctly.*
-
-Normally, you should never get this error but if you disabled user namespaces, this error message may appears in the command output when launching Vien. To solve the issue, that Chromium cannot start the sandbox (process), you can choose one of the following steps:
-
-- Enable Linux kernel user namespaces to use the preferred sandbox: `sudo sysctl kernel.unprivileged_userns_clone=1`.
-- Set correct SUID sandbox helper binary permissions: `sudo chown root <path_to_vien_dir>/chrome-sandbox && sudo chmod 4755 <path_to_vien_dir>/chrome-sandbox`. This is preferred if you don't want to enable user namespaces.
-- Launch Vien with `--no-sandbox` argument.

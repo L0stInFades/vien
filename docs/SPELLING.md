@@ -1,6 +1,6 @@
-#  Spelling
+# Spelling
 
-Vien can automatically check your text for misspelled words as you type and suggest corrections. You just need to enable spell checking in settings under *spelling* to never miss a misspelled word. We're using Hunspell for Linux and older Windows versions and on macOS and Window 10 you can choose between Hunspell or the system spell checker (default). You can control the default proofing language via settings but can change the language at runtime via right-click menu `Change Language` entry under `Spelling` without changing the default language. By default Vien only support American English for Hunspell and the local available languages for the system spell checker. You can download 42 languages for Hunspell and many more for macOS and Windows 10 via system settings.
+Vien uses the native macOS spell checker to underline misspelled words and offer corrections. Enable spell checking in Settings under *Spelling*. macOS detects the active language automatically, and available dictionaries are managed in System Settings.
 
 ![](assets/vien-spellchecker-menu.png)
 
@@ -20,16 +20,6 @@ You can add words to the selected dictionary by right-clicking on a misspelled w
 
 ## Manage dictionaries
 
-### macOS spell checker
-
 You need to add the additional language dictionaries via *"Language & Region"* in your system preferences pane.
-
-### Windows spell checker
-
-On Windows 10, you need to add additional language dictionaries via *"Language"* in your *"Time & language"* settings. Add the additional language(s) and download the *"Basic typing"* language option for each language.
-
-### Hunspell
-
-Please go to spelling settings and scroll to the bottom. Now you see a list of available language dictionaries and can add additional dictionaries via the drop-down menu at the bottom. Please note that an active internet connection is required to download a dictionary!
 
 ![](assets/vien-spelling-settings.png)
