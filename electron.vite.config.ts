@@ -1,17 +1,24 @@
-import { createRequire } from 'module'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import { resolve, basename } from 'path'
 import { readFileSync, cpSync } from 'fs'
 import { execSync } from 'child_process'
+import { createRequire } from 'node:module'
 import vue from '@vitejs/plugin-vue'
-import { viteStaticCopy } from 'vite-plugin-static-copy'
-import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import type { Plugin } from 'vite'
 
-const _require = createRequire(import.meta.url)
+const require = createRequire(import.meta.url)
 
 // Version information
-const { version } = JSON.parse(readFileSync(new URL('package.json', import.meta.url), 'utf-8'))
+const packageJson = JSON.parse(readFileSync(new URL('package.json', import.meta.url), 'utf-8')) as {
+  version: string
+  dependencies?: Record<string, string>
+}
+const { version } = packageJson
+const bundledMainDependencies = new Set(['chokidar', 'electron-store', 'plist'])
+const externalMainDependencies = [
+  'electron',
+  ...Object.keys(packageJson.dependencies ?? {}).filter((name) => !bundledMainDependencies.has(name)),
+]
 let shortHash = 'N/A'
 let fullHash = 'N/A'
 try {
@@ -51,10 +58,11 @@ function snapSvgPlugin(): Plugin {
     name: 'snap-svg-workaround',
     transform(code: string, id: string) {
       if (!id.includes('snap.svg-min.js')) return null
+      const browserCode = code.replace(/require\((['"])eve\1\)/g, 'window.eve')
       // Without `module` defined, snap.svg's UMD fallback assigns Snap to
       // `window.Snap`. Re-export it as the ESM default after the IIFE runs.
       return {
-        code: `;(function(window) {\nvar fix = 0;\n${code}\n})(typeof window !== 'undefined' ? window : globalThis);\nexport default (typeof window !== 'undefined' ? window.Snap : globalThis.Snap);`,
+        code: `;(function(window) {\nvar fix = 0;\nvar module;\nvar exports;\n${browserCode}\n})(typeof window !== 'undefined' ? window : globalThis);\nexport default (typeof window !== 'undefined' ? window.Snap : globalThis.Snap);`,
         map: null,
       }
     },
@@ -161,6 +169,7 @@ export default defineConfig(({ mode }) => {
         // Main runs first — it cleans the shared dir; preload + renderer skip clean.
         emptyOutDir: true,
         rollupOptions: {
+          external: externalMainDependencies,
           output: { entryFileNames: 'main.js' },
         },
       },
@@ -174,7 +183,8 @@ export default defineConfig(({ mode }) => {
         emptyOutDir: false,
         rollupOptions: {
           input: resolve('src/main/preload.ts'),
-          output: { entryFileNames: 'preload.js' },
+          external: ['electron'],
+          output: { entryFileNames: 'preload.js', format: 'cjs' },
         },
       },
     },
@@ -187,25 +197,6 @@ export default defineConfig(({ mode }) => {
         vue(),
         snapSvgPlugin(),
         svgSpritePlugin(),
-        // Polyfill Node.js built-ins (path, os, buffer, events, etc.) for
-        // legacy renderer code that still uses them directly.
-        nodePolyfills({
-          // Only polyfill built-ins that are actually used
-          include: ['path', 'os', 'buffer', 'events', 'util', 'stream'],
-          // Electron's renderer sandbox already provides `process` natively (correct platform etc.)
-          // Do NOT override it with a browser shim — that would break process.platform detection.
-          globals: { Buffer: true, process: true },
-        }),
-        // Copy CodeMirror mode files so dynamic require()/import() works.
-        // Resolve the path at config-eval time (handles pnpm's virtual store).
-        viteStaticCopy({
-          targets: [{
-            // _require.resolve gives e.g. ".../codemirror/lib/codemirror.js"
-            // strip "/lib/codemirror.js" to get the package root
-            src: resolve(_require.resolve('codemirror').replace(/[\\/]lib[\\/]codemirror\.js$/, ''), 'mode/**/*.js'),
-            dest: 'codemirror/mode',
-          }],
-        }),
       ],
       resolve: {
         extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
@@ -221,6 +212,11 @@ export default defineConfig(({ mode }) => {
           { find: /^child_process$/, replacement: resolve('src/renderer/node/child-process-stub.js') },
           { find: /^node:zlib$/, replacement: resolve('src/renderer/node/zlib-stub.js') },
           { find: /^zlib$/, replacement: resolve('src/renderer/node/zlib-stub.js') },
+          // The sandboxed renderer only imports the path API from Node's
+          // standard library. Keep this one targeted browser implementation
+          // instead of pulling in the entire Node polyfill graph.
+          { find: /^node:path$/, replacement: require.resolve('path-browserify') },
+          { find: /^path$/, replacement: require.resolve('path-browserify') },
           // Regular path aliases
           { find: '@', replacement: resolve('src/renderer') },
           { find: 'common', replacement: resolve('src/common') },
@@ -249,6 +245,7 @@ export default defineConfig(({ mode }) => {
         emptyOutDir: false,
         sourcemap: isDev ? 'inline' : false,
         rollupOptions: {
+          input: resolve('src/renderer/index.html'),
           external: ['electron'],
         },
       },

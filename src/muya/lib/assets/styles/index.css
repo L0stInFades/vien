@@ -399,7 +399,6 @@ span.ag-math > .ag-math-render.ag-math-error {
 
 figure {
   padding: 0;
-  margin: 0;
   margin: 1.4em 0;
   position: relative;
 }
@@ -455,7 +454,6 @@ figure {
 }
 
 .ag-container-icon i.icon,
-.ag-front-icon i.icon,
 .ag-tool-bar ul li i.icon {
   display: inline-block;
   position: relative;
@@ -468,7 +466,6 @@ figure {
 }
 
 .ag-container-icon i.icon > i[class^="icon-"],
-.ag-front-icon i.icon > i[class^="icon-"],
 .ag-tool-bar ul li i.icon > i[class^="icon-"] {
   display: inline-block;
   width: 100%;
@@ -862,7 +859,6 @@ figure[data-role="MERMAID"].ag-active.ag-container-block:not(.ag-editing) > div.
 }
 
 figure[data-role="MERMAID"].ag-container-block.ag-editing > div.ag-container-preview {
-  position: static;
   top: auto;
   left: auto;
   z-index: 1;
@@ -895,7 +891,6 @@ figure[data-role="MERMAID"].ag-container-block.ag-editing {
   overflow: hidden;
 }
 
-figure[data-role="MERMAID"].ag-container-block.ag-editing > .ag-front-icon,
 figure[data-role="MERMAID"].ag-container-block.ag-editing > .ag-container-icon,
 figure[data-role="MERMAID"].ag-container-block.ag-editing > pre .ag-code-copy {
   display: none;
@@ -1320,58 +1315,6 @@ span.ag-reference-link {
 .ag-focus-mode td.ag-active,
 .ag-focus-mode pre.ag-active {
   opacity: 1;
-}
-
-.ag-front-icon {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  top: 0.2em;
-  left: -30px;
-  display: none;
-  cursor: pointer;
-  opacity: 0.6;
-}
-
-.ag-front-icon:hover {
-  background: var(--selectionColor);
-}
-
-.ag-front-icon::before {
-  content: "";
-  width: 0;
-  height: 0;
-  border-bottom: none;
-  border-left-color: transparent;
-  border-right-color: transparent;
-  position: absolute;
-  top: 13px;
-  right: -8px;
-  /*temp hide it*/
-  display: none;
-}
-
-.ag-front-icon i.icon {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 16px;
-  height: 16px;
-}
-
-.ag-front-icon i.icon > i[class^="icon-"] {
-  filter: drop-shadow(16px 0 currentColor);
-  position: absolute;
-  left: -16px;
-}
-
-.ag-paragraph.ag-active .ag-front-icon {
-  display: block;
-}
-
-figure[data-role="MERMAID"].ag-paragraph.ag-active:not(.ag-editing) > .ag-front-icon {
-  display: none;
 }
 
 .ag-meta-or-ctrl img,

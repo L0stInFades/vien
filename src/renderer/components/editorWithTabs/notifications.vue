@@ -65,18 +65,19 @@ export default {
     flex-direction: row;
     max-height: 100px;
     margin-top: 4px;
-    background: var(--notificationPrimaryBg);
-    color: var(--notificationPrimaryColor);
+    background: var(--panelSurfaceBgColor);
+    color: var(--editorColor80);
+    border: 1px solid var(--floatBorderColor);
+    border-radius: 10px;
+    box-shadow: var(--floatShadow);
     padding: 8px 10px;
     user-select: none;
     overflow: hidden;
     &.warn {
-      background: var(--notificationWarningBg);
-      color: var(--notificationWarningColor);
+      border-left: 3px solid var(--notificationWarningBg);
     }
     &.crit {
-      background: var(--notificationErrorBg);
-      color: var(--notificationErrorColor);
+      border-left: 3px solid var(--notificationErrorBg);
     }
   }
   .msg {

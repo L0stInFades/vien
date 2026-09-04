@@ -1,0 +1,29 @@
+version: 2
+
+updates:
+  # package.json stays on the `latest` dist-tag; Dependabot advances the
+  # reproducible pnpm snapshot and lets the macOS CI gate every new release.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: daily
+      time: '03:17'
+      timezone: Asia/Shanghai
+    versioning-strategy: lockfile-only
+    open-pull-requests-limit: 1
+    groups:
+      all-packages:
+        patterns:
+          - '*'
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+      time: '03:27'
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 1
+    groups:
+      all-actions:
+        patterns:
+          - '*'

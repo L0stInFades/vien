@@ -22,6 +22,33 @@ export const MARKDOWN_INCLUSIONS: readonly string[] = Object.freeze(MARKDOWN_EXT
 
 export const IMAGE_EXTENSIONS: readonly string[] = Object.freeze(['jpeg', 'jpg', 'png', 'gif', 'svg', 'webp'])
 
+// File types that macOS Launch Services may execute, install, or hand to a
+// command-capable system application when opened from an untrusted document.
+export const DANGEROUS_MACOS_EXTENSIONS: readonly string[] = Object.freeze([
+  'app',
+  'command',
+  'tool',
+  'terminal',
+  'workflow',
+  'action',
+  'pkg',
+  'mpkg',
+  'jar',
+  'webloc',
+  'inetloc',
+  'mobileconfig',
+])
+
+/** Return whether a path has a macOS executable/launcher extension. */
+export const isDangerousExecutableFile = (filepath: string): boolean => {
+  if (!filepath || typeof filepath !== 'string') return false
+  // Strip separators first so app bundles linked as `Foo.app/` are covered;
+  // trailing spaces/dots can also obscure the effective extension.
+  const canonicalName = filepath.replace(/[\\/]+$/, '').replace(/[ .]+$/, '')
+  const extension = path.extname(canonicalName).slice(1).toLowerCase()
+  return !!extension && DANGEROUS_MACOS_EXTENSIONS.includes(extension)
+}
+
 /**
  * Returns true if the filename matches one of the markdown extensions.
  */

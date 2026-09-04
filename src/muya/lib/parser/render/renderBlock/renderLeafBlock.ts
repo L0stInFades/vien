@@ -269,9 +269,5 @@ export default function renderLeafBlock(
     Object.assign(data.attrs, { spellcheck: 'false' })
   }
 
-  if (!block.parent) {
-    return h(selector, data, [this.renderIcon(block), ...children])
-  } else {
-    return h(selector, data, children)
-  }
+  return h(selector, data, children)
 }

@@ -137,6 +137,30 @@ class QuickInsert extends BaseScrollFloat {
         this.hide()
       }
     }) as (...args: unknown[]) => void)
+
+    eventCenter.attachDOMEvent(this.container, 'mousemove', (event: Event) => {
+      this.container.classList.remove('ag-keyboard-navigation')
+      if (!(event.target instanceof Element)) return
+
+      const itemElement = event.target.closest<HTMLElement>('.item')
+      if (!itemElement || !this.container.contains(itemElement)) return
+
+      const item = (this.renderArray as QuickInsertItem[]).find(({ label }) => label === itemElement.dataset.label)
+      if (item && item !== this.activeItem) {
+        this.activeItem = item
+        this.render()
+      }
+    })
+  }
+
+  override step(direction: 'next' | 'previous') {
+    this.container.classList.add('ag-keyboard-navigation')
+    super.step(direction)
+  }
+
+  override hide() {
+    this.container.classList.remove('ag-keyboard-navigation')
+    super.hide()
   }
 
   search(text: string) {

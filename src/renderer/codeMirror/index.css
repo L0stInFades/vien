@@ -2,13 +2,13 @@
   background: transparent;
   height: auto;
 }
-.CodeMirror-line::selection,
-.CodeMirror-line > span::selection,
-.CodeMirror-line > span > span::selection {
+
+.CodeMirror .cm-line::selection,
+.CodeMirror .cm-line > span::selection {
   background: var(--selectionColor);
 }
 
-.CodeMirror-selected,
-.CodeMirror-focused .CodeMirror-selected {
+.CodeMirror.cm-focused .cm-selectionBackground,
+.CodeMirror .cm-selectionBackground {
   background: var(--selectionColor);
 }

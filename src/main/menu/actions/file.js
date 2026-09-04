@@ -7,11 +7,12 @@ import { MARKDOWN_EXTENSIONS, isMarkdownFile } from 'common/filesystem/paths'
 import { checkUpdates, userSetting } from './marktext'
 import { showTabBar } from './view'
 import { COMMANDS } from '../../commands'
-import { EXTENSION_HASN, PANDOC_EXTENSIONS, URL_REG } from '../../config'
+import { EXTENSION_HASN, PANDOC_EXTENSIONS, URL_REG, isOsx } from '../../config'
 import { normalizeAndResolvePath, writeFile } from '../../filesystem'
 import { writeMarkdownFile } from '../../filesystem/markdown'
 import { getPath, getRecommendTitleFromMarkdownString } from '../../utils'
 import pandoc from '../../utils/pandoc'
+import { requiresMacExecutableConfirmation } from '../../security/localLink'
 
 // TODO(refactor): "save" and "save as" should be moved to the editor window (editor.js) and
 // the renderer should communicate only with the editor window for file relevant stuff.
@@ -416,7 +417,7 @@ ipcMain.on('mt::ask-for-open-project-in-sidebar', async (e) => {
   }
 })
 
-ipcMain.on('mt::format-link-click', (e, { data, dirname }) => {
+ipcMain.on('mt::format-link-click', async (e, { data, dirname }) => {
   if (!data || (!data.href && !data.text)) {
     return
   }
@@ -444,11 +445,30 @@ ipcMain.on('mt::format-link-click', (e, { data, dirname }) => {
 
   if (pathname) {
     pathname = path.normalize(pathname)
+    const win = BrowserWindow.fromWebContents(e.sender)
+    if (!win) return
     if (isMarkdownFile(pathname)) {
-      const win = BrowserWindow.fromWebContents(e.sender)
       openFileOrFolder(win, pathname)
     } else {
-      shell.openPath(pathname)
+      if (isOsx && (await requiresMacExecutableConfirmation(pathname))) {
+        const { response } = await dialog.showMessageBox(win, {
+          type: 'warning',
+          buttons: ['Cancel', 'Open Anyway'],
+          defaultId: 0,
+          cancelId: 0,
+          noLink: true,
+          title: 'Potentially Unsafe File',
+          message: `Open “${path.basename(pathname)}”?`,
+          detail:
+            'This file can run code or trigger a system action. Open it only if you trust the document and its source.',
+        })
+        if (response !== 1) return
+      }
+
+      const errorMessage = await shell.openPath(pathname)
+      if (errorMessage) {
+        log.warn(`Unable to open linked file "${pathname}": ${errorMessage}`)
+      }
     }
   }
 })

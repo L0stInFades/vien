@@ -1,116 +1,235 @@
-import { filter } from 'fuzzaldrin'
-import 'codemirror/addon/edit/closebrackets'
-import 'codemirror/addon/edit/closetag'
-import 'codemirror/addon/selection/active-line'
-import 'codemirror/mode/meta'
-import codeMirror from 'codemirror/lib/codemirror'
+import { redo as redoCommand, selectAll, undo as undoCommand } from '@codemirror/commands'
+import { markdown } from '@codemirror/lang-markdown'
+import { Compartment, EditorSelection } from '@codemirror/state'
+import { EditorView, basicSetup } from 'codemirror'
 
-import loadmode from './loadmode'
-import overlayMode from './overlayMode'
-import multiplexMode from './mltiplexMode'
-import languages from './modes'
-import 'codemirror/lib/codemirror.css'
 import './index.css'
-import 'codemirror/theme/railscasts.css'
 
-loadmode(codeMirror)
-overlayMode(codeMirror)
-multiplexMode(codeMirror)
-window.CodeMirror = codeMirror
+const normalizeDirection = (direction) => (direction === 'rtl' ? 'rtl' : 'ltr')
 
-const modes = codeMirror.modeInfo
-codeMirror.modeURL = './codemirror/mode/%N/%N.js'
+const positionFromCursor = (doc, cursor = {}) => {
+  const requestedLine = Number.isFinite(cursor.line) ? cursor.line + 1 : 1
+  const line = doc.line(Math.max(1, Math.min(doc.lines, requestedLine)))
+  const requestedColumn = Number.isFinite(cursor.ch) ? cursor.ch : 0
+  return Math.max(line.from, Math.min(line.to, line.from + requestedColumn))
+}
 
-const getModeFromName = (name) => {
-  let result = null
-  const lang = languages.filter((lang) => lang.name === name)[0]
-  if (lang) {
-    const { name, mode, mime } = lang
-    const matched = modes.filter((m) => {
-      if (m.mime) {
-        if (Array.isArray(m.mime) && m.mime.indexOf(mime) > -1 && m.mode === mode) {
-          return true
-        } else if (typeof m.mime === 'string' && m.mime === mime && m.mode === mode) {
-          return true
+const cursorFromPosition = (doc, position) => {
+  const line = doc.lineAt(position)
+  return { line: line.number - 1, ch: position - line.from }
+}
+
+const sourceTheme = EditorView.theme({
+  '&': {
+    height: 'auto',
+    color: 'var(--editorColor)',
+    backgroundColor: 'transparent',
+  },
+  '&.cm-focused': { outline: 'none' },
+  '.cm-scroller': {
+    overflow: 'visible',
+    fontFamily: 'inherit',
+    lineHeight: 'inherit',
+  },
+  '.cm-content': {
+    minHeight: 'calc(100vh - var(--titleBarHeight) - 100px)',
+    caretColor: 'var(--editorColor)',
+  },
+  '.cm-cursor, .cm-dropCursor': { borderLeftColor: 'var(--editorColor)' },
+  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection': {
+    backgroundColor: 'var(--selectionColor)',
+  },
+  '.cm-gutters': {
+    color: 'var(--editorColor50)',
+    backgroundColor: 'transparent',
+    borderRight: 'none',
+  },
+  '.cm-activeLine, .cm-activeLineGutter': { backgroundColor: 'var(--floatHoverColor)' },
+})
+
+class CodeMirrorCompat {
+  constructor(parent, config = {}) {
+    this.listeners = new Map()
+    this.domListeners = []
+    this.direction = new Compartment()
+
+    const extensions = [
+      basicSetup,
+      markdown(),
+      sourceTheme,
+      this.direction.of(EditorView.contentAttributes.of({ dir: normalizeDirection(config.direction) })),
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged || update.selectionSet) {
+          this.emit('cursorActivity')
         }
-      }
-      if (Array.isArray(m.mimes) && m.mimes.indexOf(mime) > -1 && m.mode === mode) {
-        return true
-      }
-      return false
+      }),
+    ]
+    if (config.lineWrapping !== false) {
+      extensions.push(EditorView.lineWrapping)
+    }
+
+    this.view = new EditorView({
+      doc: config.value ?? '',
+      extensions,
+      parent,
     })
-    if (matched.length && typeof matched[0] === 'object') {
-      result = {
-        name,
-        mode: matched[0],
-      }
+    this.view.dom.classList.add('CodeMirror', `cm-s-${config.theme || 'default'}`)
+
+    if (config.autofocus) {
+      queueMicrotask(() => this.focus())
     }
   }
-  return result
+
+  emit(event, ...args) {
+    for (const listener of this.listeners.get(event) ?? []) {
+      listener(this, ...args)
+    }
+  }
+
+  on(event, listener) {
+    if (event === 'contextmenu') {
+      const wrapped = (domEvent) => listener(this, domEvent)
+      this.view.dom.addEventListener(event, wrapped)
+      this.domListeners.push([event, wrapped])
+      return
+    }
+    const listeners = this.listeners.get(event) ?? new Set()
+    listeners.add(listener)
+    this.listeners.set(event, listeners)
+  }
+
+  getValue() {
+    return this.view.state.doc.toString()
+  }
+
+  setValue(value) {
+    const text = String(value ?? '')
+    if (text === this.getValue()) return
+    this.view.dispatch({
+      changes: { from: 0, to: this.view.state.doc.length, insert: text },
+      selection: EditorSelection.cursor(0),
+    })
+  }
+
+  getCursor(which = 'head') {
+    const selection = this.view.state.selection.main
+    const position = which === 'anchor' ? selection.anchor : selection.head
+    return cursorFromPosition(this.view.state.doc, position)
+  }
+
+  setSelection(anchor, head = anchor, options = {}) {
+    const doc = this.view.state.doc
+    const anchorPosition = positionFromCursor(doc, anchor)
+    const headPosition = positionFromCursor(doc, head)
+    const transaction = {
+      selection: EditorSelection.range(anchorPosition, headPosition),
+    }
+    if (options.scroll) {
+      transaction.effects = EditorView.scrollIntoView(headPosition)
+    }
+    this.view.dispatch(transaction)
+  }
+
+  setCursor(lineOrCursor, column = 0) {
+    const cursor = typeof lineOrCursor === 'object' ? lineOrCursor : { line: lineOrCursor, ch: column }
+    this.setSelection(cursor, cursor, { scroll: true })
+  }
+
+  getLine(lineNumber) {
+    const doc = this.view.state.doc
+    if (lineNumber < 0 || lineNumber >= doc.lines) return null
+    return doc.line(lineNumber + 1).text
+  }
+
+  getLineHandle(lineNumber) {
+    const text = this.getLine(lineNumber)
+    return text === null ? null : { text }
+  }
+
+  lastLine() {
+    return this.view.state.doc.lines - 1
+  }
+
+  lineCount() {
+    return this.view.state.doc.lines
+  }
+
+  focus() {
+    this.view.focus()
+  }
+
+  hasFocus() {
+    return this.view.hasFocus
+  }
+
+  undo() {
+    return undoCommand(this.view)
+  }
+
+  redo() {
+    return redoCommand(this.view)
+  }
+
+  execCommand(command) {
+    if (command === 'selectAll') return selectAll(this.view)
+    return false
+  }
+
+  setTextDirection(direction) {
+    this.view.dispatch({
+      effects: this.direction.reconfigure(EditorView.contentAttributes.of({ dir: normalizeDirection(direction) })),
+    })
+  }
+
+  // Source mode contains no rendered image cache, but this method preserves
+  // the editor contract shared with Muya.
+  invalidateImageCache() {}
+
+  destroy() {
+    for (const [event, listener] of this.domListeners) {
+      this.view.dom.removeEventListener(event, listener)
+    }
+    this.listeners.clear()
+    this.view.destroy()
+  }
 }
 
-export const search = (text) => {
-  const matchedLangs = filter(languages, text, { key: 'name' })
-  return matchedLangs.map(({ name }) => getModeFromName(name)).filter((lang) => !!lang)
-}
+const createCodeMirror = (parent, config) => new CodeMirrorCompat(parent, config)
 
-/**
- * set cursor at the end of last line.
- */
 export const setCursorAtLastLine = (cm) => {
   const lastLine = cm.lastLine()
-  const lineHandle = cm.getLineHandle(lastLine)
-
   cm.focus()
-  cm.setCursor(lastLine, lineHandle.text.length)
+  cm.setCursor(lastLine, cm.getLine(lastLine)?.length ?? 0)
 }
 
-// if cursor at firstLine return true
 export const isCursorAtFirstLine = (cm) => {
-  const cursor = cm.getCursor()
-  const { line, ch, outside } = cursor
-
-  return line === 0 && ch === 0 && outside
+  const { line, ch } = cm.getCursor()
+  return line === 0 && ch === 0
 }
 
 export const isCursorAtLastLine = (cm) => {
-  const lastLine = cm.lastLine()
-  const cursor = cm.getCursor()
-  const { line, outside, sticky } = cursor
-  return line === lastLine && (outside || !sticky)
+  const { line } = cm.getCursor()
+  return line === cm.lastLine()
 }
 
-export const isCursorAtBegin = (cm) => {
-  const cursor = cm.getCursor()
-  const { line, ch, hitSide } = cursor
-  return line === 0 && ch === 0 && !!hitSide
-}
+export const isCursorAtBegin = isCursorAtFirstLine
 
-export const onlyHaveOneLine = (cm) => {
-  return cm.lineCount() === 1
-}
+export const onlyHaveOneLine = (cm) => cm.lineCount() === 1
 
 export const isCursorAtEnd = (cm) => {
   const lastLine = cm.lastLine()
-  const lastLineHandle = cm.getLineHandle(lastLine)
-  const cursor = cm.getCursor()
-  const { line, ch, hitSide } = cursor
-
-  return line === lastLine && ch === lastLineHandle.text.length && !!hitSide
+  const { line, ch } = cm.getCursor()
+  return line === lastLine && ch === (cm.getLine(lastLine)?.length ?? 0)
 }
 
-export const getBeginPosition = () => {
-  return {
-    anchor: { line: 0, ch: 0 },
-    head: { line: 0, ch: 0 },
-  }
-}
+export const getBeginPosition = () => ({
+  anchor: { line: 0, ch: 0 },
+  head: { line: 0, ch: 0 },
+})
 
 export const getEndPosition = (cm) => {
-  const lastLine = cm.lastLine()
-  const lastLineHandle = cm.getLineHandle(lastLine)
-  const line = lastLine
-  const ch = lastLineHandle.text.length
+  const line = cm.lastLine()
+  const ch = cm.getLine(line)?.length ?? 0
   return { anchor: { line, ch }, head: { line, ch } }
 }
 
@@ -119,28 +238,11 @@ export const setCursorAtFirstLine = (cm) => {
   cm.setCursor(0, 0)
 }
 
-export const setMode = (doc, text) => {
-  const m = getModeFromName(text)
+export const setMode = (_editor, text) =>
+  text === 'markdown'
+    ? Promise.resolve({ name: 'markdown', mode: { mode: 'markdown', mime: 'text/markdown' } })
+    : Promise.reject(new Error(`${text || 'Empty mode'} is not a supported source editor mode.`))
 
-  if (!m) {
-    const errMsg = !text
-      ? "You'd better provided a language mode when you create code block"
-      : `${text} is not a valid language mode!`
-    return Promise.reject(errMsg) // eslint-disable-line prefer-promise-reject-errors
-  }
+export const setTextDirection = (cm, textDirection) => cm.setTextDirection(textDirection)
 
-  const { mode, mime } = m.mode
-  return new Promise((resolve) => {
-    codeMirror.requireMode(mode, () => {
-      doc.setOption('mode', mime || mode)
-      codeMirror.autoLoadMode(doc, mode)
-      resolve(m)
-    })
-  })
-}
-
-export const setTextDirection = (cm, textDirection) => {
-  cm.setOption('direction', textDirection)
-}
-
-export default codeMirror
+export default createCodeMirror

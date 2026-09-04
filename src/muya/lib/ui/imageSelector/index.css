@@ -1,5 +1,5 @@
 .ag-image-selector-wrapper {
-  border-radius: 3px;
+  border-radius: 10px;
 }
 .ag-image-selector {
   width: 500px;
@@ -38,7 +38,7 @@
 }
 
 .ag-image-selector ul.header li span:hover {
-  background: var(--editorColor04);
+  background: var(--floatHoverColor);
 }
 
 .ag-image-selector ul.header li.active::before {
@@ -113,7 +113,7 @@
 
 .ag-image-selector span.description a {
   cursor: pointer;
-  color: #4ca4f5;
+  color: var(--themeColor);
 }
 
 .ag-image-selector > div {

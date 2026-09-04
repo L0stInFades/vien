@@ -15,6 +15,13 @@ export const zoomOut = (win) => {
   webContents.send('mt::window-zoom', Math.max(0.5, zoom - 0.125))
 }
 
+export const resetZoom = (win) => {
+  if (win?.webContents) {
+    // WORKAROUND: Set zoom through the renderer because of Electron#16018.
+    win.webContents.send('mt::window-zoom', 1)
+  }
+}
+
 export const centerWindowOptions = (options) => {
   // "workArea" doesn't work on Linux
   const { bounds, workArea } = screen.getDisplayNearestPoint(screen.getCursorScreenPoint())

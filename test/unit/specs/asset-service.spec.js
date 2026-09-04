@@ -52,8 +52,7 @@ beforeAll(() => {
   setWindowRegistry({ get: (id) => (id === WINDOW_ID ? { id } : undefined) })
 
   const windowManager = {
-    get: (id) =>
-      id === WINDOW_ID ? { openedRootDirectory: workspaceRoot, openedFiles: [docPath] } : undefined,
+    get: (id) => (id === WINDOW_ID ? { openedRootDirectory: workspaceRoot, openedFiles: [docPath] } : undefined),
   }
   new AssetService(
     windowManager,
@@ -93,7 +92,7 @@ describe('AssetService.copyImageToFolder', () => {
     expect(result.value.pathname).toBe('https-remote-or-not-an-image.txt')
   })
 
-  it('writes pasted bytes with the provided name', async () => {
+  it('writes pasted bytes with a deterministic content-hash name', async () => {
     const result = await invoke(AssetChannels.copyImageToFolder, {
       docPathname: docPath,
       outputDir: imageFolder,
@@ -101,8 +100,16 @@ describe('AssetService.copyImageToFolder', () => {
       imageName: '2026-07-16-shot.png',
     })
     expect(result.ok).toBe(true)
-    expect(path.basename(result.value.pathname)).toBe('2026-07-16-shot.png')
+    expect(path.basename(result.value.pathname)).toMatch(/^[a-f0-9]{40}\.png$/)
     expect(fs.readFileSync(result.value.pathname).equals(PNG_BYTES)).toBe(true)
+
+    const duplicate = await invoke(AssetChannels.copyImageToFolder, {
+      docPathname: docPath,
+      outputDir: imageFolder,
+      imageBytes: new Uint8Array(PNG_BYTES),
+      imageName: 'another-name.png',
+    })
+    expect(duplicate.value.pathname).toBe(result.value.pathname)
   })
 
   it('denies output directories outside the granted scope', async () => {

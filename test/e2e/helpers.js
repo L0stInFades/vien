@@ -2,7 +2,7 @@ const { execFileSync } = require('node:child_process')
 const fs = require('node:fs')
 const os = require('node:os')
 const path = require('node:path')
-const { _electron } = require('playwright')
+const { _electron } = require('@playwright/test')
 
 const mainEntrypoint = 'dist/electron/main.js'
 const launchedApps = new WeakMap()

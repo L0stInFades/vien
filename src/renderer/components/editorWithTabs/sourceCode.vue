@@ -7,6 +7,7 @@
 </template>
 
 <script>
+import { markRaw } from 'vue'
 import codeMirror, { setMode, setCursorAtLastLine, setTextDirection } from '../../codeMirror'
 import { wordCount as getWordCount } from 'muya/lib/utils'
 import { adjustCursor } from '../../util'
@@ -95,13 +96,18 @@ export default {
 
       // Init CodeMirror
       const editor = codeMirror(container, codeMirrorConfig)
-      this.editor = editor
+      // CodeMirror owns a mutable line tree. Vue must not proxy it because
+      // proxying can corrupt CodeMirror's internal parent/child references.
+      this.editor = markRaw(editor)
 
       bus.on('file-loaded', this.handleFileChange)
       bus.on('invalidate-image-cache', this.handleInvalidateImageCache)
       bus.on('file-changed', this.handleFileChange)
       bus.on('selectAll', this.handleSelectAll)
       bus.on('image-action', this.handleImageAction)
+      bus.on('undo', this.handleUndo)
+      bus.on('redo', this.handleRedo)
+      bus.on('flush-active-editor', this.flushActiveEditor)
 
       setMode(editor, 'markdown')
       this.listenChange()
@@ -134,10 +140,15 @@ export default {
     bus.off('file-changed', this.handleFileChange)
     bus.off('selectAll', this.handleSelectAll)
     bus.off('image-action', this.handleImageAction)
+    bus.off('undo', this.handleUndo)
+    bus.off('redo', this.handleRedo)
+    bus.off('flush-active-editor', this.flushActiveEditor)
 
     const { editor } = this
     const { cursor, markdown } = this.getMarkdownAndCursor(editor)
     bus.emit('file-changed', { id: this.tabId, markdown, cursor, renderCursor: true })
+    editor.destroy()
+    this.editor = null
   },
   methods: {
     handleImageAction({ id, result, alt }) {
@@ -185,28 +196,42 @@ export default {
         if (focus && anchor) {
           editor.setSelection(anchor, focus, { scroll: true })
         } else {
-          setCursorAtLastLine()
+          setCursorAtLastLine(editor)
         }
       }
     },
     listenChange() {
       const { editor } = this
-      editor.on('cursorActivity', (cm) => {
-        const { cursor, markdown } = this.getMarkdownAndCursor(cm)
-        // Attention: the cursor may be `{focus: null, anchor: null}` when press `backspace`
-        const wordCount = getWordCount(markdown)
+      editor.on('cursorActivity', () => {
         if (this.commitTimer) clearTimeout(this.commitTimer)
         this.commitTimer = setTimeout(() => {
-          // See "beforeDestroy" note
-          if (!this.viewDestroyed) {
-            if (this.tabId) {
-              this.$store.dispatch('LISTEN_FOR_CONTENT_CHANGE', { id: this.tabId, markdown, wordCount, cursor })
-            } else {
-              // This may occur during tab switching but should not occur otherwise.
-              console.warn('LISTEN_FOR_CONTENT_CHANGE: Cannot commit changes because not tab id was set!')
-            }
-          }
-        }, 1000)
+          this.flushActiveEditor()
+        }, 150)
+      })
+    },
+    // Persist the live CodeMirror buffer synchronously before save/close/move
+    // actions serialize Vuex state. This closes the debounce data-loss window.
+    flushActiveEditor() {
+      if (this.commitTimer) {
+        clearTimeout(this.commitTimer)
+        this.commitTimer = null
+      }
+      if (this.viewDestroyed || !this.editor) {
+        return
+      }
+      if (!this.tabId) {
+        console.warn('LISTEN_FOR_CONTENT_CHANGE: Cannot commit changes because no tab id was set!')
+        return
+      }
+
+      const { cursor, markdown } = this.getMarkdownAndCursor(this.editor)
+      // Attention: the cursor may be `{focus: null, anchor: null}` after Backspace.
+      const wordCount = getWordCount(markdown)
+      this.$store.dispatch('LISTEN_FOR_CONTENT_CHANGE', {
+        id: this.tabId,
+        markdown,
+        wordCount,
+        cursor,
       })
     },
     // Another tab was selected - only listen to get changes but don't set history or other things.
@@ -252,13 +277,18 @@ export default {
     },
     // Commit changes from old tab. Problem: tab was already switched, so commit changes with old tab id.
     prepareTabSwitch() {
-      if (this.commitTimer) clearTimeout(this.commitTimer)
       if (this.tabId) {
-        const { editor } = this
-        const { cursor, markdown } = this.getMarkdownAndCursor(editor)
-        this.$store.dispatch('LISTEN_FOR_CONTENT_CHANGE', { id: this.tabId, markdown, cursor })
+        this.flushActiveEditor()
         this.tabId = null // invalidate tab id
       }
+    },
+
+    handleUndo() {
+      this.editor?.undo()
+    },
+
+    handleRedo() {
+      this.editor?.redo()
     },
 
     handleSelectAll() {
@@ -299,12 +329,12 @@ export default {
     max-width: var(--editorAreaWidth);
     background: transparent;
   }
-  .source-code .CodeMirror-gutters {
+  .source-code .cm-gutters {
     border-right: none;
     background-color: transparent;
   }
-  .source-code .CodeMirror-activeline-background,
-  .source-code .CodeMirror-activeline-gutter {
+  .source-code .cm-activeLine,
+  .source-code .cm-activeLineGutter {
     background: var(--floatHoverColor);
   }
 </style>

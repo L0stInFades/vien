@@ -50,21 +50,20 @@
 }
 .ag-table-picker .footer input {
   color: var(--editorColor);
-  background: var(--floatBorderColor);
+  background: var(--inputBgColor);
   outline: none;
-  border-radius: 3px;
+  border-radius: 5px;
   text-align: center;
-  border: none;
+  border: 1px solid var(--editorColor10);
   box-sizing: border-box;
   padding: 0;
   height: 20px;
   width: 30px;
-  border: none;
 }
 .ag-table-picker .footer button {
   outline: none;
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: 5px;
   line-height: 20px;
   border: none;
   height: 20px;

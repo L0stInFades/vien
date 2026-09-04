@@ -106,7 +106,7 @@ class FormatPicker extends BaseFloat {
         itemSelector,
         {
           attrs: {
-            title: `${i.tooltip} ${i.shortcut}`,
+            'data-tooltip': `${i.tooltip} ${i.shortcut}`,
           },
           on: {
             click: (event) => {

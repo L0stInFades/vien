@@ -60,6 +60,10 @@ const discardRecoverySnapshot = (tabId) => {
 // incremented before loading and decremented after the first change event.
 let _suppressDirtyCount = 0
 
+// Event delivery is synchronous. Source mode uses this hook to push the live
+// CodeMirror buffer into Vuex before a persistence action reads document state.
+const flushActiveEditor = () => bus.emit('flush-active-editor')
+
 const state = {
   currentFile: {},
   tabs: [],
@@ -425,8 +429,8 @@ const actions = {
   },
 
   LISTEN_SCREEN_SHOT() {
-    window.api.ipc.on('mt::screenshot-captured', () => {
-      bus.emit('screenshot-captured')
+    window.api.ipc.on('mt::screenshot-captured', (filePath) => {
+      bus.emit('screenshot-captured', filePath)
     })
   },
 
@@ -484,7 +488,10 @@ const actions = {
     }
   },
 
-  CLOSE_UNSAVED_TAB(_context, file) {
+  CLOSE_UNSAVED_TAB({ state }, file) {
+    if (file.id === state.currentFile.id) {
+      flushActiveEditor()
+    }
     const { id, pathname, filename, markdown } = file
     const options = getOptionsFromState(file)
 
@@ -497,6 +504,7 @@ const actions = {
   // need pass some data to main process when `save` menu item clicked
   LISTEN_FOR_SAVE({ state, rootState }) {
     window.api.ipc.on('mt::editor-ask-file-save', () => {
+      flushActiveEditor()
       const { id, filename, pathname, markdown } = state.currentFile
       const options = getOptionsFromState(state.currentFile)
       const defaultPath = getRootFolderFromState(rootState)
@@ -517,6 +525,7 @@ const actions = {
   // need pass some data to main process when `save as` menu item clicked
   LISTEN_FOR_SAVE_AS({ state, rootState }) {
     window.api.ipc.on('mt::editor-ask-file-save-as', () => {
+      flushActiveEditor()
       const { id, filename, pathname, markdown } = state.currentFile
       const options = getOptionsFromState(state.currentFile)
       const defaultPath = getRootFolderFromState(rootState)
@@ -591,6 +600,7 @@ const actions = {
 
   LISTEN_FOR_CLOSE({ state }) {
     window.api.ipc.on('mt::ask-for-close', () => {
+      flushActiveEditor()
       const unsavedFiles = state.tabs
         .filter((file) => !file.isSaved)
         .map((file) => {
@@ -617,6 +627,7 @@ const actions = {
   },
 
   ASK_FOR_SAVE_ALL({ commit, dispatch, state }, closeTabs) {
+    flushActiveEditor()
     const { tabs } = state
     const unsavedFiles = tabs
       .filter((file) => !(file.isSaved && /[^\n]/.test(file.markdown)))
@@ -647,6 +658,7 @@ const actions = {
 
   LISTEN_FOR_MOVE_TO({ state, rootState }) {
     window.api.ipc.on('mt::editor-move-file', () => {
+      flushActiveEditor()
       const { id, filename, pathname, markdown } = state.currentFile
       const options = getOptionsFromState(state.currentFile)
       const defaultPath = getRootFolderFromState(rootState)
@@ -676,6 +688,7 @@ const actions = {
   },
 
   RESPONSE_FOR_RENAME({ state, rootState }) {
+    flushActiveEditor()
     const { id, filename, pathname, markdown } = state.currentFile
     const options = getOptionsFromState(state.currentFile)
     const defaultPath = getRootFolderFromState(rootState)
@@ -856,7 +869,10 @@ const actions = {
     })
   },
 
-  CLOSE_TAB({ dispatch }, file) {
+  CLOSE_TAB({ state, dispatch }, file) {
+    if (file.id === state.currentFile.id) {
+      flushActiveEditor()
+    }
     const { isSaved } = file
     if (isSaved) {
       dispatch('FORCE_CLOSE_TAB', file)
@@ -875,6 +891,7 @@ const actions = {
   },
 
   CLOSE_SAVED_TABS({ state, dispatch }) {
+    flushActiveEditor()
     const { tabs } = state
     tabs
       .filter((f) => f.isSaved)
@@ -1321,6 +1338,11 @@ const actions = {
           }
           case 'add':
           case 'change': {
+            // Some editors and file providers emit watcher events without a
+            // content change. Do not mark a clean tab dirty or prompt users.
+            if (change.data?.markdown === tab.markdown) {
+              return
+            }
             const { autoSave } = rootState.preferences
             if (autoSave) {
               if (autoSaveTimers.has(id)) {

@@ -9,7 +9,7 @@
     dir="ltr"
     @closed="handleClosed"
   >
-    <template #title>
+    <template #header>
       <div class="dialog-title">Crash Recovery</div>
     </template>
 
@@ -135,6 +135,11 @@ export default {
 </script>
 
 <style scoped>
+.dialog-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--editorColor80);
+}
 .recovery-intro {
   margin: 0 0 8px;
   font-size: 13px;
@@ -153,7 +158,7 @@ export default {
   padding: 10px 12px;
   margin-bottom: 8px;
   border: 1px solid var(--editorColor10, #e5e5e5);
-  border-radius: 6px;
+  border-radius: 10px;
 }
 .recovery-item-head {
   display: flex;
@@ -183,7 +188,7 @@ export default {
   font-size: 11px;
   line-height: 1.5;
   background: var(--editorColor5, #f7f7f7);
-  border-radius: 4px;
+  border-radius: 6px;
   white-space: pre-wrap;
   word-break: break-word;
 }

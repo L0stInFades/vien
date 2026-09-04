@@ -1,4 +1,5 @@
 import { URL_REG, DATA_URL_REG } from '../config'
+import { escapeHTML } from '../utils'
 import { correctImageSrc } from '../utils/getImageInfo'
 import type { IContentState, Token } from '../types'
 
@@ -130,7 +131,7 @@ const imageCtrl = (ContentState: { prototype: IContentState }) => {
       if (value && attr === 'src') {
         value = correctImageSrc(value)
       }
-      imageText += `${attr}="${value}" `
+      imageText += `${attr}="${escapeHTML(String(value))}" `
     }
     imageText = imageText.trim()
     imageText += '>'
@@ -178,7 +179,7 @@ const imageCtrl = (ContentState: { prototype: IContentState }) => {
         if (value && attr === 'src') {
           value = correctImageSrc(value)
         }
-        imageText += `${attr}="${value}" `
+        imageText += `${attr}="${escapeHTML(String(value))}" `
       }
       imageText = imageText.trim()
       imageText += '>'

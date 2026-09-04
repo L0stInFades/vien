@@ -1,5 +1,5 @@
+import { resolve } from 'node:path'
 import { defineConfig } from 'vitest/config'
-import { resolve } from 'path'
 
 export default defineConfig({
   test: {
@@ -10,9 +10,9 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      common: resolve(__dirname, 'src/common'),
-      muya: resolve(__dirname, 'src/muya'),
-      '@': resolve(__dirname, 'src/renderer'),
+      common: resolve(import.meta.dirname, 'src/common'),
+      muya: resolve(import.meta.dirname, 'src/muya'),
+      '@': resolve(import.meta.dirname, 'src/renderer'),
     },
   },
 })

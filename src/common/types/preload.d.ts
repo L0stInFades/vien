@@ -63,6 +63,11 @@ export interface ShellApi {
   showItemInFolder(fullPath: string): void
 }
 
+export interface FilesApi {
+  /** Resolve an Electron-backed File without relying on the removed File.path property. */
+  getPathForFile(file: File): string
+}
+
 /** ServiceResult envelope from capability IPC (see src/common/contracts). */
 export type CapabilityResult<T> =
   | { ok: true; value: T }
@@ -201,6 +206,7 @@ export interface PreloadApi {
   contextMenu: ContextMenuApi
   clipboard: ClipboardApi
   shell: ShellApi
+  files: FilesApi
   fonts: FontsApi
   workspace: WorkspaceApi
   assets: AssetsApi

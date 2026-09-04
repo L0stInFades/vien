@@ -42,11 +42,17 @@
         </div>
       </div>
 
-      <div class="search-message-section" v-if="showNoFolderOpenedMessage">
-        <span>No folder open</span>
+      <div class="search-status" v-if="showNoFolderOpenedMessage">
+        <p>Open a folder to search its notes.</p>
+        <button
+          class="button-primary"
+          @click="openFolder"
+        >
+          Open Folder
+        </button>
       </div>
-      <div class="search-message-section" v-if="showNoResultFoundMessage">No results found.</div>
-      <div class="search-message-section" v-if="searchErrorString">{{ searchErrorString }}</div>
+      <div class="search-status error" v-else-if="searchErrorString">{{ searchErrorString }}</div>
+      <div class="search-status" v-else-if="showNoResultFoundMessage">No results for “{{ keyword }}”.</div>
 
       <div
         class="cancel-area"
@@ -68,20 +74,6 @@
           :searchResult="item"
         ></search-result-item>
       </div>
-      <div class="empty" v-else>
-        <div class="no-data">
-          <svg :viewBox="EmptyIcon.viewBox" aria-hidden="true">
-            <use :xlink:href="EmptyIcon.url" />
-          </svg>
-          <button
-            class="button-primary"
-            v-if="showNoFolderOpenedMessage"
-            @click="openFolder"
-          >
-            Open Folder
-          </button>
-        </div>
-      </div>
     </div>
 </template>
 
@@ -91,7 +83,6 @@ import bus from '../../bus'
 import log from 'electron-log'
 import SearchResultItem from './searchResultItem.vue'
 import { RipgrepDirectorySearcher } from '@/services/searchClient'
-import EmptyIcon from '@/assets/icons/undraw_empty.svg'
 import FindCaseIcon from '@/assets/icons/searchIcons/iconCase.svg'
 import FindWordIcon from '@/assets/icons/searchIcons/iconWord.svg'
 import FindRegexIcon from '@/assets/icons/searchIcons/iconRegex.svg'
@@ -104,7 +95,6 @@ export default {
     this.keyUpTimer = null
     this.searcherCancelCallback = null
     this.ripgrepDirectorySearcher = new RipgrepDirectorySearcher()
-    this.EmptyIcon = EmptyIcon
     this.FindCaseIcon = FindCaseIcon
     this.FindWordIcon = FindWordIcon
     this.FindRegexIcon = FindRegexIcon
@@ -112,6 +102,7 @@ export default {
       keyword: '',
       searchResult: [],
       searcherRunning: false,
+      hasSearched: false,
       showSearchCancelArea: false,
       searchErrorString: '',
 
@@ -164,7 +155,9 @@ export default {
       return !this.projectTree || !this.projectTree.pathname
     },
     showNoResultFoundMessage() {
-      return this.searchResult.length === 0 && this.searcherRunning === false && this.keyword.length > 0
+      return (
+        this.hasSearched && this.searchResult.length === 0 && this.searcherRunning === false && this.keyword.length > 0
+      )
     },
   },
   methods: {
@@ -195,11 +188,13 @@ export default {
       if (!keyword) {
         this.searchResult = []
         this.searcherRunning = false
+        this.hasSearched = false
         return
       }
 
       let canceled = false
       this.searcherRunning = true
+      this.hasSearched = true
       this.startShowSearchCancelAreaTimer()
 
       const newSearchResult = []
@@ -337,58 +332,55 @@ export default {
   }
   .search-wrapper {
     display: flex;
+    flex-direction: column;
+    align-items: stretch;
     margin: 0 0 12px;
-    padding: 0 10px;
-    border-radius: 18px;
-    min-height: 44px;
+    padding: 4px 6px;
+    border-radius: 8px;
     border: 1px solid var(--controlBorderColor);
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.66)),
-      var(--controlBgColor);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+    background: var(--inputBgColor);
     box-sizing: border-box;
-    align-items: center;
     & > input {
       color: var(--sideBarColor);
       background: transparent;
-      height: 100%;
-      flex: 1;
+      width: 100%;
+      height: 30px;
       border: none;
       outline: none;
-      padding: 0 10px;
-      font-size: 14px;
-      width: 50%;
+      padding: 0 6px;
+      box-sizing: border-box;
+      font-size: 13px;
     }
     & > .controls {
       display: flex;
-      flex-shrink: 0;
-      gap: 4px;
+      justify-content: flex-end;
+      gap: 2px;
       & > span {
         cursor: pointer;
-        width: 28px;
-        height: 28px;
+        width: 26px;
+        height: 26px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border-radius: 10px;
+        border-radius: 7px;
         transition: background-color .18s ease;
         &:hover {
-          background: rgba(255, 255, 255, 0.72);
+          background: rgba(126, 102, 76, 0.07);
           color: var(--sideBarIconColor);
         }
         & > svg {
           fill: var(--sideBarIconColor);
-          width: 16px;
-          height: 16px;
+          width: 15px;
+          height: 15px;
           &:hover {
-            fill: var(--highlightThemeColor);
+            fill: var(--editorColor80);
           }
         }
         &.active svg {
           fill: var(--highlightThemeColor);
         }
         &.active {
-          background: linear-gradient(135deg, rgba(96, 182, 126, 0.12), rgba(73, 118, 206, 0.1));
+          background: var(--itemBgColor);
         }
       }
     }
@@ -408,28 +400,27 @@ export default {
     text-align: center;
     margin: 8px 0 16px;
   }
-  .search-message-section {
-    overflow-wrap: break-word;
-  }
-  .search-result-info,
-  .search-message-section {
-    margin-bottom: 8px;
+  .search-status {
+    margin: 2px 4px 10px;
     font-size: 12px;
+    line-height: 1.6;
+    overflow-wrap: break-word;
     color: var(--panelMutedColor);
+    &.error {
+      color: var(--notificationErrorBg);
+    }
+    & > p {
+      margin: 0 0 10px;
+    }
   }
   .search-result-info {
+    margin-bottom: 8px;
     padding: 0 4px;
+    font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--panelEyebrowColor);
+    letter-spacing: 0.08em;
+    color: var(--panelMutedColor);
   }
-  .search-message-section {
-    padding: 12px 14px;
-    background: rgba(255, 255, 255, 0.46);
-    border: 1px solid var(--panelSubtleBorderColor);
-    border-radius: 16px;
-  }
-  .empty,
   .search-result {
     flex: 1;
     overflow-y: auto;
@@ -437,29 +428,6 @@ export default {
     padding: 0 2px 12px;
     &::-webkit-scrollbar:vertical {
       width: 8px;
-    }
-  }
-  .empty {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding-bottom: 48px;
-    & .no-data {
-      display: flex;
-      align-items: center;
-      flex-direction: column;
-      gap: 18px;
-      padding: 28px 20px;
-      background: rgba(255, 255, 255, 0.5);
-      border: 1px solid var(--panelSubtleBorderColor);
-      border-radius: 24px;
-    }
-    & .no-data svg {
-      fill: var(--themeColor);
-      width: 120px;
-    }
-    & .no-data .button-primary {
-      display: block;
     }
   }
 </style>

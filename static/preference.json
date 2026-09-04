@@ -29,7 +29,7 @@
   "autoGuessEncoding": true,
   "trimTrailingNewline": 2,
   "textDirection": "ltr",
-  "hideQuickInsertHint": false,
+  "hideQuickInsertHint": true,
   "imageInsertAction": "path",
   "imagePreferRelativeDirectory": false,
   "imageRelativeDirectoryName": "assets",

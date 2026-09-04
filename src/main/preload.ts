@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer, webFrame } from 'electron'
+import { contextBridge, ipcRenderer, webFrame, webUtils } from 'electron'
 import type {
   PreloadApi,
   SideBarContextMenuPayload,
@@ -81,6 +81,10 @@ const api: PreloadApi = {
     showItemInFolder: (fullPath: string) => {
       ipcRenderer.invoke('mt::shell-show-item-in-folder', fullPath).catch(() => {})
     },
+  },
+
+  files: {
+    getPathForFile: (file: File) => webUtils.getPathForFile(file),
   },
 
   fonts: {

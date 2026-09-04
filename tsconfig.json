@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "target": "ES2022",
+    "module": "Preserve",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "strict": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -14,11 +14,10 @@
     "allowJs": true,
     "checkJs": false,
     "noEmit": true,
-    "baseUrl": ".",
     "paths": {
-      "common/*": ["src/common/*"],
-      "@/*": ["src/renderer/*"],
-      "muya/*": ["src/muya/*"]
+      "common/*": ["./src/common/*"],
+      "@/*": ["./src/renderer/*"],
+      "muya/*": ["./src/muya/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],

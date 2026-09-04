@@ -73,7 +73,6 @@
   --editorAreaWidth: 750px;
 }
 
-.ag-front-menu .submenu,
 .ag-float-wrapper {
   box-shadow: 0 4px 8px 0 var(--floatShadow);
 }
@@ -86,7 +85,6 @@
   background-color: rgb(255, 255, 255, 0.05);
 }
 
-.recent-files-projects a,
 .open-project a {
   box-shadow: none;
 }
@@ -98,8 +96,7 @@
   background: var(--floatBgColor);
 }
 
-.open-project button,
-.recent-files-projects button {
+.open-project button {
   box-shadow: none;
 }
 

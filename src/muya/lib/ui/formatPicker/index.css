@@ -1,10 +1,10 @@
 .ag-float-wrapper.ag-format-picker-container {
   overflow: visible;
-  border-radius: 2px;
+  border-radius: 10px;
 }
 .ag-format-picker {
   height: 28px;
-  width: 265px;
+  width: max-content;
 }
 
 .ag-format-picker ul,
@@ -23,6 +23,8 @@
   list-style: none;
   width: 35px;
   height: 28px;
+  flex-shrink: 0;
+  border-radius: 6px;
   display: flex;
   justify-content: space-around;
   align-items: center;

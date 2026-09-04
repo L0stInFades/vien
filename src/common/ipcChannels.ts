@@ -111,7 +111,6 @@ export const LEGACY_RECEIVE_CHANNELS = Object.freeze([
   'mt::tabs-cycle-right',
   'mt::toggle-view-layout-entry',
   'mt::toggle-view-mode-entry',
-  'mt::tweet',
   'mt::update-file',
   'mt::update-object-tree',
   'mt::user-preference',

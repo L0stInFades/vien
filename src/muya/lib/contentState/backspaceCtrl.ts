@@ -142,27 +142,30 @@ const backspaceCtrl = (ContentState: { prototype: IContentState }) => {
 
     const startBlock = this.getBlock(start.key)
     const endBlock = this.getBlock(end.key)
-    const maybeLastRow = this.getParent(endBlock!)
-    const startOutmostBlock = this.findOutMostBlock(startBlock!)
-    const endOutmostBlock = this.findOutMostBlock(endBlock!)
+    // List mutations can briefly leave the persisted cursor pointing at a
+    // removed block. Wait for selection state to settle instead of crashing.
+    if (!startBlock || !endBlock) return
+    const maybeLastRow = this.getParent(endBlock)
+    const startOutmostBlock = this.findOutMostBlock(startBlock)
+    const endOutmostBlock = this.findOutMostBlock(endBlock)
     // Just for fix delete the last `#` or all the atx heading cause error @fixme
-    if (start.key === end.key && startBlock!.type === 'span' && startBlock!.functionType === 'atxLine') {
+    if (start.key === end.key && startBlock.type === 'span' && startBlock.functionType === 'atxLine') {
       if (
-        (start.offset === 0 && end.offset === startBlock!.text.length) ||
-        (start.offset === end.offset && start.offset === 1 && startBlock!.text === '#')
+        (start.offset === 0 && end.offset === startBlock.text.length) ||
+        (start.offset === end.offset && start.offset === 1 && startBlock.text === '#')
       ) {
         event.preventDefault()
-        startBlock!.text = ''
+        startBlock.text = ''
         this.cursor = {
           start: { key: start.key, offset: 0 },
           end: { key: end.key, offset: 0 },
         }
-        this.updateToParagraph(this.getParent(startBlock!)!, startBlock!)
+        this.updateToParagraph(this.getParent(startBlock)!, startBlock)
         return this.partialRender()
       }
     }
     // fix: #897
-    const { text } = startBlock!
+    const { text } = startBlock
     const tokens = tokenizer(text, {
       options: this.muya.options,
     })

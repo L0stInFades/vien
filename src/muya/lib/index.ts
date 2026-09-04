@@ -412,6 +412,11 @@ class Muya {
     this.clipboard.pasteAsPlainText()
   }
 
+  /** Insert an image from an explicit path or data URL at the cursor. */
+  pasteImage(src: string) {
+    return this.contentState.pasteImageSrc(src)
+  }
+
   /**
    * Copy the anchor block contains the block with `info`. like copy as markdown.
    * @param {string|object} key the block key or block

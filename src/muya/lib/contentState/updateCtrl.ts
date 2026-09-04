@@ -202,7 +202,6 @@ const updateCtrl = (ContentState: { prototype: IContentState }) => {
         }
       }
     } else {
-      // From front menu click.
       listItemLines = lines
     }
 

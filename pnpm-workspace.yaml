@@ -1,23 +1,52 @@
 packages:
   - '.'
 
-# node-abi / node-addon-api pins keep native module rebuilds (keytar, ced,
-# native-keymap) working against Electron's ABI.
+# Release artifacts cover both current Mac architectures, even when the
+# packaging machine itself only runs one of them.
+supportedArchitectures:
+  os:
+    - darwin
+  cpu:
+    - x64
+    - arm64
+
 # "@marktext/file-icons>file-icons" is a github: git subdep only used at that
 # package's own build time (its published build/index.js has no runtime
 # require) — removed so blockExoticSubdeps can stay enabled.
 overrides:
-  node-abi: ^3.8.0
-  node-addon-api: ^4.3.0
   '@marktext/file-icons>file-icons': '-'
+  '@babel/core': latest
+  brace-expansion: latest
+  browserslist: latest
+  clean-css: latest
+  dompurify: latest
+  fast-uri: latest
+  js-yaml: latest
+  lodash-es: latest
+  minimatch: latest
+  postcss: latest
+  tar: latest
+  tmp: latest
+  undici: latest
 
 allowBuilds:
   ced: true
   electron: true
+  electron-winstaller: false
   esbuild: true
   fontmanager-redux: true
   highlight.js: true
   keytar: true
   native-keymap: true
-  vscode-ripgrep: true
+  '@vscode/ripgrep': true
   vue-demi: true
+  vscode-ripgrep: false
+
+peerDependencyRules:
+  # electron-vite's latest release has not widened its declaration to Vite 8
+  # yet; the production build is exercised by CI against the latest Vite.
+  allowedVersions:
+    vite: '*'
+    # The latest patched Babel core is one major ahead of the transform plugin
+    # bundled by electron-vite; CI exercises the complete transform pipeline.
+    '@babel/core': '*'

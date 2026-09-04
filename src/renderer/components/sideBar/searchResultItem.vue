@@ -139,11 +139,10 @@ export default {
     margin-bottom: 10px;
     padding: 12px;
     color: var(--sideBarColor);
-    font-size: 14px;
-    border-radius: 20px;
+    font-size: 13px;
+    border-radius: 12px;
     border: 1px solid var(--panelSubtleBorderColor);
     background: rgba(255, 255, 255, 0.5);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
     & > .search-result {
       display: flex;
       align-items: center;
@@ -156,7 +155,7 @@ export default {
       }
     }
     & .title .filename {
-      font-size: 14px;
+      font-size: 13px;
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
@@ -173,7 +172,7 @@ export default {
           cursor: pointer;
           /* Hide space between inline spans */
           font-size: 0;
-          border-radius: 12px;
+          border-radius: 8px;
           & .highlight {
             background: var(--selectionColor);
             line-height: 16px;
@@ -184,7 +183,7 @@ export default {
             padding: 0 2px;
           }
           &:hover {
-            background: var(--sideBarItemHoverBgColor);
+            background: rgba(126, 102, 76, 0.06);
           }
           & span {
             font-size: 13px;
@@ -230,8 +229,8 @@ export default {
       height: 22px;
       border-radius: 11px;
       flex-shrink: 0;
-      background: rgba(255, 255, 255, 0.72);
-      color: var(--panelEyebrowColor);
+      background: rgba(126, 102, 76, 0.08);
+      color: var(--panelMutedColor);
     }
   }
 

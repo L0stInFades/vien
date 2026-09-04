@@ -27,7 +27,6 @@
       <about-dialog></about-dialog>
       <export-setting-dialog></export-setting-dialog>
       <rename></rename>
-      <tweet></tweet>
       <recovery-center></recovery-center>
     </div>
   </div>
@@ -42,7 +41,6 @@ import AboutDialog from '@/components/about'
 import CommandPalette from '@/components/commandPalette'
 import ExportSettingDialog from '@/components/exportSettings'
 import Rename from '@/components/rename'
-import Tweet from '@/components/tweet'
 import RecoveryCenter from '@/components/recoveryCenter'
 import { loadingPageMixins } from '@/mixins'
 import { DEFAULT_STYLE } from '@/config'
@@ -51,7 +49,6 @@ import { useCommandCenterStore } from '@/store/pinia/commandCenter'
 import { useLayoutStore } from '@/store/pinia/layout'
 import { useNotificationStore } from '@/store/pinia/notification'
 import { usePreferencesStore } from '@/store/pinia/preferences'
-import { useTweetStore } from '@/store/pinia/tweet'
 
 export default {
   name: 'marktext',
@@ -62,7 +59,6 @@ export default {
     AboutDialog,
     ExportSettingDialog,
     Rename,
-    Tweet,
     CommandPalette,
     RecoveryCenter,
   },
@@ -144,7 +140,6 @@ export default {
 
     dispatch('LINTEN_WIN_STATUS')
     commandCenterStore.listen()
-    useTweetStore().listen()
     layoutStore.listen()
     dispatch('LISTEN_FOR_EDIT')
     preferencesStore.listenForView()

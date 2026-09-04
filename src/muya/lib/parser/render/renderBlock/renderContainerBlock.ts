@@ -195,9 +195,5 @@ export default function renderContainerBlock(
     }
   }
 
-  if (!block.parent) {
-    children.unshift(this.renderIcon(block))
-  }
-
   return h(selector, data, children)
 }

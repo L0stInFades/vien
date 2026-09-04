@@ -1,6 +1,6 @@
 /**
  * SearchService integration tests (PLAN.md SEARCH-001): real ripgrep
- * binary from vscode-ripgrep against a real temp workspace, streaming
+ * binary from @vscode/ripgrep against a real temp workspace, streaming
  * batches to a mocked webContents, with cancellation and path scoping.
  */
 import fs from 'node:fs'
@@ -24,11 +24,9 @@ const { setWindowRegistry } = await import('../../../src/main/security/ipcGuard'
 const { SearchService } = await import('../../../src/main/services/search')
 const { SearchChannels } = await import('../../../src/common/contracts/search')
 const { ErrorCodes } = await import('../../../src/common/contracts/errors')
-const {
-  RipgrepJsonParser,
-  prepareGlobs,
-  processUnicodeMatch,
-} = await import('../../../src/main/services/search/ripgrepParser')
+const { RipgrepJsonParser, prepareGlobs, processUnicodeMatch } = await import(
+  '../../../src/main/services/search/ripgrepParser'
+)
 
 let sandbox
 let workspaceRoot
@@ -52,9 +50,7 @@ const invoke = (channel, payload) => handlers.get(channel)(event(), payload)
 const waitForDone = async (searchId, timeoutMs = 10000) => {
   const startedAt = Date.now()
   for (;;) {
-    const done = sentEvents.find(
-      (e) => e.channel === SearchChannels.done && e.payload.searchId === searchId,
-    )
+    const done = sentEvents.find((e) => e.channel === SearchChannels.done && e.payload.searchId === searchId)
     if (done) {
       return done.payload
     }

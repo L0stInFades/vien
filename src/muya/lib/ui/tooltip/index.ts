@@ -3,11 +3,13 @@ import './index.css'
 
 const position = (source: HTMLElement, ele: HTMLElement) => {
   const rect = source.getBoundingClientRect()
-  const { top, right, height } = rect
+  const width = ele.offsetWidth
+  const centerX = rect.left + rect.width / 2
+  const left = Math.max(8, Math.min(centerX - width / 2, window.innerWidth - width - 8))
 
   Object.assign(ele.style, {
-    top: `${top + height + 15}px`,
-    left: `${right - ele.offsetWidth / 2 - 10}px`,
+    top: `${rect.top + rect.height + 15}px`,
+    left: `${left}px`,
   })
 }
 
@@ -17,9 +19,11 @@ class Tooltip {
   constructor(muya: IMuya) {
     this.muya = muya
     this.cache = new WeakMap()
-    const { container, eventCenter } = this.muya
+    const { eventCenter } = this.muya
 
-    eventCenter.attachDOMEvent(container, 'mouseover', this.mouseOver.bind(this) as EventListener)
+    // Float containers are appended to document.body, so listen there instead
+    // of on the muya container.
+    eventCenter.attachDOMEvent(document.body, 'mouseover', this.mouseOver.bind(this) as EventListener)
   }
 
   mouseOver(event: MouseEvent) {

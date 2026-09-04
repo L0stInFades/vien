@@ -28,11 +28,9 @@ app.setName('Vien')
 // Custom protocol privileges must be declared before the app is ready.
 registerAssetSchemePrivileges()
 
-// NOTE: We only support Linux, macOS and Windows but not BSD nor SunOS.
-if (!/^(darwin|win32|linux)$/i.test(process.platform)) {
-  process.stdout.write(
-    `Operating system "${process.platform}" is not supported. Please open an issue at "https://github.com/L0stInFades/vien/issues".\n`,
-  )
+// Vien is built, tested, and released for macOS only.
+if (process.platform !== 'darwin') {
+  process.stdout.write(`Operating system "${process.platform}" is not supported. Vien currently requires macOS.\n`)
   process.exit(1)
 }
 

@@ -7,7 +7,7 @@
       custom-class="ag-dialog-table"
       width="410px"
     >
-      <template #title>
+      <template #header>
         <div class="search-wrapper">
           <div class="input-wrapper">
             <input
@@ -86,7 +86,7 @@ export default {
     align-items: center;
     box-shadow: none;
     border: none;
-    border-radius: 3px;
+    border-radius: 10px;
     margin: 0;
     padding: 0 8px;
 

@@ -1,5 +1,5 @@
 import htmlTags from 'html-tags'
-import voidHtmlTags from 'html-tags/void'
+import { voidHtmlTags } from 'html-tags'
 import { generateKeyHash, genUpper2LowerKeyHash } from '../utils/hash'
 import { getLongUniqueId } from '../utils/random'
 
@@ -181,7 +181,6 @@ export const CLASS_OR_ID = Object.freeze(
     'AG_FLOWCHART',
     'AG_FOCUS_MODE',
     'AG_FRONT_MATTER',
-    'AG_FRONT_ICON',
     'AG_GRAY',
     'AG_HARD_LINE_BREAK',
     'AG_HARD_LINE_BREAK_SPACE',
@@ -379,6 +378,7 @@ export const MUYA_DEFAULT_OPTION = Object.freeze({
   spellcheckEnabled: false,
   // transform the image to local folder, cloud or just return the local path
   imageAction: null,
+  filePathResolver: null,
   // Call Electron open dialog or input element type is file.
   imagePathPicker: null,
   clipboardFilePath: () => {},

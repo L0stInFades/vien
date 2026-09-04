@@ -1,13 +1,7 @@
-import path from 'node:path'
 import AppPaths, { ensureAppDirectoriesSync } from './paths'
+import { patchEnvPath } from './envPath'
 
 let envId = 0
-
-const patchEnvPath = () => {
-  if (process.platform === 'darwin') {
-    process.env.PATH += `${process.env.PATH.endsWith(path.delimiter) ? '' : path.delimiter}/Library/TeX/texbin`
-  }
-}
 
 export class AppEnvironment {
   constructor(options) {

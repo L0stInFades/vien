@@ -124,46 +124,45 @@ const pasteCtrl = (ContentState: { prototype: IContentState }) => {
     return tempWrapper.innerHTML
   }
 
+  ContentState.prototype.pasteImageSrc = async function (src: string) {
+    if (!src) return null
+
+    const id = `loading-${getUniqueId()}`
+    if (this.selectedImage) {
+      this.replaceImage(this.selectedImage, { alt: id, src })
+    } else {
+      this.insertImage({ alt: id, src })
+    }
+
+    let newSrc = src
+    try {
+      if (this.muya.options.imageAction) {
+        newSrc = await this.muya.options.imageAction(src, id)
+      }
+    } catch (error) {
+      // TODO: Notify user about an error.
+      console.error('Unexpected error on image action:', error)
+      return null
+    }
+
+    const { src: previewSrc } = getImageSrc(src)
+    if (previewSrc && newSrc) {
+      this.stateRender.urlMap.set(newSrc, previewSrc)
+    }
+
+    const imageWrapper = this.muya.container.querySelector(`span[data-id=${id}]`)
+    if (imageWrapper) {
+      const imageInfo = getImageInfo(imageWrapper as HTMLElement)
+      this.replaceImage(imageInfo, { src: newSrc })
+    }
+    return src
+  }
+
   ContentState.prototype.pasteImage = async function (event: ClipboardEvent) {
     // Try to guess the clipboard file path.
     const imagePath = await this.muya.options.clipboardFilePath!()
     if (imagePath && typeof imagePath === 'string' && IMAGE_EXT_REG.test(imagePath)) {
-      const id = `loading-${getUniqueId()}`
-      if (this.selectedImage) {
-        this.replaceImage(this.selectedImage, {
-          alt: id,
-          src: imagePath,
-        })
-      } else {
-        this.insertImage({
-          alt: id,
-          src: imagePath,
-        })
-      }
-
-      let newSrc = null
-      try {
-        newSrc = await this.muya.options.imageAction!(imagePath, id)
-      } catch (error) {
-        // TODO: Notify user about an error.
-        console.error('Unexpected error on image action:', error)
-        return null
-      }
-
-      const { src } = getImageSrc(imagePath)
-      if (src) {
-        this.stateRender.urlMap.set(newSrc, src)
-      }
-
-      const imageWrapper = this.muya.container.querySelector(`span[data-id=${id}]`)
-
-      if (imageWrapper) {
-        const imageInfo = getImageInfo(imageWrapper as HTMLElement)
-        this.replaceImage(imageInfo, {
-          src: newSrc,
-        })
-      }
-      return imagePath
+      return this.pasteImageSrc(imagePath)
     }
 
     const items = event.clipboardData?.items

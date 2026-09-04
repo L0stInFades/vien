@@ -309,7 +309,8 @@ export default {
     padding: 0;
     top: 0;
     right: 20px;
-    border-radius: 3px;
+    border-radius: 10px;
+    border: 1px solid var(--floatBorderColor);
     box-shadow: var(--floatShadow);
     background: var(--floatBgColor);
     display: flex;
@@ -322,6 +323,7 @@ export default {
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    border-radius: 10px 0 0 10px;
   }
   .search-bar .left-arrow:hover {
     background: var(--floatHoverColor);
@@ -378,7 +380,7 @@ export default {
     position: relative;
     border: 1px solid var(--inputBgColor);
     background: var(--inputBgColor);
-    border-radius: 3px;
+    border-radius: 7px;
     overflow: visible;
   }
   .input-wrapper.error {
@@ -404,17 +406,16 @@ export default {
         height: 20px;
         margin-left: 2px;
         margin-right: 2px;
+        border-radius: 6px;
+        color: var(--editorColor40);
         &:hover {
-          color: var(--sideBarIconColor);
+          background: var(--floatHoverColor);
+        }
+        &.active {
+          color: var(--themeColor);
         }
         & > svg {
-          fill: var(--sideBarIconColor);
-          &:hover {
-            fill: var(--highlightThemeColor);
-          }
-        }
-        &.active svg {
-            fill: var(--highlightThemeColor);
+          fill: currentColor;
         }
       }
   }
@@ -427,8 +428,8 @@ export default {
     left: -1px;
     padding: 0 8px;
     box-sizing: border-box;
-    border-bottom-left-radius: 3px;
-    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
     background: var(--notificationErrorBg);
     line-height: 28px;
     color: #ffffff;

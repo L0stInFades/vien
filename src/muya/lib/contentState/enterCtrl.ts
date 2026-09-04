@@ -18,9 +18,11 @@ const getIndentSpace = (text: string) => {
 const enterCtrl = (ContentState: { prototype: IContentState }) => {
   // TODO@jocs this function need opti.
   ContentState.prototype.chopBlockByCursor = function (block: Block, key: string, offset: number) {
-    const newBlock = this.createBlock('p')
     const { children } = block
     const index = children.findIndex((child: Block) => child.key === key)
+    // A stale/wrong owning paragraph must not fall through to children[-1].
+    if (index === -1) return this.createBlockP('')
+    const newBlock = this.createBlock('p')
     const activeLine = this.getBlock(key)!
     const { text } = activeLine
     newBlock.children = children.splice(index + 1)
@@ -369,6 +371,9 @@ const enterCtrl = (ContentState: { prototype: IContentState }) => {
       block = parent!
       parent = this.getParent(block)
     }
+    // Keep the paragraph that actually owns the caret before walking up to a
+    // list item; loose items can contain multiple paragraphs and sublists.
+    const activeParagraphBlock = block
     const paragraph = document.querySelector(`#${block.key}`)
     if (
       (parent && parent.type === 'li' && this.isOnlyChild(block)) ||
@@ -410,16 +415,27 @@ const enterCtrl = (ContentState: { prototype: IContentState }) => {
         } else if (block.type === 'p') {
           newBlock = this.chopBlockByCursor(block, start.key, start.offset)
         } else if (type === 'li') {
-          // handle task item
+          const fallbackIndex = block.listItemType === 'task' ? 1 : 0
+          let activeIndex = block.children.findIndex((child) => child.key === activeParagraphBlock.key)
+          if (activeIndex === -1) activeIndex = fallbackIndex
+          const activeChild = block.children[activeIndex] ?? block.children[fallbackIndex]
+          const trailingChildren = block.children.slice(activeIndex + 1)
+
           if (block.listItemType === 'task') {
             const { checked } = block.children[0] // block.children[0] is input[type=checkbox]
-            newBlock = this.chopBlockByCursor(block.children[1], start.key, start.offset)
+            newBlock = this.chopBlockByCursor(activeChild, start.key, start.offset)
             newBlock = this.createTaskItemBlock(newBlock, checked ?? false)
           } else {
-            newBlock = this.chopBlockByCursor(block.children[0], start.key, start.offset)
+            newBlock = this.chopBlockByCursor(activeChild, start.key, start.offset)
             newBlock = this.createBlockLi(newBlock)
             newBlock.listItemType = block.listItemType
             newBlock.bulletMarkerOrDelimiter = block.bulletMarkerOrDelimiter
+          }
+
+          // Blocks after the split paragraph belong to the new list item.
+          for (const child of trailingChildren) {
+            this.appendChild(newBlock, child)
+            this.removeBlock(child)
           }
           newBlock.isLooseListItem = block.isLooseListItem
         } else if (block.type === 'hr') {

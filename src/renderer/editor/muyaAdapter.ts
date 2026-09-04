@@ -18,7 +18,6 @@ import FormatPicker from 'muya/lib/ui/formatPicker'
 import LinkTools from 'muya/lib/ui/linkTools'
 import FootnoteTool from 'muya/lib/ui/footnoteTool'
 import TableBarTools from 'muya/lib/ui/tableTools'
-import FrontMenu from 'muya/lib/ui/frontMenu'
 import type { EditorEngine, EditorEngineOptions, EngineEventListener, EngineSelection, TocEntry } from './engine'
 
 export interface MuyaEngineHooks {
@@ -52,7 +51,6 @@ const registerMuyaPlugins = (hooks: MuyaEngineHooks): void => {
   usePlugin(Transformer)
   usePlugin(ImageToolbar)
   usePlugin(FormatPicker)
-  usePlugin(FrontMenu)
   usePlugin(LinkTools, {
     jumpClick: hooks.jumpClick,
   })
@@ -74,6 +72,7 @@ interface MuyaLike {
   selectAll(): void
   getSelection(): EngineSelection | null
   setCursor(cursor: unknown): void
+  pasteImage(src: string): Promise<string | null>
   undo(): void
   redo(): void
   clearHistory(): void
@@ -92,6 +91,7 @@ interface MuyaLike {
   setOptions(options: Record<string, unknown>, needRender?: boolean): void
   invalidateImageCache(): void
   _replaceCurrentWordInlineUnsafe(word: string, replacement: string): void
+  hideAllFloatTools(): void
   exportStyledHTML(options: Record<string, unknown>): Promise<string>
 }
 
@@ -144,6 +144,10 @@ class MuyaAdapter implements EditorEngine {
 
   setCursor(cursor: unknown): void {
     this._muya.setCursor(cursor)
+  }
+
+  pasteImage(src: string): Promise<string | null> {
+    return this._muya.pasteImage(src)
   }
 
   hasSelectedTableCells(): boolean {
@@ -216,6 +220,10 @@ class MuyaAdapter implements EditorEngine {
 
   invalidateImageCache(): void {
     this._muya.invalidateImageCache()
+  }
+
+  hideAllFloatTools(): void {
+    this._muya.hideAllFloatTools()
   }
 
   replaceCurrentWordInline(word: string, replacement: string): void {

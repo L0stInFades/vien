@@ -87,6 +87,7 @@ export default new Map([
   ['window.minimize', 'Ctrl+M'],
   ['window.toggle-always-on-top', ''],
   ['window.zoom-in', 'Ctrl+='],
+  ['window.zoom-reset', ''],
   ['window.zoom-out', 'Ctrl+-'],
   ['window.toggle-full-screen', 'F11'],
 

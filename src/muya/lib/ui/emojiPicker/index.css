@@ -15,7 +15,7 @@
   font-weight: 600;
   position: sticky;
   top: 0;
-  background: var(--itemBgColor);
+  background: var(--floatBgColor);
   z-index: 1001;
 }
 
@@ -55,7 +55,7 @@
   font-size: 24px;
   text-align: center;
   line-height: 1.15;
-  color: #000;
+  color: var(--editorColor);
   transition: transform 0.2s ease-in;
   transform-origin: center;
 }

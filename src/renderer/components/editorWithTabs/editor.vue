@@ -33,7 +33,7 @@
       center
       dir='ltr'
     >
-      <template #title>
+      <template #header>
         <div class="dialog-title">
           Insert Table
         </div>
@@ -93,6 +93,7 @@ import { SpellChecker } from '@/spellchecker'
 import { isOsx, animatedScrollTo, getScrollTopForElement } from '@/util'
 import { moveImageToFolder, moveToRelativeFolder, uploadImage } from '@/util/fileSystem'
 import { guessClipboardFilePath } from '@/util/clipboard'
+import { dataURLToFile } from '@/util/dataURLToFile'
 import { getCssForOptions, getHtmlToc } from '@/util/pdf'
 import { addCommonStyle, setEditorWidth } from '@/util/theme'
 
@@ -508,6 +509,7 @@ export default {
         sequenceTheme,
         spellcheckEnabled: spellcheckerEnabled,
         imageAction: this.imageAction.bind(this),
+        filePathResolver: (file) => window.api.files.getPathForFile(file),
         imagePathPicker: this.imagePathPicker.bind(this),
         clipboardFilePath: guessClipboardFilePath,
         imagePathAutoComplete: this.imagePathAutoComplete.bind(this),
@@ -664,6 +666,14 @@ export default {
 
     async imageAction(image, id, alt = '') {
       // TODO(Refactor): Refactor this method.
+      if (typeof image === 'string' && image.startsWith('data:')) {
+        const imageFile = dataURLToFile(image)
+        if (!imageFile) {
+          throw new Error('Invalid image data URL.')
+        }
+        image = imageFile
+      }
+
       const {
         imageInsertAction,
         imageFolderPath,
@@ -825,13 +835,13 @@ export default {
     },
 
     handleUndo() {
-      if (this.editor) {
+      if (!this.sourceCode && this.editor) {
         this.editor.undo()
       }
     },
 
     handleRedo() {
-      if (this.editor) {
+      if (!this.sourceCode && this.editor) {
         this.editor.redo()
       }
     },
@@ -1113,9 +1123,9 @@ export default {
       this.editor.focus()
     },
 
-    handleScreenShot() {
-      if (this.editor) {
-        document.execCommand('paste')
+    handleScreenShot(filePath) {
+      if (this.editor && typeof filePath === 'string' && filePath) {
+        this.editor.pasteImage(filePath)
       }
     },
   },

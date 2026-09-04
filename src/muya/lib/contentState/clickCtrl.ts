@@ -47,35 +47,6 @@ const clickCtrl = (ContentState: { prototype: IContentState }) => {
         }
       }
     }
-    // handle front menu click
-    const { start: oldStart, end: oldEnd } = this.cursor
-    if (oldStart && oldEnd) {
-      let hasSameParent = false
-      const startBlock = this.getBlock(oldStart.key)
-      const endBlock = this.getBlock(oldEnd.key)
-      if (startBlock && endBlock) {
-        const startOutBlock = this.findOutMostBlock(startBlock)
-        const endOutBlock = this.findOutMostBlock(endBlock)
-        hasSameParent = startOutBlock === endOutBlock
-      }
-      // show the muya-front-menu only when the cursor in the same paragraph
-      if ((target as HTMLElement).closest('.ag-front-icon') && hasSameParent) {
-        const currentBlock = this.findOutMostBlock(startBlock!)
-        const frontIcon = (target as HTMLElement).closest('.ag-front-icon')!
-        const rect = frontIcon.getBoundingClientRect()
-        const reference = {
-          getBoundingClientRect() {
-            return rect
-          },
-          clientWidth: rect.width,
-          clientHeight: rect.height,
-          id: currentBlock.key,
-        }
-        this.selectedBlock = currentBlock
-        eventCenter.dispatch('muya-front-menu', { reference, outmostBlock: currentBlock, startBlock, endBlock })
-        return this.partialRender()
-      }
-    }
     const { start, end } = selection.getCursorRange()
     // fix #625, the selection maybe not in edit area.
     if (!start || !end) {

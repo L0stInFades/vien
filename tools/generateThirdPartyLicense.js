@@ -1,25 +1,16 @@
 'use strict'
 
-const path = require('path')
 const fs = require('fs')
+const path = require('path')
 const thirdPartyChecker = require('../.electron-vue/thirdPartyChecker.js')
 const rootDir = path.resolve(__dirname, '..')
 
-const additionalPackages = {
-  hunspell: {
-    packageName: 'Hunspell',
-    licenses: 'LGPL 2.1',
-    licenseText: fs.readFileSync(path.join(rootDir, 'resources/hunspell_dictionaries/LICENSE-hunspell.txt'))
-  }
-}
-
-thirdPartyChecker.getLicenses(rootDir, (err, packages, checker) => {
+thirdPartyChecker.getLicenses(rootDir, (err, packages) => {
   if (err) {
-    console.log(`[ERROR] ${err}`)
+    console.error(`[ERROR] ${err}`)
+    process.exitCode = 1
     return
   }
-
-  Object.assign(packages, additionalPackages)
 
   let summary = ''
   let licenseList = ''
@@ -58,7 +49,7 @@ ${licenseText}
   const output = `# Third Party Notices
 -------------------------------------------------
 
-This file contains all third-party packages that are bundled and shipped with MarkText.
+This file contains all third-party packages that are bundled and shipped with Vien.
 
 -------------------------------------------------
 # Summary
@@ -72,5 +63,9 @@ ${summary}
 
 ${licenseList}
 `
-  fs.writeFileSync(path.resolve(rootDir, 'resources', 'THIRD-PARTY-LICENSES.txt'), output)
+  // Third-party license bodies occasionally contain accidental line-ending
+  // spaces. They are not part of the license text and make repository-wide
+  // whitespace checks noisy, so normalize them in the generated artifact.
+  const normalizedOutput = output.replace(/[ \t]+$/gm, '')
+  fs.writeFileSync(path.resolve(rootDir, 'resources', 'THIRD-PARTY-LICENSES.txt'), normalizedOutput)
 })

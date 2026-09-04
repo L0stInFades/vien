@@ -1,9 +1,9 @@
+import { resolve } from 'node:path'
 import { defineConfig } from 'vitest/config'
-import { resolve } from 'path'
 
 /**
  * Performance benchmark profile (PLAN.md QUALITY-001 / §8.6).
- * Run via: pnpm run perf  — writes perf-results.json for CI artifacts.
+ * Run via: pnpm run perf — writes perf-results.json for CI artifacts.
  * Kept out of the unit profile so PR runs stay fast.
  */
 export default defineConfig({
@@ -17,9 +17,9 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      common: resolve(__dirname, 'src/common'),
-      muya: resolve(__dirname, 'src/muya'),
-      '@': resolve(__dirname, 'src/renderer'),
+      common: resolve(import.meta.dirname, 'src/common'),
+      muya: resolve(import.meta.dirname, 'src/muya'),
+      '@': resolve(import.meta.dirname, 'src/renderer'),
     },
   },
 })

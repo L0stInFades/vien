@@ -141,7 +141,9 @@ const dragDropCtrl = (ContentState: { prototype: IContentState }) => {
       }
       const image = fileList.find((file) => /image/.test(file.type))
       if (image && dropAnchor) {
-        const { name, path } = image
+        const { name } = image
+        const path = this.muya.options.filePathResolver?.(image)
+        if (!path) return
         const id = `loading-${getUniqueId()}`
         const text = `![${id}](${path})`
         const imageBlock = this.createBlockP(text)

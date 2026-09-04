@@ -5,19 +5,19 @@
 
   /*editor*/
   /*Theme color cluster*/
-  --themeColor: rgba(33, 181, 111, 1);
-  --themeColor90: rgba(33, 181, 111, 0.9);
-  --themeColor80: rgba(33, 181, 111, 0.8);
-  --themeColor70: rgba(33, 181, 111, 0.7);
-  --themeColor60: rgba(33, 181, 111, 0.6);
-  --themeColor50: rgba(33, 181, 111, 0.5);
-  --themeColor40: rgba(33, 181, 111, 0.4);
-  --themeColor30: rgba(33, 181, 111, 0.3);
-  --themeColor20: rgba(33, 181, 111, 0.2);
-  --themeColor10: rgba(33, 181, 111, 0.1);
+  --themeColor: rgba(63, 122, 87, 1);
+  --themeColor90: rgba(63, 122, 87, 0.9);
+  --themeColor80: rgba(63, 122, 87, 0.8);
+  --themeColor70: rgba(63, 122, 87, 0.7);
+  --themeColor60: rgba(63, 122, 87, 0.6);
+  --themeColor50: rgba(63, 122, 87, 0.5);
+  --themeColor40: rgba(63, 122, 87, 0.4);
+  --themeColor30: rgba(63, 122, 87, 0.3);
+  --themeColor20: rgba(63, 122, 87, 0.2);
+  --themeColor10: rgba(63, 122, 87, 0.1);
   --highlightThemeColor: var(--themeColor);
 
-  --highlightColor: rgba(33, 181, 111, 0.4);
+  --highlightColor: rgba(63, 122, 87, 0.35);
   --selectionColor: rgba(162, 188, 155, 0.34);
   --selectionOutlineColor: rgba(120, 151, 113, 0.22);
   --selectionTextColor: rgba(41, 35, 29, 0.96);
@@ -54,15 +54,15 @@
   --codeBlockShadow: 0 10px 24px rgba(111, 90, 65, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.62);
   --blockquoteBgColor: rgba(255, 255, 255, 0.44);
   --footnoteBgColor: rgba(0, 0, 0, 0.03);
-  --inputBgColor: rgba(0, 0, 0, 0.06);
+  --inputBgColor: rgba(126, 102, 76, 0.07);
   --focusColor: var(--themeColor);
 
   --buttonFontColor: var(--editorColor);
   --buttonBgColor: #ffffff;
-  --buttonBorder: 1px solid #dcdfe6;
+  --buttonBorder: 1px solid rgba(126, 102, 76, 0.18);
   --buttonShadow: none;
   --buttonFontColorHover: var(--buttonFontColor);
-  --buttonBgColorHover: linear-gradient(#f9f9f9, #f2f2f2);
+  --buttonBgColorHover: rgba(126, 102, 76, 0.06);
   --buttonBorderHover: var(--buttonBorder);
   --buttonFontColorActive: var(--buttonFontColor);
   --buttonBgColorActive: #f0f0f0;
@@ -98,8 +98,8 @@
   --sideBarRowBgColor: rgba(255, 255, 255, 0.26);
   --sideBarRowBorderColor: rgba(126, 102, 76, 0.08);
   --sideBarRowActiveBgColor: rgba(255, 255, 255, 0.76);
-  --sideBarRowCurrentBgColor: linear-gradient(135deg, rgba(96, 182, 126, 0.12), rgba(73, 118, 206, 0.1));
-  --sideBarCurrentIndicator: rgba(96, 182, 126, 0.82);
+  --sideBarRowCurrentBgColor: var(--itemBgColor);
+  --sideBarCurrentIndicator: var(--themeColor50);
 
   --panelSurfaceBgColor: rgba(255, 250, 244, 0.86);
   --panelSurfaceBorderColor: rgba(126, 102, 76, 0.1);
@@ -118,7 +118,7 @@
   --floatBorderColor: rgba(0, 0, 0, 0.1);
   --floatShadow:
     rgba(15, 15, 15, 0.03) 0px 0px 0px 1px, rgba(15, 15, 15, 0.04) 0px 3px 6px, rgba(15, 15, 15, 0.05) 0px 9px 24px;
-  --maskColor: rgba(232, 232, 232, 0.8);
+  --maskColor: rgba(74, 61, 48, 0.24);
 
   /* Notification colors */
   --notificationPrimaryColor: #ffffff;
@@ -228,8 +228,8 @@ body {
 
 .el-dialog,
 .el-dialog.ag-dialog-table {
-  border-radius: 8px;
-  box-shadow: 0 4px 8px 0 var(--floatBorderColor);
+  border-radius: 14px;
+  box-shadow: var(--floatShadow);
   border: solid 1px var(--floatBorderColor);
   background-color: var(--floatBgColor);
 }
@@ -288,7 +288,7 @@ div.el-tab-pane {
   color: var(--buttonFontColor);
   background: var(--buttonBgColor);
   border: var(--buttonBorder);
-  border-radius: 5px;
+  border-radius: 8px;
   box-shadow: var(--buttonShadow);
   padding: 7px 14px;
 }
@@ -321,7 +321,7 @@ div.el-tab-pane {
   color: var(--buttonPrimaryFontColor);
   background: var(--buttonPrimaryBgColor);
   border: var(--buttonPrimaryBorder);
-  border-radius: 5px;
+  border-radius: 8px;
   box-shadow: var(--buttonPrimaryShadow);
   padding: 7px 14px;
 }

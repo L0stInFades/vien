@@ -147,8 +147,6 @@ export interface StateRenderContext {
     useCache?: boolean,
   ): VNode
 
-  renderIcon(block: Block): VNode
-
   // ---- Mixin methods from renderInlines ----
 
   backlash: InlineRenderMethod

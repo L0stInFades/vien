@@ -24,7 +24,7 @@ function marked(src: string, opt: Record<string, unknown> = {}) {
       new (Lexer as unknown as new (opt: Record<string, unknown>) => { lex(src: string): unknown })(opt).lex(src),
     )
   } catch (e) {
-    ;(e as Error).message += '\nPlease report this to https://github.com/marktext/marktext/issues.'
+    ;(e as Error).message += '\nPlease report this to https://github.com/L0stInFades/vien/issues.'
     if (opt.silent) {
       return `<p>An error occurred:</p><pre>${escape(`${(e as Error).message}`, true)}</pre>`
     }

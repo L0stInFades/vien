@@ -94,7 +94,7 @@ export class AssetService {
      * Copy an image into `outputDir` and return its new absolute path.
      * Mirrors the legacy renderer `moveImageToFolder`:
      * - path variant: content-hash naming, no-op when already in place;
-     * - bytes variant: timestamped name preserved by caller-supplied imageName.
+     * - bytes variant: content-hash naming for deterministic deduplication.
      */
     handleCapability(AssetChannels.copyImageToFolder, AssetCopyImageRequestSchema, async (request, context) => {
       const scope = this._scopeFor(context.windowId)
@@ -120,8 +120,9 @@ export class AssetService {
       }
 
       if (request.imageBytes !== undefined) {
-        const baseName = request.imageName ? path.basename(request.imageName) : `${sha1(request.imageBytes)}.png`
-        const imagePath = path.join(outputDir, baseName)
+        const requestedExtension = path.extname(request.imageName ?? '').toLowerCase()
+        const extension = IMAGE_EXTENSIONS.includes(requestedExtension) ? requestedExtension : '.png'
+        const imagePath = path.join(outputDir, `${sha1(request.imageBytes)}${extension}`)
         await fs.writeFile(imagePath, Buffer.from(request.imageBytes))
         return { pathname: imagePath }
       }

@@ -138,15 +138,17 @@ export class RipgrepDirectorySearcher {
             searchId,
             rootPath,
             pattern,
+            // Values must be plain JSON-safe data: reactive proxies or frozen
+            // arrays cannot cross the contextBridge ("An object could not be cloned").
             options: {
-              inclusions,
-              exclusions,
-              noIgnore,
-              followSymlinks,
-              includeHidden,
-              isWholeWord,
-              isRegexp,
-              isCaseSensitive,
+              inclusions: Array.isArray(inclusions) ? [...inclusions] : undefined,
+              exclusions: Array.isArray(exclusions) ? [...exclusions] : undefined,
+              noIgnore: !!noIgnore,
+              followSymlinks: !!followSymlinks,
+              includeHidden: !!includeHidden,
+              isWholeWord: !!isWholeWord,
+              isRegexp: !!isRegexp,
+              isCaseSensitive: !!isCaseSensitive,
               maxFileSize: maxFileSize ?? undefined,
               leadingContextLineCount,
               trailingContextLineCount,
@@ -186,7 +188,12 @@ export class FileSearcher {
           window.api.search.startFileSearch({
             searchId,
             rootPath,
-            options: { inclusions, noIgnore, followSymlinks, includeHidden },
+            options: {
+              inclusions: Array.isArray(inclusions) ? [...inclusions] : undefined,
+              noIgnore: !!noIgnore,
+              followSymlinks: !!followSymlinks,
+              includeHidden: !!includeHidden,
+            },
           }),
         ),
     )

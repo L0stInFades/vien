@@ -1,9 +1,7 @@
 import path from 'node:path'
-import fsPromises from 'node:fs/promises'
-import { exec } from 'node:child_process'
 import dayjs from 'dayjs'
 import log from 'electron-log'
-import { app, BrowserWindow, clipboard, dialog, ipcMain, nativeImage, nativeTheme, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, nativeImage, nativeTheme, shell } from 'electron'
 import { isChildOfDirectory } from 'common/filesystem/paths'
 import { isLinux, isOsx, isWindows } from '../config'
 import { normalizeAndResolvePath } from '../filesystem'
@@ -19,6 +17,7 @@ import EditorWindow from '../windows/editor'
 import SettingWindow from '../windows/setting'
 import { parseSecondInstanceArgv } from './parseSecondInstanceArgv'
 import { revealOrCreateWindow } from './revealOrCreateWindow'
+import { captureMacScreenshot } from './screenshot'
 import { registerAssetProtocolHandler } from '../security/assetProtocol'
 
 class App {
@@ -122,7 +121,7 @@ class App {
 
   async getScreenshotFileName() {
     const screenshotFolderPath = await this._accessor.dataCenter.getItem('screenshotFolderPath')
-    const fileName = `${dayjs().format('YYYY-MM-DD-HH-mm-ss')}-screenshot.png`
+    const fileName = `${dayjs().format('YYYY-MM-DD-HH-mm-ss-SSS')}-screenshot.png`
     return path.join(screenshotFolderPath, fileName)
   }
 
@@ -456,30 +455,24 @@ class App {
     })
 
     ipcMain.on('screen-capture', async (win) => {
-      if (isOsx) {
-        // Use macOs `screencapture` command line when in macOs system.
-        const screenshotFileName = await this.getScreenshotFileName()
-        exec('screencapture -i -c', async (err) => {
-          if (err) {
-            log.error(err)
-            return
-          }
-          try {
-            // Write screenshot image into screenshot folder.
-            const image = clipboard.readImage()
-            const bufferImage = image.toPNG()
-            await fsPromises.writeFile(screenshotFileName, bufferImage)
-          } catch (err) {
-            log.error(err)
-          }
-          win.webContents.send('mt::screenshot-captured')
-        })
-      } else {
+      if (!isOsx || !win) {
         // TODO: Do nothing, maybe we'll add screenCapture later on Linux and Windows.
         // if (this.shortcutCapture) {
         //   this.launchScreenshotWin = win
         //   this.shortcutCapture.shortcutCapture()
         // }
+        return
+      }
+
+      const screenshotFileName = await this.getScreenshotFileName()
+      let savedPath = ''
+      try {
+        savedPath = await captureMacScreenshot(screenshotFileName)
+      } catch (error) {
+        log.error(error)
+      }
+      if (!win.isDestroyed() && !win.webContents.isDestroyed()) {
+        win.webContents.send('mt::screenshot-captured', savedPath)
       }
     })
 

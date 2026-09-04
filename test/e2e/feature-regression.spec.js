@@ -169,13 +169,32 @@ test.describe('Feature regressions', () => {
     }
   })
 
-  test('markdown open and styled HTML export complete end to end', async () => {
+  test('markdown open, resilient Mermaid rendering, and styled HTML export complete end to end', async () => {
     const userDataDir = createTempDir()
     const workspaceDir = createTempDir()
     const importFile = path.join(workspaceDir, 'drop-import.md')
     const exportFile = path.join(workspaceDir, 'drop-import.html')
 
-    writeFile(importFile, ['# Drop Imported', '', '```javascript', 'const answer = 42', '```', ''].join('\n'))
+    writeFile(
+      importFile,
+      [
+        '# Drop Imported',
+        '',
+        '```javascript',
+        'const answer = 42',
+        '```',
+        '',
+        '```mermaid',
+        'not-a-valid-mermaid-diagram',
+        '```',
+        '',
+        '```mermaid',
+        'flowchart LR',
+        '  A[Latest source] --> B[Vien]',
+        '```',
+        '',
+      ].join('\n'),
+    )
 
     const { app, page } = await launchElectron({ userDataDir })
 
@@ -185,6 +204,35 @@ test.describe('Feature regressions', () => {
       }, importFile)
 
       await expect(page.locator('.editor-tabs li.active')).toContainText('drop-import.md')
+
+      const mermaidFigures = page.locator('figure[data-role="MERMAID"]')
+      await expect(mermaidFigures).toHaveCount(2)
+      await expect(mermaidFigures.nth(0).locator('.ag-container-preview')).toHaveClass(/ag-math-error/)
+
+      const validPreview = mermaidFigures.nth(1).locator('.ag-container-preview')
+      const validSvg = validPreview.locator('svg')
+      await expect(validSvg).toBeVisible()
+
+      const previewMetrics = await validPreview.evaluate((preview) => {
+        const svg = preview.querySelector('svg')
+        const editor = document.querySelector('#ag-editor-id')
+        if (!svg || !editor) {
+          throw new Error('Unable to resolve the Mermaid preview geometry.')
+        }
+
+        const previewRect = preview.getBoundingClientRect()
+        const svgRect = svg.getBoundingClientRect()
+        const editorRect = editor.getBoundingClientRect()
+        return {
+          centered: Math.abs(svgRect.left + svgRect.width / 2 - (previewRect.left + previewRect.width / 2)) <= 1,
+          withinEditor: svgRect.left >= editorRect.left - 1 && svgRect.right <= editorRect.right + 1,
+          width: svgRect.width,
+        }
+      })
+
+      expect(previewMetrics.centered).toBe(true)
+      expect(previewMetrics.withinEditor).toBe(true)
+      expect(previewMetrics.width).toBeGreaterThan(0)
 
       await app.evaluate(({ dialog }, filePath) => {
         dialog.showSaveDialog = async () => ({
@@ -203,6 +251,9 @@ test.describe('Feature regressions', () => {
       await expect.poll(() => fs.existsSync(exportFile)).toBe(true)
       await expect.poll(() => fs.readFileSync(exportFile, 'utf8')).toContain('Drop Imported')
       await expect.poll(() => fs.readFileSync(exportFile, 'utf8')).toContain('language-javascript')
+      await expect.poll(() => fs.readFileSync(exportFile, 'utf8')).toContain('invalid-diagram')
+      await expect.poll(() => fs.readFileSync(exportFile, 'utf8')).toContain('<svg')
+      await expect.poll(() => fs.readFileSync(exportFile, 'utf8')).toContain('Latest source')
     } finally {
       await closeElectron(app)
     }

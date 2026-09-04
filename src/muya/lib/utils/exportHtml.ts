@@ -3,6 +3,7 @@ import Prism from 'prismjs'
 import katex from 'katex'
 import 'katex/dist/contrib/mhchem.min.js'
 import loadRenderer from '../renderers'
+import { withMermaidRenderer } from '../renderers/mermaid'
 import githubMarkdownCss from 'github-markdown-css/github-markdown.css?inline'
 import exportStyle from '../assets/styles/exportStyle.css?inline'
 import highlightCss from 'prismjs/themes/prism.css?inline'
@@ -40,26 +41,48 @@ class ExportHtml {
   async renderMermaid() {
     const codes = this.exportContainer!.querySelectorAll('code.language-mermaid')
     for (const code of codes) {
-      const preEle = code.parentNode as HTMLElement
+      const preEle = code.parentNode
+      if (!(preEle instanceof HTMLElement)) continue
       const mermaidContainer = document.createElement('div')
       mermaidContainer.innerHTML = sanitize(unescapeHTML(code.innerHTML), EXPORT_DOMPURIFY_CONFIG, true)
       mermaidContainer.classList.add('mermaid')
       preEle.replaceWith(mermaidContainer)
     }
-    // biome-ignore lint/suspicious/noExplicitAny: mermaid lacks proper type declarations
-    const mermaid = (await loadRenderer('mermaid')) as any
-    // We only export light theme, so set mermaid theme to `default`, in the future, we can choose whick theme to export.
-    mermaid.initialize({
-      securityLevel: 'strict',
-      theme: 'default',
-    })
-    mermaid.init(undefined, this.exportContainer!.querySelectorAll('div.mermaid'))
-    if (this.muya) {
+
+    const nodes = Array.from(this.exportContainer!.querySelectorAll<HTMLElement>('div.mermaid'))
+    if (nodes.length === 0) return
+
+    await withMermaidRenderer(async (mermaid) => {
+      // Export with a deterministic light theme. `run` is the supported Mermaid
+      // v10+ integration API; render each node separately so one malformed
+      // diagram cannot abort the rest of the document export.
       mermaid.initialize({
+        startOnLoad: false,
         securityLevel: 'strict',
-        theme: this.muya.options.mermaidTheme,
+        theme: 'default',
       })
-    }
+
+      try {
+        for (const node of nodes) {
+          try {
+            await mermaid.run({ nodes: [node] })
+          } catch (_error) {
+            node.textContent = '< Invalid Diagram >'
+            node.classList.add('invalid-diagram')
+          }
+        }
+      } finally {
+        // Mermaid configuration is global. Restore the live editor theme after
+        // the temporary export render, including when a diagram is invalid.
+        if (this.muya) {
+          mermaid.initialize({
+            startOnLoad: false,
+            securityLevel: 'strict',
+            theme: this.muya.options.mermaidTheme,
+          })
+        }
+      }
+    })
   }
 
   async renderDiagram() {

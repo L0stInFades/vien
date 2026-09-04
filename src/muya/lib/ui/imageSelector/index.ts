@@ -10,8 +10,8 @@ import type { VNode } from 'snabbdom'
 import './index.css'
 
 interface UnsplashResponse {
-  type: string
-  response?: unknown
+  data?: unknown
+  error?: unknown
 }
 
 interface UnsplashPhoto {
@@ -41,11 +41,10 @@ interface ImageSelectorOptions {
 }
 
 const toJson = (res: UnsplashResponse) => {
-  if (res.type === 'success') {
-    return Promise.resolve(res.response)
-  } else {
-    return Promise.reject(new Error(res.type))
+  if (res.data !== undefined) {
+    return res.data
   }
+  throw new Error(`Unsplash request failed: ${JSON.stringify(res.error ?? 'unknown error')}`)
 }
 
 class ImageSelector extends BaseFloat {
@@ -135,16 +134,17 @@ class ImageSelector extends BaseFloat {
         if (this.unsplash) {
           // Load latest unsplash photos.
           this.loading = true
-          this.unsplash.photos
-            .list({
-              perPage: 40,
+          this.unsplash
+            .GET('/photos', {
+              params: {
+                query: { per_page: 40 },
+              },
             })
             .then(toJson)
             .then((json: unknown) => {
-              const data = json as { results?: UnsplashPhoto[] }
               this.loading = false
-              if (Array.isArray(data.results)) {
-                this.photoList = data.results
+              if (Array.isArray(json)) {
+                this.photoList = json as UnsplashPhoto[]
                 if (this.tab === 'unsplash') {
                   this.render()
                 }
@@ -175,11 +175,15 @@ class ImageSelector extends BaseFloat {
 
     this.loading = true
     this.photoList = []
-    this.unsplash.search
-      .getPhotos({
-        query: keyword,
-        page: 1,
-        perPage: 40,
+    this.unsplash
+      .GET('/search/photos', {
+        params: {
+          query: {
+            query: keyword,
+            page: 1,
+            per_page: 40,
+          },
+        },
       })
       .then(toJson)
       .then((json: unknown) => {
@@ -543,14 +547,9 @@ class ImageSelector extends BaseFloat {
                   const alt = photo.alt_description
                   const src = photo.urls.regular
                   const { id: photoId } = photo
-                  this.unsplash!.photos.get({ photoId })
-                    .then(toJson)
-                    .then((result: unknown) => {
-                      const data = result as { links: { download_location: string } }
-                      this.unsplash!.photos.trackDownload({
-                        downloadLocation: data.links.download_location,
-                      })
-                    })
+                  this.unsplash!.GET('/photos/{id}/download', {
+                    params: { path: { id: photoId } },
+                  }).catch(() => {})
                   return this.replaceImageAsync({ alt, title, src })
                 },
               },

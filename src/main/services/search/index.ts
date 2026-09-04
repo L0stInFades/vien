@@ -41,9 +41,9 @@ const resolveRipgrepPath = (): string => {
     // NOTE: Binary must be a compatible version, otherwise the searcher may fail.
     return process.env.MARKTEXT_RIPGREP_PATH
   }
-  // vscode-ripgrep is unpacked out of asar because of the binary.
+  // @vscode/ripgrep is unpacked out of asar because of the binary.
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { rgPath } = require('vscode-ripgrep') as { rgPath: string }
+  const { rgPath } = require('@vscode/ripgrep') as { rgPath: string }
   return rgPath.replace(/\bapp\.asar\b/, 'app.asar.unpacked')
 }
 

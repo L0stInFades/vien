@@ -18,17 +18,6 @@
           </svg>
         </li>
       </ul>
-      <ul class="bottom">
-        <li
-          v-for="(c, index) of sideBarBottomIcons"
-          :key="index"
-          @click="handleLeftBottomClick(c.name)"
-        >
-          <svg :viewBox="c.icon.viewBox">
-            <use :xlink:href="c.icon.url"></use>
-          </svg>
-        </li>
-      </ul>
     </div>
     <div class="right-column" v-show="rightColumn">
       <tree
@@ -49,7 +38,7 @@
 </template>
 
 <script>
-import { sideBarIcons, sideBarBottomIcons } from './help'
+import { sideBarIcons } from './help'
 import Tree from './tree.vue'
 import SideBarSearch from './search.vue'
 import Toc from './toc.vue'
@@ -58,7 +47,6 @@ import { useLayoutStore } from '@/store/pinia/layout'
 export default {
   data() {
     this.sideBarIcons = sideBarIcons
-    this.sideBarBottomIcons = sideBarBottomIcons
     return {
       openedFiles: [],
       sideBarViewWidth: 280,
@@ -140,11 +128,6 @@ export default {
         }
       }
     },
-    handleLeftBottomClick(name) {
-      if (name === 'settings') {
-        this.$store.dispatch('OPEN_SETTING_WINDOW')
-      }
-    },
   },
 }
 </script>
@@ -163,15 +146,11 @@ export default {
     user-select: none;
     padding: 16px 12px 16px 14px;
     box-sizing: border-box;
-    background:
-      radial-gradient(circle at top left, rgba(255, 148, 117, 0.16), transparent 24%),
-      radial-gradient(circle at bottom right, rgba(73, 118, 206, 0.16), transparent 28%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0)),
-      var(--sideBarBgColor);
+    background: var(--sideBarBgColor);
     border-right: 1px solid var(--editorSurfaceEdge);
     & .left-column {
       & svg {
-        fill: var(--iconColor);
+        fill: var(--editorColor40);
       }
     }
   }
@@ -181,15 +160,9 @@ export default {
     width: 60px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     padding: 56px 8px 10px;
     box-sizing: border-box;
-    border-radius: 30px;
-    border: 1px solid var(--sideBarPanelBorderColor);
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.18)),
-      var(--sideBarRailBgColor);
-    box-shadow: var(--sideBarPanelShadow);
     & > ul {
       opacity: 1;
       display: flex;
@@ -211,25 +184,37 @@ export default {
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      border-radius: 14px;
+      border-radius: 10px;
       background: transparent;
-      transition:
-        background-color .18s ease,
-        box-shadow .18s ease,
-        transform .18s ease;
+      transition: background-color .18s ease;
       & > svg {
         width: 18px;
         height: 18px;
-        fill: var(--sideBarIconColor);
+        fill: var(--editorColor40);
         opacity: 1;
-        transition:
-          transform .25s ease-in-out,
-          fill .18s ease;
+        transition: fill .18s ease;
       }
       &:hover {
-        background: rgba(255, 255, 255, 0.5);
-        transform: translateY(-1px);
+        background: rgba(126, 102, 76, 0.07);
       }
+      &.active {
+        background: var(--itemBgColor);
+        & > svg {
+          fill: var(--editorColor80);
+        }
+      }
+    }
+  }
+
+  .right-column {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    & > * {
+      flex: 1;
+      min-height: 0;
     }
   }
 </style>

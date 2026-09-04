@@ -7,6 +7,7 @@ const checkUpdates = vi.fn()
 const userSetting = vi.fn()
 const showAboutDialog = vi.fn()
 const toggleAlwaysOnTop = vi.fn()
+const resetZoom = vi.fn()
 const zoomIn = vi.fn()
 const zoomOut = vi.fn()
 const buildFromTemplate = vi.fn((template) => ({ items: template }))
@@ -59,6 +60,7 @@ vi.mock('../../../src/main/menu/actions/window.js', () => ({
 }))
 
 vi.mock('../../../src/main/windows/utils.js', () => ({
+  resetZoom,
   zoomIn,
   zoomOut,
 }))
@@ -82,6 +84,7 @@ describe('macOS native menus', () => {
     userSetting.mockClear()
     showAboutDialog.mockClear()
     toggleAlwaysOnTop.mockClear()
+    resetZoom.mockClear()
     zoomIn.mockClear()
     zoomOut.mockClear()
     buildFromTemplate.mockClear()
@@ -128,6 +131,7 @@ describe('macOS native menus', () => {
 
     expect(viewMenu.submenu.some((item) => item.label === 'Zoom In')).toBe(true)
     expect(viewMenu.submenu.some((item) => item.label === 'Zoom Out')).toBe(true)
+    expect(viewMenu.submenu.some((item) => item.label === 'Actual Size')).toBe(true)
     expect(viewMenu.submenu.some((item) => item.role === 'togglefullscreen')).toBe(true)
   })
 

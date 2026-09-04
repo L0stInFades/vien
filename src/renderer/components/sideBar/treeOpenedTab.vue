@@ -44,13 +44,10 @@ export default {
     padding: 0 12px 0 36px;
     position: relative;
     color: var(--sideBarColor);
-    border-radius: 14px;
+    border-radius: 8px;
     border: 1px solid transparent;
-    background: var(--sideBarRowBgColor);
-    transition:
-      background-color .18s ease,
-      border-color .18s ease,
-      transform .18s ease;
+    background: transparent;
+    transition: background-color .18s ease;
     & > svg {
       display: flex;
       align-items: center;
@@ -64,9 +61,7 @@ export default {
       transition: opacity .18s ease;
     }
     &:hover {
-      background: var(--sideBarItemHoverBgColor);
-      border-color: var(--sideBarRowBorderColor);
-      transform: translateX(1px);
+      background: rgba(126, 102, 76, 0.06);
     }
     &:hover > svg {
       opacity: 1;
@@ -80,8 +75,7 @@ export default {
   .opened-file.active {
     color: var(--sideBarTitleColor);
     background: var(--sideBarRowCurrentBgColor);
-    border-color: var(--themeColor20);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.62);
+    border-color: var(--sideBarRowBorderColor);
   }
   .unsaved.opened-file::before {
     content: '';

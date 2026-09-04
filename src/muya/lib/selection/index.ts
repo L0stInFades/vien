@@ -484,9 +484,6 @@ class Selection {
         const child = childNodes[i] as HTMLElement
         const textContent = getTextContent(child, [CLASS_OR_ID.AG_MATH_RENDER, CLASS_OR_ID.AG_RUBY_RENDER])
         const textLength = textContent.length
-        if ((child as Element).classList?.contains(CLASS_OR_ID.AG_FRONT_ICON)) {
-          continue
-        }
 
         // Fix #1460 - put the cursor at the next text node or element if it can be put at the last of /^\n$/ or the next text node/element.
         if (/^\n$/.test(textContent) && i !== len - 1 ? count + textLength > offset : count + textLength >= offset) {

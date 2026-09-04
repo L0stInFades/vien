@@ -164,7 +164,6 @@ class ContentState {
     this.renderRange = [null, null]
     this.currentCursor = null
     this.editingContainerKey = null
-    // you'll select the outmost block of current cursor when you click the front icon.
     this.selectedBlock = null
     this._selectedImage = null
     this.dropAnchor = null

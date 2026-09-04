@@ -98,6 +98,17 @@ Operating system: ${getOSInformation()}`,
 }
 
 const setupExceptionHandler = () => {
+  // A GUI-launched macOS app can outlive the terminal or output pipe that
+  // started it. macOS reports revoked descriptors as EIO; other systems
+  // commonly use EPIPE. Neither is an application crash.
+  const ignoreBrokenOutputPipe = (error) => {
+    if (error.code !== 'EPIPE' && error.code !== 'EIO') {
+      throw error
+    }
+  }
+  process.stdout.on('error', ignoreBrokenOutputPipe)
+  process.stderr.on('error', ignoreBrokenOutputPipe)
+
   // main process error handler
   process.on('uncaughtException', (error) => {
     handleError(ERROR_MSG_MAIN, error, 'main')

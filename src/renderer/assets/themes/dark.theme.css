@@ -78,7 +78,6 @@
   background: var(--editorBgColor);
 }
 
-.ag-front-menu .submenu,
 .ag-float-wrapper {
   box-shadow: 0 4px 8px 0 var(--floatShadow);
 }
@@ -95,7 +94,6 @@
   border-right: 1px solid #1d1d1d;
 }
 
-.recent-files-projects a,
 .open-project a {
   box-shadow: none;
 }
@@ -127,8 +125,7 @@
   background: var(--editorBgColor);
 }
 
-.open-project button,
-.recent-files-projects button {
+.open-project button {
   box-shadow: none;
 }
 

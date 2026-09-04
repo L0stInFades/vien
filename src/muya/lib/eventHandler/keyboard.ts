@@ -10,6 +10,17 @@ interface FloatTool {
   hide: () => void
 }
 
+const COMPOSITION_KEYS = new Set([
+  EVENT_KEYS.Backspace,
+  EVENT_KEYS.Delete,
+  EVENT_KEYS.Enter,
+  EVENT_KEYS.Tab,
+  EVENT_KEYS.ArrowUp,
+  EVENT_KEYS.ArrowDown,
+  EVENT_KEYS.ArrowLeft,
+  EVENT_KEYS.ArrowRight,
+])
+
 class Keyboard {
   isComposed: boolean
   muya: IMuya
@@ -30,14 +41,6 @@ class Keyboard {
     // cache shown float box
     this.muya.eventCenter.subscribe('muya-float', (tool: unknown, status: unknown) => {
       ;(status as boolean) ? this.shownFloat.add(tool as FloatTool) : this.shownFloat.delete(tool as FloatTool)
-      if ((tool as FloatTool).name === 'ag-front-menu' && !status) {
-        const seletedParagraph = this.muya.container.querySelector('.ag-selected')
-        if (seletedParagraph) {
-          this.muya.contentState.selectedBlock = null
-          // prevent rerender, so change the class manually.
-          seletedParagraph.classList.toggle('ag-selected')
-        }
-      }
     })
   }
 
@@ -107,6 +110,9 @@ class Keyboard {
   keydownBinding() {
     const { container, eventCenter, contentState } = this.muya
     const docHandler = (event: KeyboardEvent) => {
+      if ((this.isComposed || event.isComposing) && COMPOSITION_KEYS.has(event.code)) {
+        return
+      }
       switch (event.code) {
         case EVENT_KEYS.Enter:
           return contentState.docEnterHandler(event)
@@ -141,6 +147,13 @@ class Keyboard {
         container.classList.add('ag-meta-or-ctrl')
       }
 
+      // Editing/navigation keys belong to the IME until compositionend.
+      // Running Muya handlers against the pre-composition block state can
+      // move the cursor or insert indentation while choosing candidates.
+      if ((this.isComposed || event.isComposing) && COMPOSITION_KEYS.has(event.key)) {
+        return
+      }
+
       if (
         this.shownFloat.size > 0 &&
         (event.key === EVENT_KEYS.Enter ||
@@ -157,7 +170,6 @@ class Keyboard {
             tool.name === 'ag-table-picker' ||
             tool.name === 'ag-quick-insert' ||
             tool.name === 'ag-emoji-picker' ||
-            tool.name === 'ag-front-menu' ||
             tool.name === 'ag-list-picker' ||
             tool.name === 'ag-image-selector'
           ) {
@@ -179,18 +191,14 @@ class Keyboard {
           contentState.deleteHandler(event)
           break
         case EVENT_KEYS.Enter:
-          if (!this.isComposed) {
-            contentState.enterHandler(event)
-            this.muya.dispatchChange()
-          }
+          contentState.enterHandler(event)
+          this.muya.dispatchChange()
           break
         case EVENT_KEYS.ArrowUp: // fallthrough
         case EVENT_KEYS.ArrowDown: // fallthrough
         case EVENT_KEYS.ArrowLeft: // fallthrough
         case EVENT_KEYS.ArrowRight: // fallthrough
-          if (!this.isComposed) {
-            contentState.arrowHandler(event)
-          }
+          contentState.arrowHandler(event)
           break
         case EVENT_KEYS.Tab:
           contentState.tabHandler(event)

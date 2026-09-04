@@ -75,8 +75,7 @@ const copyCutCtrl = (ContentState: { prototype: IContentState }) => {
       .${CLASS_OR_ID.AG_MATH_PREVIEW},
       .${CLASS_OR_ID.AG_COPY_REMOVE},
       .${CLASS_OR_ID.AG_LANGUAGE_INPUT},
-      .${CLASS_OR_ID.AG_HTML_TAG} br,
-      .${CLASS_OR_ID.AG_FRONT_ICON}`,
+      .${CLASS_OR_ID.AG_HTML_TAG} br`,
     )
 
     for (const e of removedElements) {

@@ -1,4 +1,4 @@
-import Popper from 'popper.js/dist/esm/popper'
+import { createPopper, type Instance, type Placement, type VirtualElement } from '@popperjs/core'
 import resizeDetector from 'element-resize-detector'
 import { noop } from '../../utils'
 import { EVENT_KEYS } from '../../config'
@@ -10,6 +10,18 @@ interface FloatOptions {
   modifiers?: Record<string, unknown>
   showArrow?: boolean
   [key: string]: unknown
+}
+
+const toPopperOptions = ({ placement, modifiers }: FloatOptions) => {
+  const rawOffset = (modifiers?.offset as { offset?: string | [number, number] } | undefined)?.offset ?? [0, 0]
+  const offset = Array.isArray(rawOffset)
+    ? rawOffset
+    : (rawOffset.split(',').map((value) => Number.parseFloat(value.trim())) as [number, number])
+
+  return {
+    placement: (placement === 'bottom-center' ? 'bottom' : placement) as Placement,
+    modifiers: [{ name: 'offset', options: { offset } }],
+  }
 }
 
 const defaultOptions = (): FloatOptions => ({
@@ -30,7 +42,7 @@ class BaseFloat {
   muya: IMuya
   name: string
   options: FloatOptions
-  popper: InstanceType<typeof Popper> | null
+  popper: Instance | null
   // biome-ignore lint/suspicious/noExplicitAny: element-resize-detector has no types
   resizeDetector: any
   status: boolean
@@ -59,7 +71,7 @@ class BaseFloat {
 
     if (showArrow) {
       const arrow = document.createElement('div')
-      arrow.setAttribute('x-arrow', '')
+      arrow.setAttribute('data-popper-arrow', '')
       arrow.classList.add('ag-popper-arrow')
       floatBox.appendChild(arrow)
     }
@@ -137,10 +149,11 @@ class BaseFloat {
       this.popper.destroy()
     }
     this.cb = cb
-    this.popper = new Popper(reference, floatBox, {
-      placement,
-      modifiers,
-    })
+    this.popper = createPopper(
+      reference as Element | VirtualElement,
+      floatBox,
+      toPopperOptions({ placement, modifiers }),
+    )
     this.status = true
     eventCenter.dispatch('muya-float', this, true)
   }

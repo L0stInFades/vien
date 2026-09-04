@@ -1,4 +1,5 @@
 import loadRenderer from '../../renderers'
+import { withMermaidRenderer, type MermaidRenderer } from '../../renderers/mermaid'
 import { CLASS_OR_ID } from '../../config'
 import { conflict, mixins, camelToSnake } from '../../utils'
 import { patch, toVNode, toHTML, h } from './snabbdom'
@@ -44,11 +45,6 @@ interface MuyaInstance {
   [k: string]: unknown
 }
 
-interface MermaidRenderResult {
-  svg: string
-  bindFunctions?: (element: Element) => void
-}
-
 class StateRender {
   codeCache: Map<string, string>
   container: HTMLElement | null
@@ -58,6 +54,8 @@ class StateRender {
   loadImageMap: Map<string, ImageInfo>
   loadMathMap: Map<string, unknown>
   mermaidCache: Map<string, { code: string; functionType: string }>
+  mermaidRenderSequence: number
+  mermaidRenderVersions: Map<string, number>
   muya: MuyaInstance
   renderBlock!: (
     parent: Block | null,
@@ -77,6 +75,8 @@ class StateRender {
     this.loadImageMap = new Map()
     this.loadMathMap = new Map()
     this.mermaidCache = new Map()
+    this.mermaidRenderSequence = 0
+    this.mermaidRenderVersions = new Map()
     this.diagramCache = new Map()
     this.tokenCache = new Map()
     this.labels = new Map()
@@ -181,7 +181,7 @@ class StateRender {
       document.body.appendChild(canvas)
     }
 
-    canvas.innerHTML = ''
+    canvas.replaceChildren()
     return canvas
   }
 
@@ -239,84 +239,106 @@ class StateRender {
     }
   }
 
-  async renderMermaidToStaticSvg(
-    mermaid: {
-      render: (id: string, text: string, container?: Element) => MermaidRenderResult | Promise<MermaidRenderResult>
-    },
-    code: string,
-    renderId: string,
-  ) {
+  async renderMermaidToStaticSvg(mermaid: Pick<MermaidRenderer, 'render'>, code: string, renderId: string) {
     const offscreenCanvas = this.getMermaidOffscreenCanvas()
-    const tempContainer = document.createElement('div')
-    tempContainer.id = renderId
-    offscreenCanvas.appendChild(tempContainer)
+    try {
+      const renderResult = await Promise.resolve(mermaid.render(renderId, code, offscreenCanvas))
+      const svgMarkup = typeof renderResult === 'string' ? renderResult : renderResult.svg
+      const tempContainer = document.createElement('div')
+      tempContainer.innerHTML = svgMarkup
+      offscreenCanvas.appendChild(tempContainer)
 
-    const renderResult = await Promise.resolve(mermaid.render(renderId, code))
-    const svgMarkup = typeof renderResult === 'string' ? renderResult : renderResult.svg
-    tempContainer.innerHTML = svgMarkup
-
-    await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => {
-        resolve()
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => {
+          resolve()
+        })
       })
-    })
 
-    const svg = tempContainer.querySelector('svg')
-    if (!(svg instanceof SVGSVGElement)) {
-      offscreenCanvas.innerHTML = ''
-      return null
-    }
+      const svg = tempContainer.querySelector('svg')
+      if (!(svg instanceof SVGSVGElement)) return null
 
-    const dimensions = this.tightenMermaidSvg(svg)
-    const markup = svg.outerHTML
-    offscreenCanvas.innerHTML = ''
+      const dimensions = this.tightenMermaidSvg(svg)
+      if (!dimensions) return null
 
-    if (!dimensions) {
-      return null
-    }
-
-    return {
-      markup,
-      ...dimensions,
+      return {
+        markup: svg.outerHTML,
+        ...dimensions,
+      }
+    } finally {
+      offscreenCanvas.replaceChildren()
     }
   }
 
   async renderMermaid() {
-    if (this.mermaidCache.size) {
-      const mermaid = (await loadRenderer('mermaid')) as {
-        initialize: (opts: Record<string, unknown>) => void
-        parse: (code: string) => void
-        render: (id: string, text: string, container?: Element) => MermaidRenderResult | Promise<MermaidRenderResult>
-      }
-      mermaid.initialize({
-        startOnLoad: false,
-        securityLevel: 'strict',
-        theme: this.muya.options.mermaidTheme,
-      })
-      for (const [key, value] of this.mermaidCache.entries()) {
-        const { code } = value
-        const target = document.querySelector(key)
-        if (!target) {
-          continue
-        }
-        try {
-          mermaid.parse(code)
-          const renderId = `${key.replace(/^#/, 'ag-mermaid-static-')}-${Date.now().toString(36)}`
-          const renderedSvg = await this.renderMermaidToStaticSvg(mermaid, code, renderId)
-          if (!renderedSvg) {
-            throw new Error('Unable to render Mermaid SVG.')
+    if (!this.mermaidCache.size) return
+
+    // Snapshot before the first await. A newer render cycle can now queue its
+    // own entries without this invocation clearing or rendering them.
+    const pending = new Map(this.mermaidCache)
+    this.mermaidCache.clear()
+    const renderVersion = ++this.mermaidRenderSequence
+    for (const key of pending.keys()) {
+      this.mermaidRenderVersions.set(key, renderVersion)
+    }
+
+    const showError = (target: HTMLElement) => {
+      target.textContent = '< Invalid Mermaid Codes >'
+      target.classList.add(CLASS_OR_ID.AG_MATH_ERROR)
+      target.style.removeProperty('--ag-mermaid-preview-width')
+      target.style.removeProperty('--ag-mermaid-preview-height')
+    }
+
+    try {
+      await withMermaidRenderer(async (mermaid) => {
+        mermaid.initialize({
+          startOnLoad: false,
+          securityLevel: 'strict',
+          theme: this.muya.options.mermaidTheme,
+        })
+
+        for (const [key, value] of pending) {
+          const { code } = value
+          const target = document.querySelector<HTMLElement>(key)
+          const isCurrentTarget = () =>
+            this.mermaidRenderVersions.get(key) === renderVersion && document.querySelector(key) === target
+
+          if (!target) {
+            if (this.mermaidRenderVersions.get(key) === renderVersion) this.mermaidRenderVersions.delete(key)
+            continue
           }
 
-          target.innerHTML = renderedSvg.markup
-          ;(target as HTMLElement).style.setProperty('--ag-mermaid-preview-width', `${renderedSvg.intrinsicWidth}px`)
-          ;(target as HTMLElement).style.setProperty('--ag-mermaid-preview-height', `${renderedSvg.intrinsicHeight}px`)
-        } catch (_err) {
-          target.innerHTML = '< Invalid Mermaid Codes >'
-          target.classList.add(CLASS_OR_ID.AG_MATH_ERROR)
-        }
-      }
+          try {
+            // Mermaid 11 parse() is asynchronous. Await it so invalid input is
+            // contained here instead of becoming an unhandled rejection.
+            await Promise.resolve(mermaid.parse(code))
+            const renderId = `${key.replace(/^#/, 'ag-mermaid-static-')}-${renderVersion}-${Date.now().toString(36)}`
+            const renderedSvg = await this.renderMermaidToStaticSvg(mermaid, code, renderId)
+            if (!renderedSvg) throw new Error('Unable to render Mermaid SVG.')
+            if (!isCurrentTarget()) continue
 
-      this.mermaidCache.clear()
+            target.innerHTML = renderedSvg.markup
+            target.classList.remove(CLASS_OR_ID.AG_MATH_ERROR)
+            target.style.setProperty('--ag-mermaid-preview-width', `${renderedSvg.intrinsicWidth}px`)
+            target.style.setProperty('--ag-mermaid-preview-height', `${renderedSvg.intrinsicHeight}px`)
+          } catch (_error) {
+            if (isCurrentTarget()) showError(target)
+          } finally {
+            if (this.mermaidRenderVersions.get(key) === renderVersion) {
+              this.mermaidRenderVersions.delete(key)
+            }
+          }
+        }
+      })
+    } catch (_error) {
+      // Dynamic renderer loading or global initialization failed. Contain the
+      // failure because render() intentionally invokes this async path without
+      // awaiting it.
+      for (const key of pending.keys()) {
+        if (this.mermaidRenderVersions.get(key) !== renderVersion) continue
+        const target = document.querySelector<HTMLElement>(key)
+        if (target) showError(target)
+        this.mermaidRenderVersions.delete(key)
+      }
     }
   }
 

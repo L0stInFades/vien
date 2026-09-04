@@ -190,7 +190,7 @@
   "hideQuickInsertHint": {
     "description": "Editor--Hide hint for quickly creating paragraphs",
     "type": "boolean",
-    "default": false
+    "default": true
   },
   "hideLinkPopup": {
     "description": "Editor--Hide link popup when the cursor is hover on the link",

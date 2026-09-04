@@ -51,6 +51,8 @@ export interface EditorEngine {
   selectAll(): void
   getSelection(): EngineSelection | null
   setCursor(cursor: unknown): void
+  /** Insert an image from an explicit path or data URL at the cursor. */
+  pasteImage(src: string): Promise<string | null>
   /** True while a table cell-range selection is active (guards copy handling). */
   hasSelectedTableCells(): boolean
 
@@ -76,6 +78,8 @@ export interface EditorEngine {
   setListIndentation(listIndentation: number | string): void
   setOptions(options: Record<string, unknown>, needRender?: boolean): void
   invalidateImageCache(): void
+  /** Hide every visible float tool (format picker, link tools, ...). */
+  hideAllFloatTools(): void
   /** Replace the word at the cursor (spellchecker suggestion flow). */
   replaceCurrentWordInline(word: string, replacement: string): void
 

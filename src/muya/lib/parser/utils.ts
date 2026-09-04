@@ -62,6 +62,9 @@ export const WHITELIST_ATTRIBUTES = Object.freeze([
 // ])
 
 const UNICODE_WHITESPACE_REG = /^\s/
+// Deliberate editor extension: CJK writing normally omits word spaces, so CJK
+// letters act as emphasis boundaries when punctuation sits inside **...**.
+const CJK_EMPHASIS_BOUNDARY_REG = /[぀-ヿ㐀-䶿一-鿿豈-﫿가-힯ｦ-ﾝ]|[\uD840-\uD87F][\uDC00-\uDFFF]/
 const INLINE_MATH_CJK_REG = /[\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff\uac00-\ud7af]/u
 const INLINE_MATH_GREEK_OR_SYMBOL_REG = /[\u0370-\u03FF\u2200-\u22FF]/u
 const INLINE_MATH_PLAIN_WORD_REG = /^[A-Za-z]{2,}$/
@@ -168,9 +171,30 @@ export const parseSrcAndTitle = (text = '') => {
   return { src, title }
 }
 
+const lastCodePointChar = (text: string): string => {
+  if (!text) return ''
+  const lastIndex = text.length - 1
+  const lastUnit = text.charCodeAt(lastIndex)
+  if (lastUnit >= 0xdc00 && lastUnit <= 0xdfff && lastIndex > 0) {
+    const previousUnit = text.charCodeAt(lastIndex - 1)
+    if (previousUnit >= 0xd800 && previousUnit <= 0xdbff) return text.slice(lastIndex - 1)
+  }
+  return text.charAt(lastIndex)
+}
+
+const codePointCharAt = (text: string, index: number): string | undefined => {
+  if (index >= text.length) return undefined
+  const unit = text.charCodeAt(index)
+  if (unit >= 0xd800 && unit <= 0xdbff && index + 1 < text.length) {
+    const nextUnit = text.charCodeAt(index + 1)
+    if (nextUnit >= 0xdc00 && nextUnit <= 0xdfff) return text.slice(index, index + 2)
+  }
+  return text.charAt(index)
+}
+
 const canOpenEmphasis = (src: string, marker: string, pending: string) => {
-  const precededChar = pending.charAt(pending.length - 1) || '\n'
-  const followedChar = src[marker.length]
+  const precededChar = lastCodePointChar(pending) || '\n'
+  const followedChar = codePointCharAt(src, marker.length) ?? ''
   // not followed by Unicode whitespace,
   if (UNICODE_WHITESPACE_REG.test(followedChar)) {
     return false
@@ -180,19 +204,30 @@ const canOpenEmphasis = (src: string, marker: string, pending: string) => {
   // For purposes of this definition, the beginning and the end of the line count as Unicode whitespace.
   if (
     PUNCTUATION_REG.test(followedChar) &&
-    !(UNICODE_WHITESPACE_REG.test(precededChar) || PUNCTUATION_REG.test(precededChar))
+    !(
+      UNICODE_WHITESPACE_REG.test(precededChar) ||
+      PUNCTUATION_REG.test(precededChar) ||
+      CJK_EMPHASIS_BOUNDARY_REG.test(precededChar)
+    )
   ) {
     return false
   }
-  if (/_/.test(marker) && !(UNICODE_WHITESPACE_REG.test(precededChar) || PUNCTUATION_REG.test(precededChar))) {
+  if (
+    /_/.test(marker) &&
+    !(
+      UNICODE_WHITESPACE_REG.test(precededChar) ||
+      PUNCTUATION_REG.test(precededChar) ||
+      CJK_EMPHASIS_BOUNDARY_REG.test(precededChar)
+    )
+  ) {
     return false
   }
   return true
 }
 
 const canCloseEmphasis = (src: string, offset: number, marker: string) => {
-  const precededChar = src[offset - marker.length - 1]
-  const followedChar = src[offset] || '\n'
+  const precededChar = lastCodePointChar(src.substring(0, offset - marker.length))
+  const followedChar = codePointCharAt(src, offset) || '\n'
   // not preceded by Unicode whitespace,
   if (UNICODE_WHITESPACE_REG.test(precededChar)) {
     return false
@@ -201,11 +236,22 @@ const canCloseEmphasis = (src: string, offset: number, marker: string) => {
   // or (2b) preceded by a punctuation character and followed by Unicode whitespace or a punctuation character.
   if (
     PUNCTUATION_REG.test(precededChar) &&
-    !(UNICODE_WHITESPACE_REG.test(followedChar) || PUNCTUATION_REG.test(followedChar))
+    !(
+      UNICODE_WHITESPACE_REG.test(followedChar) ||
+      PUNCTUATION_REG.test(followedChar) ||
+      CJK_EMPHASIS_BOUNDARY_REG.test(followedChar)
+    )
   ) {
     return false
   }
-  if (/_/.test(marker) && !(UNICODE_WHITESPACE_REG.test(followedChar) || PUNCTUATION_REG.test(followedChar))) {
+  if (
+    /_/.test(marker) &&
+    !(
+      UNICODE_WHITESPACE_REG.test(followedChar) ||
+      PUNCTUATION_REG.test(followedChar) ||
+      CJK_EMPHASIS_BOUNDARY_REG.test(followedChar)
+    )
+  ) {
     return false
   }
   return true

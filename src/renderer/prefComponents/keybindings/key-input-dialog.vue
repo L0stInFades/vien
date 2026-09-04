@@ -9,7 +9,7 @@
       custom-class="ag-dialog-table"
       width="350px"
     >
-      <template #title>
+      <template #header>
         <div class="key-input-wrapper">
           <div class="input-wrapper">
             <input

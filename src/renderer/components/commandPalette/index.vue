@@ -8,7 +8,7 @@
       custom-class="ag-dialog-table"
       width="500px"
     >
-      <template #title>
+      <template #header>
         <div class="search-wrapper">
           <div class="input-wrapper">
             <input
@@ -228,3 +228,73 @@ export default {
   },
 }
 </script>
+
+<style>
+  .command-palette .el-dialog__header {
+    padding: 0;
+  }
+  .command-palette .el-dialog__body {
+    display: none;
+  }
+</style>
+
+<style scoped>
+  .input-wrapper {
+    border-bottom: 1px solid var(--editorColor10);
+    & input.search {
+      width: 100%;
+      box-sizing: border-box;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 15px;
+      padding: 12px 16px;
+      color: var(--editorColor80);
+      &::placeholder {
+        color: var(--editorColor40);
+      }
+    }
+  }
+  .commands {
+    list-style: none;
+    margin: 0;
+    padding: 6px;
+    max-height: 320px;
+    overflow-y: auto;
+    & li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      font-size: 13px;
+      border-radius: 8px;
+      cursor: pointer;
+      &:hover, &.active {
+        background: var(--floatHoverColor);
+      }
+      & .title {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--editorColor80);
+      }
+      & .shortcut {
+        flex-shrink: 0;
+        display: inline-flex;
+        gap: 4px;
+        margin-left: 12px;
+      }
+      & kbd {
+        font-family: inherit;
+        font-size: 11px;
+        color: var(--editorColor60);
+        background: rgba(126, 102, 76, 0.05);
+        border: 1px solid var(--editorColor10);
+        border-radius: 5px;
+        padding: 1px 5px;
+      }
+    }
+  }
+</style>

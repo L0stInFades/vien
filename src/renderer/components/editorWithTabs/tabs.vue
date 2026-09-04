@@ -217,7 +217,7 @@ export default {
     flex-direction: row;
     height: 35px;
     user-select: none;
-    box-shadow: 0px 0px 9px 2px rgba(0, 0, 0, .1);
+    box-shadow: inset 0 -1px 0 var(--editorColor04);
     overflow: hidden;
     &:hover > .new-file {
       opacity: 1 !important;
@@ -245,14 +245,17 @@ export default {
     & > li {
       position: relative;
       padding: 0 8px;
-      color: var(--editorColor50);
+      color: var(--editorColor40);
       font-size: 12px;
       line-height: 35px;
       height: 35px;
       max-width: 280px;
-      background: var(--floatBgColor);
+      background: transparent;
       display: flex;
       align-items: center;
+      &:hover {
+        background: rgba(126, 102, 76, 0.06);
+      }
       &[aria-grabbed="true"] {
         color: var(--editorColor30) !important;
       }
@@ -291,16 +294,9 @@ export default {
     }
     & > li.active {
       background: var(--itemBgColor);
+      border-radius: 8px 8px 0 0;
+      color: var(--editorColor80);
       z-index: 3;
-      &:after {
-        content: '';
-        position: absolute;
-        left: 0;
-        bottom: 0;
-        right: 0;
-        height: 2px;
-        background: var(--themeColor);
-      }
       & > svg {
         opacity: 1;
       }
@@ -319,7 +315,7 @@ export default {
     align-items: center;
     justify-content: space-around;
     cursor: pointer;
-    color: var(--editorColor50);
+    color: var(--editorColor40);
     opacity: 0;
     &.always-visible {
       opacity: 1;

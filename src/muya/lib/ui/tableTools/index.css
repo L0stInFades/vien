@@ -19,6 +19,7 @@
   cursor: pointer;
   position: relative;
   font-size: 13px;
+  border-radius: 6px;
 }
 
 .ag-table-bar-tools li.item[data-label="remove"] {

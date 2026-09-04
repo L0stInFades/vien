@@ -17,6 +17,7 @@
   height: 28px;
   display: flex;
   list-style: none;
+  border-radius: 6px;
 }
 
 .ag-list-picker:hover .active {

@@ -703,9 +703,7 @@ kbd {
   th code {
     background-color: var(--codeBlockBgColor);
     border-radius: 3px;
-    padding: 0;
     /*font-family: Menlo, Monaco, Consolas, "Courier New", monospace;*/
-    padding: 2px 4px 0px 4px;
     font-size: 85%;
     margin: 0;
     padding: 0.2em 0.4em;
@@ -809,17 +807,6 @@ kbd {
   body.dark .ag-image-marked-text.ag-image-fail::before {
     background-image: url(../lib/assets/icons/image_dark_fail.png);
     background-size: cover;
-  }
-
-  .ag-front-icon {
-    fill: var(--editorColor30);
-  }
-
-  .ag-front-icon::before {
-    border: 3px solid var(--editorColor50);
-    border-bottom: none;
-    border-left-color: transparent;
-    border-right-color: transparent;
   }
 } /* end not print */
 

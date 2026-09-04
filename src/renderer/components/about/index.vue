@@ -107,18 +107,14 @@ export default {
   }
 
   .about-dialog .logo-halo {
-    position: absolute;
-    inset: 8px;
-    border-radius: 30px;
-    background: radial-gradient(circle at 30% 30%, rgba(255, 137, 92, 0.25), rgba(66, 133, 244, 0.25) 70%, rgba(255, 255, 255, 0) 72%);
-    filter: blur(10px);
+    display: none;
   }
 
   .about-dialog img.logo {
     width: 88px;
     height: 88px;
     border-radius: 26px;
-    box-shadow: 0 18px 46px rgba(63, 87, 173, 0.24);
+    box-shadow: var(--floatShadow);
     position: relative;
     z-index: 1;
   }
@@ -128,7 +124,7 @@ export default {
     font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--themeColor);
+    color: var(--editorColor40);
   }
 
   .about-dialog .title,
@@ -137,9 +133,10 @@ export default {
   }
 
   .about-dialog .title {
-    margin: 8px 0 10px;
+    margin: 10px 0 10px;
     min-height: auto;
-    font-size: 28px;
+    font-size: 20px;
+    font-weight: 600;
     color: var(--sideBarTitleColor);
   }
 
@@ -149,9 +146,9 @@ export default {
     justify-content: center;
     padding: 7px 12px;
     border-radius: 999px;
-    border: 1px solid var(--editorColor04);
+    border: 1px solid var(--editorColor10);
     background: var(--itemBgColor);
-    color: var(--themeColor);
+    color: var(--editorColor80);
     font-size: 13px;
     font-weight: 600;
   }
@@ -161,16 +158,15 @@ export default {
     margin: 14px auto 0;
     font-size: 13px;
     line-height: 1.6;
-    color: var(--floatFontColor);
-    opacity: 0.85;
+    color: var(--editorColor60);
   }
 
   .about-dialog .inspiration-card {
     max-width: 320px;
     margin: 16px auto 0;
     padding: 12px 14px;
-    border: 1px solid var(--editorColor04);
-    border-radius: 16px;
+    border: 1px solid var(--editorColor10);
+    border-radius: 10px;
     background: var(--itemBgColor);
     text-align: left;
   }
@@ -180,27 +176,26 @@ export default {
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--themeColor);
+    color: var(--editorColor40);
   }
 
   .about-dialog .inspiration-copy {
     margin: 8px 0 0;
     font-size: 13px;
     line-height: 1.65;
-    color: var(--floatFontColor);
-    opacity: 0.88;
+    color: var(--editorColor60);
   }
 
   .about-dialog .about-meta {
     margin-top: 6px;
     padding-top: 16px;
-    border-top: 1px solid var(--editorColor04);
+    border-top: 1px solid var(--editorColor10);
   }
 
   .about-dialog .text {
     min-height: auto;
+    font-size: 13px;
     line-height: 1.7;
-    color: var(--floatFontColor);
-    opacity: 0.82;
+    color: var(--editorColor40);
   }
 </style>

@@ -1,6 +1,6 @@
 import * as actions from '../actions/view'
 import { isOsx } from '../../config'
-import { zoomIn, zoomOut } from '../../windows/utils'
+import { resetZoom, zoomIn, zoomOut } from '../../windows/utils'
 
 export default function (keybindings) {
   const viewMenu = {
@@ -104,6 +104,13 @@ export default function (keybindings) {
         accelerator: keybindings.getAccelerator('window.zoom-out'),
         click(_item, focusedWindow) {
           zoomOut(focusedWindow)
+        },
+      },
+      {
+        label: 'Actual Size',
+        accelerator: keybindings.getAccelerator('window.zoom-reset'),
+        click(_item, focusedWindow) {
+          resetZoom(focusedWindow)
         },
       },
       {

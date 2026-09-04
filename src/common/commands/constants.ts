@@ -104,6 +104,7 @@ const COMMANDS = Object.freeze({
   WINDOW_TOGGLE_ALWAYS_ON_TOP: 'window.toggle-always-on-top',
   WINDOW_TOGGLE_FULL_SCREEN: 'window.toggle-full-screen',
   WINDOW_ZOOM_IN: 'window.zoom-in',
+  WINDOW_ZOOM_RESET: 'window.zoom-reset',
   WINDOW_ZOOM_OUT: 'window.zoom-out',
 } as const)
 

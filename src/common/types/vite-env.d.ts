@@ -18,6 +18,8 @@ declare module '*.css?inline' {
   export default css
 }
 
+declare module '*.css' {}
+
 declare module 'fuzzaldrin' {
   interface FilterOptions {
     key?: string
@@ -34,20 +36,6 @@ declare module 'command-exists' {
     sync(command: string): boolean
   }
   export default commandExists
-}
-
-declare module 'popper.js/dist/esm/popper' {
-  interface PopperOptions {
-    placement?: string
-    modifiers?: Record<string, unknown>
-    [key: string]: unknown
-  }
-  class Popper {
-    constructor(reference: Element | { getBoundingClientRect(): DOMRect }, popper: HTMLElement, options?: PopperOptions)
-    update(): void
-    destroy(): void
-  }
-  export default Popper
 }
 
 declare module 'element-resize-detector' {

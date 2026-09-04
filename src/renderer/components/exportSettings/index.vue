@@ -423,6 +423,12 @@ export default {
   .print-settings-dialog {
     user-select: none;
   }
+  h3 {
+    margin: 0 0 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--editorColor80);
+  }
   .row {
     margin-bottom: 8px;
   }
@@ -440,6 +446,8 @@ export default {
   .text {
     white-space: pre-wrap;
     word-break: break-word;
+    font-size: 13px;
+    color: var(--editorColor40);
   }
 
   .button-controlls {

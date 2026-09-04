@@ -558,6 +558,7 @@ export interface IContentState {
 
   // Paste (pasteCtrl)
   pasteImage(event: ClipboardEvent): Promise<string | File | null>
+  pasteImageSrc(src: string): Promise<string | null>
   standardizeHTML(html: string): Promise<string>
   checkCopyType(html: string, text: string): string
   html2State(html: string): Block[]
@@ -642,6 +643,7 @@ export interface MuyaOptions {
   hideLinkPopup?: boolean
   autoCheck?: boolean
   imageAction?: (...args: unknown[]) => Promise<string>
+  filePathResolver?: (file: File) => string
   imagePathPicker?: unknown
   clipboardFilePath?: () => Promise<string>
   imageUploader?: unknown

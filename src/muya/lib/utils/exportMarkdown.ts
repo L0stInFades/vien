@@ -136,7 +136,7 @@ class ExportMarkdown {
           this.isLooseParentList = true
 
           // Start a new list without separation due changing the bullet or ordered list delimiter starts a new list.
-          const { bulletMarkerOrDelimiter } = block.children[0]
+          const bulletMarkerOrDelimiter = block.children[0]?.bulletMarkerOrDelimiter
           if (lastListBullet && lastListBullet !== bulletMarkerOrDelimiter) {
             // Compact splits stay compact; blank-separated sources keep
             // their blank line (ADR-001 lossless round-trip).
@@ -157,7 +157,7 @@ class ExportMarkdown {
           this.isLooseParentList = true
 
           // Start a new list without separation due changing the bullet or ordered list delimiter starts a new list.
-          const { bulletMarkerOrDelimiter } = block.children[0]
+          const bulletMarkerOrDelimiter = block.children[0]?.bulletMarkerOrDelimiter
           if (lastListBullet && lastListBullet !== bulletMarkerOrDelimiter) {
             // Compact splits stay compact; blank-separated sources keep
             // their blank line (ADR-001 lossless round-trip).

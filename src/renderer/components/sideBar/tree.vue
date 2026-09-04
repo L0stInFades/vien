@@ -64,15 +64,11 @@
       </div>
     </div>
       <div v-else class="open-project" data-testid="open-project">
-      <div class="centered-group">
-        <svg aria-hidden="true" :viewBox="FolderIcon.viewBox">
-          <use :xlink:href="FolderIcon.url"></use>
-        </svg>
+        <p>Open a folder to browse its notes.</p>
         <button class="button-primary" @click="openFolder">
           Open Folder
         </button>
       </div>
-    </div>
   </div>
 </template>
 
@@ -83,13 +79,11 @@ import OpenedFile from './treeOpenedTab.vue'
 import { mapState } from 'vuex'
 import bus from '../../bus'
 import { createFileOrDirectoryMixins } from '../../mixins'
-import FolderIcon from '@/assets/icons/undraw_folder.svg'
 
 export default {
   mixins: [createFileOrDirectoryMixins],
   data() {
     this.depth = 0
-    this.FolderIcon = FolderIcon
     return {
       showDirectories: true,
       showNewInput: false,
@@ -178,7 +172,7 @@ export default {
     transform: translateX(-50px);
   }
   .tree-view {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--sideBarColor);
     display: flex;
     flex-direction: column;
@@ -204,13 +198,10 @@ export default {
     & > .title {
       height: 36px;
       line-height: 36px;
-      font-size: 12px;
-      letter-spacing: 0.16em;
+      font-size: 11px;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--panelEyebrowColor);
-      background: var(--sideBarRowBgColor);
-      border: 1px solid var(--sideBarRowBorderColor);
-      border-radius: 16px;
+      color: var(--panelMutedColor);
       padding: 0 14px;
       box-sizing: border-box;
     }
@@ -232,11 +223,11 @@ export default {
       margin-left: 8px;
       width: 24px;
       height: 24px;
-      border-radius: 10px;
+      border-radius: 8px;
       opacity: 0;
       transition: opacity .18s ease, background-color .18s ease, color .18s ease;
       &:hover {
-        background: rgba(255, 255, 255, 0.72);
+        background: rgba(126, 102, 76, 0.06);
       }
     }
   }
@@ -244,7 +235,7 @@ export default {
   .opened-files div.title > a:hover {
     opacity: 1;
     &:hover {
-      color: var(--highlightThemeColor);
+      color: var(--editorColor80);
     }
   }
   .opened-files {
@@ -315,27 +306,15 @@ export default {
   .open-project {
     flex: 1;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 14px;
     padding-bottom: 48px;
-    & .centered-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 18px;
-      padding: 28px 20px;
-      background: rgba(255, 255, 255, 0.52);
-      border: 1px solid var(--panelSubtleBorderColor);
-      border-radius: 24px;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
-    }
-    & svg {
-      width: 120px;
-      fill: var(--themeColor);
-    }
-    & button.button-primary {
-      display: block;
+    color: var(--panelMutedColor);
+    & > p {
+      margin: 0;
+      font-size: 13px;
     }
   }
   .new-input {
@@ -345,9 +324,9 @@ export default {
     padding: 0 12px;
     color: var(--sideBarColor);
     border: 1px solid var(--controlBorderColor);
-    background: var(--controlBgColor);
+    background: var(--inputBgColor);
     width: calc(100% - 45px);
-    border-radius: 14px;
+    border-radius: 8px;
     box-sizing: border-box;
   }
   .tree-wrapper {
@@ -355,21 +334,18 @@ export default {
   }
   .empty-project {
     margin-top: 6px;
-    font-size: 14px;
+    font-size: 13px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 22px 18px;
+    padding: 16px 10px;
     color: var(--panelMutedColor);
-    background: rgba(255, 255, 255, 0.52);
-    border: 1px solid var(--panelSubtleBorderColor);
-    border-radius: 20px;
     line-height: 1.6;
     & > a {
       color: var(--highlightThemeColor);
       text-align: center;
-      margin-top: 12px;
+      margin-top: 8px;
       text-decoration: none;
       font-weight: 600;
     }

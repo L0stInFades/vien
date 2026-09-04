@@ -6,9 +6,11 @@
   height: auto;
   top: -1000px;
   right: -1000px;
-  border-radius: 2px;
+  border-radius: 10px;
+  border: 1px solid var(--floatBorderColor);
   box-shadow: var(--floatShadow);
   background-color: var(--floatBgColor);
+  color: var(--floatFontColor);
   transition: opacity 0.25s ease-in-out;
   transform-origin: top;
   box-sizing: border-box;
@@ -28,7 +30,7 @@
   width: 16px;
   height: 16px;
   background: inherit;
-  border: 1px solid #ebeef5;
+  border: 1px solid var(--floatBorderColor);
   display: inline-block;
   position: absolute;
   transform: rotate(45deg);

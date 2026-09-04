@@ -1,6 +1,6 @@
 .ag-float-wrapper.ag-image-toolbar-container {
   overflow: visible;
-  border-radius: 2px;
+  border-radius: 10px;
 }
 .ag-image-toolbar {
   height: 30px;
@@ -23,6 +23,7 @@
   list-style: none;
   width: 28px;
   height: 30px;
+  border-radius: 6px;
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -34,11 +35,10 @@
   box-sizing: border-box;
   height: 30px;
   text-align: center;
-  display: block;
   position: absolute;
   top: -38px;
   background: var(--floatBgColor);
-  border-radius: 2px;
+  border-radius: 5px;
   line-height: 30px;
   color: var(--editorColor);
   box-shadow: var(--floatShadow);

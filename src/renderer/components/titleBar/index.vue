@@ -21,23 +21,7 @@
         :class="[{ 'active': active }, { 'tabs-visible': showTabBar }, { 'frameless': titleBarStyle === 'custom' }, { 'isOsx': isOsx }]"
       >
         <div class="title" @dblclick.stop="toggleMaxmizeOnMacOS">
-          <span v-if="!filename" class="brand-title">
-            <img class="brand-mark" :src="brandLogo" alt="Vien logo" />
-            <span class="brand-copy">
-              <span class="brand-name">Vien</span>
-              <span v-if="projectName" class="brand-context">{{ projectName }}</span>
-            </span>
-          </span>
-          <span v-else>
-            <span
-              v-for="(path, index) of paths"
-              :key="index"
-            >
-              {{ path }}
-              <svg class="icon" aria-hidden="true">
-                <use xlink:href="#icon-arrow-right"></use>
-              </svg>
-            </span>
+          <span v-if="filename">
             <span
               class="filename"
               :class="{'isOsx': platform === 'darwin'}"
@@ -56,30 +40,14 @@
           >
             <span class="text-center-vertical">&#9776;</span>
           </div>
-          <el-tooltip
+          <div
             v-if="wordCount"
-            class="item"
-            placement="bottom-end"
+            class="word-count item"
+            :class="[{ 'title-no-drag': platform !== 'darwin' }]"
+            @click.stop="handleWordClick"
           >
-            <template #content>
-              <div class="title-item">
-                <span class="front">Words:</span><span class="text">{{wordCount['word']}}</span>
-              </div>
-              <div class="title-item">
-                <span class="front">Characters:</span><span class="text">{{wordCount['character']}}</span>
-              </div>
-              <div class="title-item">
-                <span class="front">Paragraphs:</span><span class="text">{{wordCount['paragraph']}}</span>
-              </div>
-            </template>
-            <div
-              class="word-count"
-              :class="[{ 'title-no-drag': platform !== 'darwin' }]"
-              @click.stop="handleWordClick"
-            >
-              <span class="text-center-vertical">{{ `${HASH[show].short} ${wordCount[show]}` }}</span>
-            </div>
-          </el-tooltip>
+            <span class="text-center-vertical">{{ `${HASH[show].short} ${wordCount[show]}` }}</span>
+          </div>
         </div>
         <div
           v-if="titleBarStyle === 'custom' && !isFullScreen && !isOsx"
@@ -116,9 +84,7 @@
 
 <script>
 import { minimizePath, restorePath, maximizePath, closePath } from '../../assets/window-controls.js'
-import { PATH_SEPARATOR } from '../../config'
 import { isOsx } from '@/util'
-import VienLogo from '@/assets/images/logo.png'
 import { useLayoutStore } from '@/store/pinia/layout'
 import { usePreferencesStore } from '@/store/pinia/preferences'
 
@@ -139,7 +105,6 @@ export default {
       windowIconRestore: restorePath,
       windowIconMaximize: maximizePath,
       windowIconClose: closePath,
-      brandLogo: VienLogo,
     }
   },
   async created() {
@@ -174,11 +139,6 @@ export default {
     },
     showTabBar() {
       return useLayoutStore().showTabBar
-    },
-    paths() {
-      if (!this.pathname) return []
-      const pathnameToken = this.pathname.split(PATH_SEPARATOR).filter((i) => i)
-      return pathnameToken.slice(0, pathnameToken.length - 1).slice(-3)
     },
     projectName() {
       return this.project?.name || ''
@@ -314,21 +274,11 @@ export default {
     padding: 0 142px;
     height: 100%;
     line-height: var(--titleBarHeight);
-    font-size: 14px;
+    font-size: 13px;
     text-align: center;
     transition: all .25s ease-in-out;
     & .filename {
       transition: all .25s ease-in-out;
-    }
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      height: 1px;
-      width: 100%;
-      z-index: 1;
-      -webkit-app-region: no-drag;
-      background: linear-gradient(90deg, transparent, var(--editorColor10), transparent);
     }
   }
   div.title > span {
@@ -337,47 +287,6 @@ export default {
     direction: rtl;
     overflow: hidden;
     text-overflow: clip;
-    white-space: nowrap;
-  }
-  div.title > span.brand-title {
-    direction: ltr;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    max-width: min(48vw, 340px);
-    margin: 0 auto;
-    padding: 5px 12px;
-    border-radius: 999px;
-    background: var(--itemBgColor);
-    box-shadow: 0 12px 30px rgba(15, 15, 15, 0.06);
-  }
-  .brand-mark {
-    width: 18px;
-    height: 18px;
-    margin-top: 0;
-    border-radius: 6px;
-    flex-shrink: 0;
-    vertical-align: top;
-  }
-  .brand-copy {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 8px;
-    min-width: 0;
-  }
-  .brand-name {
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-  .brand-context {
-    max-width: 16vw;
-    font-size: 12px;
-    opacity: .55;
-    overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
   }
 
@@ -429,22 +338,14 @@ export default {
 
   .word-count {
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12px;
     color: var(--editorColor30);
     text-align: center;
     line-height: 24px;
     padding: 0 5px;
     box-sizing: border-box;
     transition: all .25s ease-in-out;
-    & > .text-center-vertical {
-      padding: 3px 8px;
-      border-radius: 999px;
-      border: 1px solid transparent;
-      background: rgba(127, 127, 127, 0.06);
-    }
     &:hover > span {
-      background: var(--sideBarBgColor);
-      border-color: var(--editorColor04);
       color: var(--sideBarTitleColor);
     }
   }
@@ -488,17 +389,4 @@ export default {
     vertical-align: middle;
     line-height: normal;
   }
-</style>
-
-<style>
-.title-item {
-  height: 28px;
-  line-height: 28px;
-  & .front {
-    opacity: .7;
-  }
-  & .text {
-    margin-left: 10px;
-  }
-}
 </style>

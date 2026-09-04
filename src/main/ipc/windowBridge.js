@@ -1,5 +1,5 @@
 import { BrowserWindow, ipcMain, Menu, clipboard } from 'electron'
-import plist from 'plist'
+import { parse as parsePlist } from 'plist'
 
 const isOsx = process.platform === 'darwin'
 const isWindows = process.platform === 'win32'
@@ -150,7 +150,7 @@ export const registerWindowBridgeHandlers = () => {
     if (!isOsx) return []
     if (!clipboard.has('NSFilenamesPboardType')) return []
     try {
-      return plist.parse(clipboard.read('NSFilenamesPboardType'))
+      return parsePlist(clipboard.read('NSFilenamesPboardType'))
     } catch {
       return []
     }
@@ -160,7 +160,7 @@ export const registerWindowBridgeHandlers = () => {
     if (isOsx) {
       if (!clipboard.has('NSFilenamesPboardType')) return ''
       try {
-        const result = plist.parse(clipboard.read('NSFilenamesPboardType'))
+        const result = parsePlist(clipboard.read('NSFilenamesPboardType'))
         return Array.isArray(result) && result.length ? result[0] : ''
       } catch {
         return ''

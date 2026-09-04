@@ -4,9 +4,13 @@
  * strict CSP in index.html (script-src 'self', no inline scripts).
  */
 
-// Provide a minimal `process` global for Node.js polyfills (util, stream,
-// etc.) that run in the browser context. Electron's preload cannot expose
-// `process` because contextIsolation is enabled and nodeIntegration is off.
+// Provide the small set of Node-style globals used by browser-ready modules.
+// Electron's preload cannot expose `process` because contextIsolation is
+// enabled and nodeIntegration is off.
+// A few browser-ready dependencies still use the conventional Node `global`
+// alias even though they do not need any other Node APIs.
+window.global = globalThis
+
 if (typeof process === 'undefined') {
   window.process = {
     env: {},

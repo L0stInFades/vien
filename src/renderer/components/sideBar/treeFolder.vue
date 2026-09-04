@@ -132,13 +132,10 @@ export default {
       min-height: 34px;
       margin: 1px 0;
       padding-right: 12px;
-      border-radius: 14px;
+      border-radius: 8px;
       border: 1px solid transparent;
-      background: var(--sideBarRowBgColor);
-      transition:
-        background-color .18s ease,
-        border-color .18s ease,
-        transform .18s ease;
+      background: transparent;
+      transition: background-color .18s ease;
       & > svg {
         flex-shrink: 0;
         color: var(--sideBarIconColor);
@@ -147,15 +144,12 @@ export default {
         margin-right: 8px;
       }
       &:hover {
-        background: var(--sideBarItemHoverBgColor);
-        border-color: var(--sideBarRowBorderColor);
-        transform: translateX(1px);
+        background: rgba(126, 102, 76, 0.06);
       }
       &.active {
         color: var(--sideBarTitleColor);
         background: var(--sideBarRowCurrentBgColor);
-        border-color: var(--themeColor20);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.62);
+        border-color: var(--sideBarRowBorderColor);
       }
     }
   }
@@ -166,9 +160,9 @@ export default {
     padding: 0 12px;
     color: var(--sideBarColor);
     border: 1px solid var(--controlBorderColor);
-    background: var(--controlBgColor);
+    background: var(--inputBgColor);
     width: 70%;
-    border-radius: 14px;
+    border-radius: 8px;
     box-sizing: border-box;
   }
 </style>
