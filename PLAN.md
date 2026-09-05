@@ -1155,6 +1155,11 @@ M3 “功能完整 RC”在此结束。
 | `VienDiagrams` | 原生 Mermaid：flowchart / sequence / pie / class / state，分层布局 + Core Graphics + SVG 导出 | DiagramTests、`vien-tool diagrams` |
 | `VienMath` | 原生 TeX 数学：STIX Two Math 的 OpenType MATH 表驱动排版，Core Graphics + MathML 导出 | MathTests、`vien-tool math` |
 | `Vien` 应用 | NSDocument（自动保存 / 版本 / 恢复 / 外部修改）、TextKit 2 源码即真相编辑器、侧栏（文件 / 目录 / 全文搜索）、设置窗口、HTML / PDF 导出、Pandoc 导入导出、快速打开、原生标签页 | `VIEN_SNAPSHOT` 截图、`--export` 无头导出 |
+| 性能（release，2020 Intel MacBook） | 启动到可编辑窗口 0.35 s（1 KB）/ 0.96 s（15 MB）；常驻内存 49 MB / 259 MB；按键 2 ms（0.6 MB）/ 4 ms（15 MB），读完整篇后不变 | `VIEN_QUIT_WHEN_READY`、`VIEN_SCRIPT` 基准（README 表） |
+
+发现并规避的平台陷阱：TextKit 2 会缓存创建过的每个段落元素，且每次按键都改写光标之后所有元素的区间——
+通读长文档后按键会线性变慢（纯 `NSTextView` 翻完 15 MB 后每键 440 ms）。原生实现从不在视口之外枚举元素，
+并在滚动创建约两千个元素后用整篇属性失效丢弃缓存（锚定视口不动），按键延迟与阅读量无关。
 
 未做：非 Mermaid 图表库（flowchart.js / sequence / PlantUML / Vega）、图片上传服务、截图工具；其余以本计划 §2.2 指标为准继续推进。
 

@@ -33,8 +33,6 @@ final class Preferences {
     imageInsertAction = defaults.string(forKey: "imageInsertAction") ?? "path"
     imageFolderName = defaults.string(forKey: "imageFolderName") ?? "assets"
     showFrontMatterInExport = defaults.bool(forKey: "showFrontMatterInExport")
-    exportTheme = defaults.string(forKey: "exportTheme") ?? "system"
-    sidebarWidth = defaults.object(forKey: "sidebarWidth") as? Double ?? 240
     defaultEncodingUTF8BOM = defaults.bool(forKey: "defaultEncodingUTF8BOM")
     newDocumentLineEnding = defaults.string(forKey: "newDocumentLineEnding") ?? "\n"
     trimTrailingWhitespaceOnSave = defaults.bool(forKey: "trimTrailingWhitespaceOnSave")
@@ -77,14 +75,10 @@ final class Preferences {
 
   // Export
   var showFrontMatterInExport: Bool { didSet { defaults.set(showFrontMatterInExport, forKey: "showFrontMatterInExport") } }
-  var exportTheme: String { didSet { defaults.set(exportTheme, forKey: "exportTheme") } }
 
   // Files
   var defaultEncodingUTF8BOM: Bool { didSet { defaults.set(defaultEncodingUTF8BOM, forKey: "defaultEncodingUTF8BOM") } }
   var newDocumentLineEnding: String { didSet { defaults.set(newDocumentLineEnding, forKey: "newDocumentLineEnding") } }
   var trimTrailingWhitespaceOnSave: Bool { didSet { defaults.set(trimTrailingWhitespaceOnSave, forKey: "trimTrailingWhitespaceOnSave") } }
   var ensureFinalNewline: Bool { didSet { defaults.set(ensureFinalNewline, forKey: "ensureFinalNewline") } }
-
-  // Layout
-  var sidebarWidth: Double { didSet { defaults.set(sidebarWidth, forKey: "sidebarWidth") } }
 }

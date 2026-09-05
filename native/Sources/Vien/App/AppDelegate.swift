@@ -30,10 +30,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     if let path = env["VIEN_SNAPSHOT"] {
       Task { await Snapshot.capture(to: path) }
     }
+    if let script = env["VIEN_SCRIPT"] {
+      Task { await Automation.run(script) }
+    }
     if env["VIEN_QUIT_WHEN_READY"] != nil {
       // Launch benchmark: report time-to-first-window and resident memory, then quit.
       Task {
         while Snapshot.frontWindow == nil { try? await Task.sleep(for: .milliseconds(5)) }
+        trace("app: first window visible")
         let wc = Snapshot.frontWindow?.windowController as? DocumentWindowController
         wc?.editor.textView.layoutSubtreeIfNeeded()
         wc?.editor.textView.textLayoutManager?.textViewportLayoutController.layoutViewport()
@@ -139,6 +143,56 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
   }
 }
 
+/// `VIEN_SCRIPT="type:- item|enter|tab|type:x|dump|quit"` drives the editor the way keys would, then
+/// prints the resulting text. Used to check the smart-editing behaviours without a human.
+enum Automation {
+  static func run(_ script: String) async {
+    while Snapshot.frontWindow == nil { try? await Task.sleep(for: .milliseconds(5)) }
+    try? await Task.sleep(for: .milliseconds(300))
+    guard let wc = Snapshot.frontWindow?.windowController as? DocumentWindowController else { NSApp.terminate(nil); return }
+    let tv = wc.editor.textView!
+    for step in script.components(separatedBy: "§") {
+      let parts = step.split(separator: ":", maxSplits: 1).map(String.init)
+      let name = parts[0], arg = parts.count > 1 ? parts[1] : ""
+      let t0 = Date()
+      switch name {
+      case "type": tv.insertText(arg.replacingOccurrences(of: "\\n", with: "\n"), replacementRange: tv.selectedRange())
+      case "enter": tv.insertNewline(nil)
+      case "tab": tv.insertTab(nil)
+      case "backtab": tv.insertBacktab(nil)
+      case "backspace": tv.deleteBackward(nil)
+      case "select": if let a = Int(arg.split(separator: ",")[0]), let b = Int(arg.split(separator: ",")[1]) { tv.setSelectedRange(NSRange(location: a, length: b)) }
+      case "goto":
+        let r = (tv.string as NSString).range(of: arg)
+        if r.location != NSNotFound { tv.setSelectedRange(NSRange(location: NSMaxRange(r), length: 0)) }
+      case "end": tv.setSelectedRange(NSRange(location: (tv.string as NSString).length, length: 0))
+      case "bold": wc.editor.toggleBold(nil)
+      case "heading": wc.editor.setHeading(Int(arg) ?? 1)
+      case "bullets": wc.editor.toggleBulletList(nil)
+      case "quote": wc.editor.toggleBlockQuote(nil)
+      case "table": wc.editor.formatTable(nil)
+      case "undo": tv.undoManager?.undo()
+      case "wait": try? await Task.sleep(for: .milliseconds(Int(arg) ?? 0))
+      case "pagedown":
+        for _ in 0..<(Int(arg) ?? 1) {
+          tv.scrollPageDown(nil)
+          tv.textLayoutManager?.textViewportLayoutController.layoutViewport()
+        }
+      case "recycle": wc.editor.recycleElements()
+      case "snap": Snapshot.write(window: wc.window!, to: arg)
+      case "stats": print("elements: \(wc.editor.elementsCreated) · scroll y: \(Int(tv.visibleRect.minY)) · selection: \(tv.selectedRange())")
+      case "time": print(String(format: "time: %.2f ms", Date().timeIntervalSince(t0) * 1000))
+      case "dump": print("--- text ---\n" + tv.string + "--- end ---")
+      case "selection": print("selection: \(tv.selectedRange())")
+      case "quit": NSApp.terminate(nil); return
+      default: print("unknown step \(name)")
+      }
+      if name == "type" || name == "enter" { print(String(format: "%@: %.2f ms", name, Date().timeIntervalSince(t0) * 1000)) }
+    }
+    NSApp.terminate(nil)
+  }
+}
+
 /// Headless conversions for scripts: the same code paths the menu uses.
 enum Headless {
   static func export(_ request: (String, URL, URL)) async {
@@ -183,6 +237,19 @@ enum Snapshot {
       NSApp.terminate(nil)
       return
     }
+    if ProcessInfo.processInfo.environment["VIEN_SNAPSHOT_QUICKOPEN"] != nil {
+      (NSApp.delegate as? AppDelegate)?.quickOpen(nil)
+      try? await Task.sleep(for: .milliseconds(700))
+      if let w = NSApp.windows.first(where: { $0 is NSPanel && $0.isVisible }), let v = w.contentView {
+        v.displayIfNeeded()
+        if let rep = v.bitmapImageRepForCachingDisplay(in: v.bounds) {
+          v.cacheDisplay(in: v.bounds, to: rep)
+          try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: path))
+        }
+      }
+      NSApp.terminate(nil)
+      return
+    }
     if let pane = ProcessInfo.processInfo.environment["VIEN_SNAPSHOT_SIDEBAR"], let wc = frontWindow?.windowController as? DocumentWindowController {
       let p: SidebarViewController.Pane = pane == "files" ? .files : pane == "search" ? .search : .outline
       wc.showSidebar(p, animated: false)
@@ -216,6 +283,13 @@ enum Snapshot {
     }
     // Wait for diagrams that may still be rendering, then force a layout pass for the viewport.
     try? await Task.sleep(for: .milliseconds(1200))
+    Snapshot.write(window: window, to: path)
+    NSApp.terminate(nil)
+  }
+
+  /// Lays out the viewport and writes the window's content view as a PNG.
+  static func write(window: NSWindow, to path: String) {
+    guard let view = window.contentView?.superview else { return }
     if let wc = window.windowController as? DocumentWindowController {
       wc.editor.textView.layoutSubtreeIfNeeded()
       wc.editor.textView.textLayoutManager?.textViewportLayoutController.layoutViewport()
@@ -229,6 +303,5 @@ enum Snapshot {
         try? png.write(to: URL(fileURLWithPath: path))
       }
     }
-    NSApp.terminate(nil)
   }
 }

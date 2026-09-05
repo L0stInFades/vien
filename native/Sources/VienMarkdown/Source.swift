@@ -103,13 +103,20 @@ extension Unicode.Scalar {
   }
 }
 
-/// Maps byte offsets to lines. Line `i` spans `starts[i] ..< ends[i]`; its terminator (LF, CR or CRLF)
+/// Maps byte offsets to lines. Line `i` spans `start(i) ..< end(i)`; its terminator (LF, CR or CRLF)
 /// follows. A document always has at least one line; a trailing terminator yields a final empty line.
-public struct LineTable: Sendable, Equatable {
-  public private(set) var starts: [Int] = []
-  public private(set) var ends: [Int] = []
+///
+/// Edits shift every later line by the same amount, so the shift is kept as one pending offset instead
+/// of being written into the arrays: a keystroke costs O(lines touched), not O(lines in the file).
+public struct LineTable: Sendable {
+  private var starts: [Int] = []
+  private var ends: [Int] = []
   /// UTF-16 offset of each line start, for bridging to Foundation text views.
-  public private(set) var utf16Starts: [Int] = []
+  private var utf16Starts: [Int] = []
+  /// Lines at index ≥ `shiftFrom` are offset by `shift` bytes / `shift16` UTF-16 units.
+  private var shiftFrom = Int.max
+  private var shift = 0
+  private var shift16 = 0
 
   public init(bytes: [Byte]) {
     starts.reserveCapacity(bytes.count / 40 + 1)
@@ -121,6 +128,13 @@ public struct LineTable: Sendable, Equatable {
   }
 
   public var count: Int { starts.count }
+
+  /// Byte offset where line `i` starts.
+  @inline(__always) public func start(_ i: Int) -> Int { starts[i] + (i >= shiftFrom ? shift : 0) }
+  /// Byte offset where line `i`'s content ends (its terminator follows).
+  @inline(__always) public func end(_ i: Int) -> Int { ends[i] + (i >= shiftFrom ? shift : 0) }
+  /// UTF-16 offset where line `i` starts.
+  @inline(__always) public func utf16Start(_ i: Int) -> Int { utf16Starts[i] + (i >= shiftFrom ? shift16 : 0) }
 
   /// Scans `bytes[from...]`, appending line boundaries, until a line start ≥ `until` is reached
   /// (that start is not appended) or the end of the buffer. Returns where scanning stopped.
@@ -154,13 +168,12 @@ public struct LineTable: Sendable, Equatable {
 
   /// Updates the table for `range` replaced by `replacement`. `bytes` is the new byte array and
   /// `removedUTF16` the UTF-16 length of the removed range (measured before the edit).
-  /// Only the touched lines are rescanned; later lines are shifted.
+  /// Only the touched lines are rescanned; later lines are shifted lazily.
   public mutating func replace(_ range: Range<Int>, with replacement: [Byte], in bytes: [Byte], removedUTF16: Int) {
     let delta = replacement.count - range.count
     let lineA = line(containing: range.lowerBound)
     let lineB = line(containing: range.upperBound)
-    let oldNext = lineB + 1 < starts.count ? starts[lineB + 1] : nil  // first untouched line start (old coords)
-    let regionEnd = oldNext.map { $0 + delta } ?? Int.max
+    let regionEnd = lineB + 1 < count ? start(lineB + 1) + delta : Int.max  // first untouched line start
 
     var inserted16 = 0
     for b in replacement where b & 0xC0 != 0x80 { inserted16 += b & 0xF8 == 0xF0 ? 2 : 1 }
@@ -169,23 +182,43 @@ public struct LineTable: Sendable, Equatable {
     var region: [Int] = []  // starts of rescanned lines after lineA
     var regionEnds: [Int] = []
     var region16: [Int] = []
-    let (stop, _) = Self.scan(bytes, from: starts[lineA], utf16: utf16Starts[lineA], until: regionEnd,
+    let (stop, _) = Self.scan(bytes, from: start(lineA), utf16: utf16Start(lineA), until: regionEnd,
       starts: &region, ends: &regionEnds, utf16Starts: &region16)
 
     // Old lines after the region are shifted; lines absorbed by the rescan (start < stop) are dropped.
     var m = lineB + 1
-    while m < starts.count, starts[m] + delta < stop { m += 1 }
+    while m < count, start(m) + delta < stop { m += 1 }
+    settle(through: lineA)
+    let moved = region.count - (m - lineA - 1)  // index change for the lines after the region
     starts.replaceSubrange((lineA + 1)..<m, with: region)
     utf16Starts.replaceSubrange((lineA + 1)..<m, with: region16)
     ends.replaceSubrange(lineA..<m, with: regionEnds)
     let tail = lineA + 1 + region.count
-    if delta != 0 {
-      for i in tail..<starts.count { starts[i] += delta; ends[i] += delta }
+    if shiftFrom != Int.max {
+      // The pending shift still applies to its lines, now at index `shiftFrom + moved` (or all of
+      // the tail if it began inside the region); lines between the region and that point owe only
+      // this edit's delta.
+      shiftFrom = max(shiftFrom + moved, tail)
+      settle(delta, delta16, in: tail..<shiftFrom)
+    } else {
+      shiftFrom = tail
     }
-    if delta16 != 0 {
-      for i in tail..<utf16Starts.count { utf16Starts[i] += delta16 }
-    }
+    shift += delta
+    shift16 += delta16
+    if shift == 0 && shift16 == 0 || shiftFrom >= count { shiftFrom = Int.max; shift = 0; shift16 = 0 }
     assert(starts.count == ends.count && starts.count == utf16Starts.count)
+  }
+
+  /// Writes the pending shift into lines `shiftFrom ... i` so they can be edited in place.
+  private mutating func settle(through i: Int) {
+    guard shiftFrom <= i else { return }
+    settle(shift, shift16, in: shiftFrom..<(i + 1))
+    shiftFrom = i + 1
+  }
+
+  private mutating func settle(_ delta: Int, _ delta16: Int, in lines: Range<Int>) {
+    if delta != 0 { for i in lines { starts[i] += delta; ends[i] += delta } }
+    if delta16 != 0 { for i in lines { utf16Starts[i] += delta16 } }
   }
 
   /// Index of the line containing byte `offset` (offsets at a terminator belong to the line they end).
@@ -193,7 +226,7 @@ public struct LineTable: Sendable, Equatable {
     var lo = 0, hi = starts.count - 1
     while lo < hi {
       let mid = (lo + hi + 1) >> 1
-      if starts[mid] <= offset { lo = mid } else { hi = mid - 1 }
+      if start(mid) <= offset { lo = mid } else { hi = mid - 1 }
     }
     return lo
   }
@@ -201,8 +234,8 @@ public struct LineTable: Sendable, Equatable {
   /// Byte offset → UTF-16 offset (walks at most one line).
   public func utf16Offset(forByte offset: Int, in bytes: [Byte]) -> Int {
     let l = line(containing: offset)
-    var i = starts[l]
-    var u = utf16Starts[l]
+    var i = start(l)
+    var u = utf16Start(l)
     let limit = min(offset, bytes.count)
     while i < limit {
       let b = bytes[i]
@@ -220,10 +253,10 @@ public struct LineTable: Sendable, Equatable {
     var lo = 0, hi = utf16Starts.count - 1
     while lo < hi {
       let mid = (lo + hi + 1) >> 1
-      if utf16Starts[mid] <= offset { lo = mid } else { hi = mid - 1 }
+      if utf16Start(mid) <= offset { lo = mid } else { hi = mid - 1 }
     }
-    var i = starts[lo]
-    var u = utf16Starts[lo]
+    var i = start(lo)
+    var u = utf16Start(lo)
     while u < offset && i < bytes.count {
       let b = bytes[i]
       if b < 0x80 { i += 1; u += 1 }
@@ -233,5 +266,16 @@ public struct LineTable: Sendable, Equatable {
       else { i += 1; u += 1 }
     }
     return i
+  }
+}
+
+extension LineTable: Equatable {
+  /// Tables are equal when every line agrees, however the shifts happen to be stored.
+  public static func == (a: LineTable, b: LineTable) -> Bool {
+    guard a.count == b.count else { return false }
+    for i in 0..<a.count where a.start(i) != b.start(i) || a.end(i) != b.end(i) || a.utf16Start(i) != b.utf16Start(i) {
+      return false
+    }
+    return true
   }
 }

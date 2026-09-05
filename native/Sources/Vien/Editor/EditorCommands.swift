@@ -326,10 +326,6 @@ extension EditorViewController {
     pb.setString(text, forType: .string)
   }
 
-  @IBAction func pasteAsPlainText(_ sender: Any?) {
-    guard let s = NSPasteboard.general.string(forType: .string) else { return }
-    textView.insertText(s, replacementRange: textView.selectedRange())
-  }
 
   // MARK: View
 

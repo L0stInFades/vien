@@ -25,9 +25,7 @@ final class EditorTextView: NSTextView {
     isAutomaticTextReplacementEnabled = false
     isAutomaticSpellingCorrectionEnabled = false
     isAutomaticLinkDetectionEnabled = false
-    let env = ProcessInfo.processInfo.environment
-    isContinuousSpellCheckingEnabled = env["VIEN_NO_SPELL"] == nil
-    if env["VIEN_NO_FINDBAR"] != nil { usesFindBar = false; isIncrementalSearchingEnabled = false }
+    isContinuousSpellCheckingEnabled = true
     isGrammarCheckingEnabled = false
     smartInsertDeleteEnabled = false
     usesFontPanel = false
@@ -58,12 +56,14 @@ final class EditorTextView: NSTextView {
   private func updateInsets() {
     guard let scroll = enclosingScrollView else { return }
     let available = scroll.contentSize.width
+    guard available > 80 else { return }
     if abs(frame.width - available) > 0.5 { frame.size.width = available }
     let width = min(contentWidth, available - 40)
     let side = max(20, ((available - width) / 2).rounded(.down))
     let vertical: CGFloat = preferences.typewriter ? max(120, scroll.contentSize.height * 0.45) : 48
     let inset = NSSize(width: side, height: vertical)
     if textContainerInset != inset || textContainer?.size.width != width {
+      trace("textview: container width \(Int(width)) inset \(Int(side)) (available \(Int(available)))")
       textContainerInset = inset
       textContainer?.widthTracksTextView = false
       textContainer?.size = NSSize(width: width, height: CGFloat.greatestFiniteMagnitude)
@@ -103,6 +103,30 @@ final class EditorTextView: NSTextView {
 
   func invalidateAll() {
     invalidateParagraphs(in: NSRange(location: 0, length: textStorage?.length ?? 0))
+  }
+
+  /// Runs `body` (typically a whole-document invalidation, which rebuilds TextKit's layout from
+  /// estimates) and then scrolls so the paragraph at the top of the window stays where it was.
+  /// Never enumerates beyond the viewport: TextKit caches every element it is asked for.
+  func keepingViewport(_ body: () -> Void) {
+    guard let lm = textLayoutManager, let cs = lm.textContentManager as? NSTextContentStorage,
+      let viewport = lm.textViewportLayoutController.viewportRange
+    else { body(); return }
+    let top = visibleRect.minY - textContainerInset.height
+    var anchor: Int? = nil
+    var offset: CGFloat = 0
+    lm.enumerateTextLayoutFragments(from: viewport.location, options: [.ensuresLayout]) { fragment in
+      if fragment.layoutFragmentFrame.maxY <= top { return true }
+      anchor = cs.offset(from: cs.documentRange.location, to: fragment.rangeInElement.location)
+      offset = fragment.layoutFragmentFrame.minY - top
+      return false
+    }
+    body()
+    guard let anchor, let location = cs.location(cs.documentRange.location, offsetBy: anchor) else { return }
+    lm.textViewportLayoutController.layoutViewport()
+    lm.ensureLayout(for: NSTextRange(location: location))
+    guard let fragment = lm.textLayoutFragment(for: location) else { return }
+    scroll(NSPoint(x: 0, y: max(0, fragment.layoutFragmentFrame.minY - offset + textContainerInset.height)))
   }
 
   // MARK: - Keyboard behaviour
@@ -259,7 +283,16 @@ final class EditorTextView: NSTextView {
     guard out != block else { return }
     insertText(out, replacementRange: lines)
     let delta = out.utf16.count - block.utf16.count
-    setSelectedRange(NSRange(location: lines.location, length: max(0, lines.length + delta - (trailingNewline ? 1 : 0))))
+    if sel.length == 0 {
+      // A caret stays a caret, moved by the change on its own line (or clamped to that line).
+      let firstNew = pieces.first.map(transform) ?? ""
+      let firstOld = pieces.first ?? ""
+      let shift = firstNew.utf16.count - firstOld.utf16.count
+      let caret = pieces.count == 1 ? sel.location + shift : sel.location + shift
+      setSelectedRange(NSRange(location: max(lines.location, min(caret, lines.location + out.utf16.count)), length: 0))
+    } else {
+      setSelectedRange(NSRange(location: lines.location, length: max(0, lines.length + delta - (trailingNewline ? 1 : 0))))
+    }
   }
 
   func indentSelectedLines(by amount: Int) {
@@ -326,9 +359,10 @@ final class EditorTextView: NSTextView {
   }
 
   override func mouseDown(with event: NSEvent) {
+    let point = convert(event.locationInWindow, from: nil)
+    let index = characterIndexForInsertion(at: point)
+    if event.clickCount == 1, !event.modifierFlags.contains(.shift), toggleTask(at: index) { return }
     if event.modifierFlags.contains(.command) {
-      let point = convert(event.locationInWindow, from: nil)
-      let index = characterIndexForInsertion(at: point)
       if let url = linkURL(at: index) {
         if url.isFileURL, url.pathExtension.lowercased() == "md" || url.pathExtension.lowercased() == "markdown" {
           NSDocumentController.shared.openDocument(withContentsOf: url, display: true) { _, _, _ in }
@@ -442,7 +476,7 @@ enum AutoPair {
   static func isClosing(_ s: String) -> Bool { brackets.values.contains(s) || quotes[s] != nil || markdown[s] != nil }
   static func isMarkdown(_ s: String) -> Bool { markdown[s] != nil }
   static func isEnabled(_ s: String, _ p: Preferences) -> Bool {
-    if brackets[s] != nil { return p.autoPairBrackets }
+    if brackets[s] != nil || brackets.values.contains(s) { return p.autoPairBrackets }
     if quotes[s] != nil { return p.autoPairQuotes }
     if markdown[s] != nil { return p.autoPairMarkdown }
     return false

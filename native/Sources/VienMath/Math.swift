@@ -12,12 +12,10 @@ public struct RenderedMath: Sendable {
 
 /// Native TeX math: parse → box layout with STIX Two Math → Core Graphics; MathML for exports.
 public enum MathRenderer {
-  /// Fill colour for the formula being drawn (CGContext cannot report its own fill colour).
-  nonisolated(unsafe) static var currentColor: CGColor?
-
   public static func render(_ source: String, display: Bool, fontSize: Double, dark: Bool, scale: CGFloat = 2) throws -> RenderedMath {
     let node = try MathParser.parse(source)
-    let layout = MathLayout(size: fontSize)
+    let color = dark ? CGColor(srgbRed: 0.96, green: 0.96, blue: 0.97, alpha: 1) : CGColor(srgbRed: 0.11, green: 0.11, blue: 0.12, alpha: 1)
+    let layout = MathLayout(size: fontSize, color: color)
     let box = layout.layout(node, MathLayout.Style(level: display ? .display : .text))
     let pad = fontSize * 0.25
     let width = max(4, box.width + pad * 2).rounded(.up)
@@ -31,12 +29,9 @@ public enum MathRenderer {
     ctx.setAllowsAntialiasing(true)
     ctx.setShouldAntialias(true)
     ctx.setShouldSmoothFonts(true)
-    let color = dark ? CGColor(srgbRed: 0.96, green: 0.96, blue: 0.97, alpha: 1) : CGColor(srgbRed: 0.11, green: 0.11, blue: 0.12, alpha: 1)
     ctx.setFillColor(color)
     ctx.setStrokeColor(color)
-    currentColor = color
     box.draw(ctx, CGPoint(x: pad, y: pad + box.ascent))
-    currentColor = nil
     guard let image = ctx.makeImage() else { throw MathSyntaxError(description: "could not render") }
     return RenderedMath(image: image, size: CGSize(width: width, height: height), baseline: pad + box.ascent)
   }

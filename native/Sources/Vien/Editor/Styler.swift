@@ -1,4 +1,5 @@
 import AppKit
+import CoreText
 import VienMarkdown
 
 /// A paragraph element that knows whether something is drawn beneath it (diagram, math, images).
@@ -12,9 +13,10 @@ nonisolated final class MarkdownParagraph: NSTextParagraph {
 /// Produces styled paragraphs on demand for the text view (TextKit 2 asks for them lazily as it lays
 /// out the viewport), so styling cost is proportional to what is visible, never to document length.
 final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerDelegate {
-  /// Diagnostics: how many paragraphs have been styled since launch.
+  /// Diagnostics: how many paragraphs have been styled since launch (reported by VIEN_QUIT_WHEN_READY).
   static var paragraphsStyled = 0
-  static let disabled = ProcessInfo.processInfo.environment["VIEN_NO_STYLE"] != nil
+  /// Paragraph elements handed to TextKit since the last recycling (see `EditorViewController`).
+  var elementsCreated = 0
   unowned let document: MarkdownFile
   var theme = Theme()
   var sourceMode = false
@@ -22,16 +24,42 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
   /// Byte range of the block that holds the selection (focus mode dims the rest).
   var focusRange: Range<Int>?
   weak var textView: EditorTextView?
+  /// Inline parses are reused for the lines of one block (and across relayouts) until the next edit.
+  private var inlineCache: [Range<Int>: [Inline]] = [:]
+  private var inlineCacheRevision = -1
+  private var prefixWidths: [String: CGFloat] = [:]
 
   init(document: MarkdownFile) {
     self.document = document
+  }
+
+  private func inlines(of block: Block) -> [Inline] {
+    if inlineCacheRevision != document.revision {
+      inlineCache.removeAll(keepingCapacity: true)
+      inlineCacheRevision = document.revision
+    }
+    if let hit = inlineCache[block.range] { return hit }
+    let parsed = document.markdown.inlines(of: block)
+    if inlineCache.count > 4096 { inlineCache.removeAll(keepingCapacity: true) }
+    inlineCache[block.range] = parsed
+    return parsed
+  }
+
+  private func prefixWidth(_ prefix: NSAttributedString) -> CGFloat {
+    let key = prefix.string + "|" + String(describing: (prefix.attribute(.font, at: 0, effectiveRange: nil) as? NSFont)?.pointSize ?? 0)
+    if let w = prefixWidths[key] { return w }
+    let line = CTLineCreateWithAttributedString(prefix)
+    let w = CGFloat(CTLineGetTypographicBounds(line, nil, nil, nil))
+    if prefixWidths.count > 512 { prefixWidths.removeAll(keepingCapacity: true) }
+    prefixWidths[key] = w
+    return w
   }
 
   // MARK: - NSTextContentStorageDelegate
 
   func textContentStorage(_ textContentStorage: NSTextContentStorage, textParagraphWith range: NSRange) -> NSTextParagraph? {
     Self.paragraphsStyled += 1
-    if Self.disabled { return nil }
+    elementsCreated += 1
     guard let storage = textContentStorage.textStorage else { return nil }
     let text = (storage.string as NSString).substring(with: range)
     let styled = NSMutableAttributedString(string: text)
@@ -158,7 +186,7 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
       }
       if prefixEnd > byteStart {
         let prefix = s.attributedSubstring(from: nsRange(byteStart..<prefixEnd))
-        indent = prefix.size().width
+        indent = prefixWidth(prefix)
       }
     }
     if textColor != Theme.text { s.addAttribute(.foregroundColor, value: textColor, range: full) }
@@ -184,10 +212,10 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
       if let marker { mark(marker, Theme.marker) }
       if let trailing { mark(trailing, Theme.marker) }
       if let underline, underline.lowerBound >= byteStart { mark(underline, Theme.marker) }
-      styleInlines(doc.inlines(of: leaf), s: s, nsRange: nsRange, mark: mark, base: theme.heading(level: level))
+      styleInlines(inlines(of: leaf), s: s, nsRange: nsRange, mark: mark, base: theme.heading(level: level))
       return theme.paragraphStyle(lineHeight: 1.25, indent: indent, firstLineIndent: 0, spacingBefore: sourceMode ? 0 : theme.headingSpacingBefore, spacingAfter: theme.paragraphSpacing * 0.5)
     case .paragraph:
-      let inlines = doc.inlines(of: leaf)
+      let inlines = inlines(of: leaf)
       styleInlines(inlines, s: s, nsRange: nsRange, mark: mark, base: nil)
       if isLastLine, !sourceMode {
         let images = Styler.imageSources(inlines)

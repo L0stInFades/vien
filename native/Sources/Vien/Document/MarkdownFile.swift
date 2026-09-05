@@ -12,8 +12,8 @@ final class MarkdownFile: NSDocument {
   var markdown: MarkdownDocument
   var codec = TextCodec()
   var lineEnding: TextCodec.LineEnding = .lf
-  /// Byte range (new coordinates) of the last reparse, for layout invalidation.
-  var lastReparse: Range<Int>?
+  /// Incremented on every text change; caches keyed on it are dropped automatically.
+  var revision = 0
 
   override init() {
     markdown = MarkdownDocument(text: "", options: Self.parserOptions)
@@ -53,9 +53,11 @@ final class MarkdownFile: NSDocument {
     }
     // Reads happen on the main thread (concurrent reading is off).
     MainActor.assumeIsolated {
+      trace("read: decoded \(text.utf8.count) bytes")
       self.codec = codec
       lineEnding = TextCodec.detectLineEnding(text) ?? (TextCodec.LineEnding(rawValue: Preferences.shared.newDocumentLineEnding) ?? .lf)
       setText(text)
+      trace("read: parsed \(markdown.blocks.count) blocks")
     }
   }
 
@@ -85,7 +87,7 @@ final class MarkdownFile: NSDocument {
     storage.setAttributes([.font: Theme().body(), .foregroundColor: Theme.text], range: NSRange(location: 0, length: storage.length))
     storage.endEditing()
     markdown = MarkdownDocument(text: text, options: Self.parserOptions)
-    lastReparse = 0..<markdown.bytes.count
+    revision += 1
   }
 
   override func makeWindowControllers() {
@@ -95,6 +97,44 @@ final class MarkdownFile: NSDocument {
   override var displayName: String! {
     get { super.displayName }
     set { super.displayName = newValue }
+  }
+
+  // MARK: - File actions
+
+  @IBAction func showInFinder(_ sender: Any?) {
+    guard let url = fileURL else { NSSound.beep(); return }
+    NSWorkspace.shared.activateFileViewerSelecting([url])
+  }
+
+  @IBAction func copyPath(_ sender: Any?) {
+    guard let url = fileURL else { NSSound.beep(); return }
+    NSPasteboard.general.clearContents()
+    NSPasteboard.general.setString(url.path, forType: .string)
+  }
+
+  @IBAction func changeEncoding(_ sender: NSMenuItem) {
+    switch sender.representedObject as? String {
+    case "UTF-8": codec = TextCodec(encoding: .utf8, hasBOM: false)
+    case "UTF-8 with BOM": codec = TextCodec(encoding: .utf8, hasBOM: true)
+    case "UTF-16": codec = TextCodec(encoding: .utf16LittleEndian, hasBOM: true)
+    default: return
+    }
+    updateChangeCount(.changeDone)
+  }
+
+  override func validateUserInterfaceItem(_ item: any NSValidatedUserInterfaceItem) -> Bool {
+    if let menu = item as? NSMenuItem {
+      if menu.action == #selector(changeEncoding(_:)) {
+        let names: [String] = codec.encoding == .utf16LittleEndian ? ["UTF-16"] : codec.hasBOM ? ["UTF-8 with BOM"] : ["UTF-8"]
+        menu.state = names.contains(menu.representedObject as? String ?? "") ? .on : .off
+        return true
+      }
+      if menu.action == #selector(convertLineEndings(_:)) {
+        menu.state = (menu.representedObject as? String) == lineEnding.rawValue ? .on : .off
+        return true
+      }
+    }
+    return super.validateUserInterfaceItem(item)
   }
 
   // MARK: - Line endings

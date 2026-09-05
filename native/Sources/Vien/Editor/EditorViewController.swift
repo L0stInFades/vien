@@ -23,9 +23,17 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
   required init?(coder: NSCoder) { fatalError() }
 
   override func loadView() {
+    trace("editor: loadView")
+    styler = Styler(document: document)
+    styler.sourceMode = Preferences.shared.sourceMode
+    styler.focusMode = Preferences.shared.focus
+    // TextKit 2 asks the delegate for a paragraph only when it lays one out, so attaching it before
+    // the text is attached costs nothing for the paragraphs that are not on screen.
     contentStorage = NSTextContentStorage()
+    contentStorage.delegate = styler
     contentStorage.textStorage = document.storage
     layoutManager = NSTextLayoutManager()
+    layoutManager.delegate = styler
     contentStorage.addTextLayoutManager(layoutManager)
     let container = NSTextContainer(size: NSSize(width: 700, height: CGFloat.greatestFiniteMagnitude))
     layoutManager.textContainer = container
@@ -34,13 +42,7 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
     textView.document = document
     textView.configure()
     textView.delegate = self
-
-    styler = Styler(document: document)
     styler.textView = textView
-    styler.sourceMode = Preferences.shared.sourceMode
-    styler.focusMode = Preferences.shared.focus
-    contentStorage.delegate = styler
-    layoutManager.delegate = styler
 
     scrollView = NSScrollView()
     scrollView.hasVerticalScroller = true
@@ -55,15 +57,47 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
 
     document.storage.delegate = self
     applyTheme(invalidate: false)
+    trace("editor: view built")
     NotificationCenter.default.addObserver(self, selector: #selector(selectionChanged), name: NSTextView.didChangeSelectionNotification, object: textView)
     NotificationCenter.default.addObserver(self, selector: #selector(appearanceChanged), name: NSApplication.didChangeScreenParametersNotification, object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(scrolled), name: NSView.boundsDidChangeNotification, object: scrollView.contentView)
     scheduleStats()
   }
 
   override func viewDidAppear() {
     super.viewDidAppear()
+    trace("editor: viewDidAppear")
     view.window?.makeFirstResponder(textView)
   }
+
+  // MARK: - Element recycling
+
+  /// TextKit 2 keeps every paragraph element it has ever created and, on each keystroke, rewrites the
+  /// range of all of them after the caret (about 2 µs each). Reading through a long document would
+  /// therefore make typing slower and slower, so once scrolling has created this many elements they
+  /// are dropped again with a whole-document attribute invalidation, which recreates only the
+  /// visible ones. Cost: one viewport relayout every few thousand paragraphs scrolled.
+  private static let elementBudget = 2_000
+  private var recyclePending = false
+
+  @objc private func scrolled() {
+    guard styler.elementsCreated > Self.elementBudget, !recyclePending else { return }
+    recyclePending = true
+    DispatchQueue.main.async { [weak self] in
+      guard let self else { return }
+      recyclePending = false
+      if styler.elementsCreated > Self.elementBudget { recycleElements() }
+    }
+  }
+
+  /// Drops every cached paragraph element; the visible ones are rebuilt in place.
+  func recycleElements() {
+    guard !textView.hasMarkedText(), NSEvent.pressedMouseButtons == 0 else { return }
+    styler.elementsCreated = 0
+    textView.keepingViewport { textView.invalidateAll() }
+  }
+
+  var elementsCreated: Int { styler.elementsCreated }
 
   // MARK: - Model sync
 
@@ -72,7 +106,7 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
     let oldRange = editedRange.location..<(editedRange.location + editedRange.length - delta)
     let replacement = (textStorage.string as NSString).substring(with: editedRange)
     let affected = document.markdown.replace(utf16Range: oldRange, with: replacement)
-    document.lastReparse = affected
+    document.revision += 1
     // Structure may have changed beyond the edited paragraph (fences, lists, tables): re-style it.
     let lo = document.markdown.utf16Offset(forByte: affected.lowerBound)
     let hi = document.markdown.utf16Offset(forByte: affected.upperBound)
@@ -101,7 +135,7 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
   }
 
   @objc private func appearanceChanged() {
-    textView.invalidateAll()
+    restyleEverything()
   }
 
   // MARK: - Modes
@@ -110,7 +144,14 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
     styler.theme = Theme(zoom: zoom)
     textView.contentWidth = CGFloat(Preferences.shared.contentWidth) * zoom
     textView.typingAttributes = [.font: styler.theme.body(), .foregroundColor: Theme.text]
-    if invalidate { textView.invalidateAll() }
+    if invalidate { restyleEverything() }
+  }
+
+  /// Rebuilds every visible paragraph now; the rest are built as they scroll into view, so switching
+  /// modes in a 10 MB document does not stall.
+  func restyleEverything() {
+    styler.elementsCreated = 0
+    textView.keepingViewport { textView.invalidateAll() }
   }
 
   func setZoom(_ z: CGFloat) {
@@ -123,14 +164,14 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
   func setSourceMode(_ on: Bool) {
     Preferences.shared.sourceMode = on
     styler.sourceMode = on
-    textView.invalidateAll()
+    restyleEverything()
   }
 
   func setFocusMode(_ on: Bool) {
     Preferences.shared.focus = on
     styler.focusMode = on
     updateFocus()
-    textView.invalidateAll()
+    restyleEverything()
   }
 
   func setTypewriter(_ on: Bool) {
@@ -149,6 +190,7 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
     let old = styler.focusRange
     styler.focusRange = newRange
     if Preferences.shared.focus {
+      if old == nil { restyleEverything(); return }
       for r in [old, newRange].compactMap({ $0 }) {
         let lo = document.markdown.utf16Offset(forByte: r.lowerBound), hi = document.markdown.utf16Offset(forByte: r.upperBound)
         textView.invalidateParagraphs(in: NSRange(location: lo, length: hi - lo))

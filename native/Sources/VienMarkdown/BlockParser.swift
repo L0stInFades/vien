@@ -120,7 +120,7 @@ struct BlockParser {
     let total = table.count
     while line < total {
       // A trailing empty "line" after the final terminator is not a real line.
-      if line == total - 1, table.starts[line] == bytes.count, total > 1 { break }
+      if line == total - 1, table.start(line) == bytes.count, total > 1 { break }
       if line > fromLine, tip === doc, resync(line) { break }
       incorporateLine(line)
       line += 1
@@ -237,8 +237,8 @@ struct BlockParser {
 
   private mutating func incorporateLine(_ line: Int) {
     currentLine = line
-    lineStart = table.starts[line]
-    lineEnd = table.ends[line]
+    lineStart = table.start(line)
+    lineEnd = table.end(line)
     offset = lineStart
     column = 0
     blank = false
@@ -641,7 +641,7 @@ struct BlockParser {
     var line = 1
     var found = false
     while line < table.count {
-      if isFrontMatterFence(kind, lineStart: table.starts[line], lineEnd: table.ends[line]) { found = true; break }
+      if isFrontMatterFence(kind, lineStart: table.start(line), lineEnd: table.end(line)) { found = true; break }
       line += 1
     }
     guard found else { return nil }

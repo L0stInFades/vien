@@ -243,7 +243,7 @@ public struct MarkdownDocument: Sendable {
     let restart = max(0, k - 1)
     let restartOffset = start(restart)
     let removedUTF16 = lines.utf16Offset(forByte: range.upperBound, in: bytes) - lines.utf16Offset(forByte: range.lowerBound, in: bytes)
-    let editEndWasLineStart = lines.starts[lines.line(containing: range.upperBound)] == range.upperBound
+    let editEndWasLineStart = lines.start(lines.line(containing: range.upperBound)) == range.upperBound
 
     bytes.replaceSubrange(range, with: replacement)
     lines.replace(range, with: replacement, in: bytes, removedUTF16: removedUTF16)
@@ -252,7 +252,7 @@ public struct MarkdownDocument: Sendable {
     // edit, that still starts at the same (shifted) offset. Answered by binary search on demand;
     // entries are still in old coordinates while this runs.
     func candidate(_ line: Int) -> Int? {
-      let newLineStart = lines.starts[line]
+      let newLineStart = lines.start(line)
       let oldLineStart = newLineStart - delta
       guard oldLineStart >= range.upperBound else { return nil }
       if oldLineStart == range.upperBound {

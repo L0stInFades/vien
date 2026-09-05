@@ -66,9 +66,19 @@ enum MainMenu {
       item("Close", #selector(NSWindow.performClose(_:)), "w"),
       item("Save", #selector(NSDocument.save(_:)), "s"),
       item("Save As…", #selector(NSDocument.saveAs(_:)), "S", [.command, .shift]),
+      item("Duplicate", #selector(NSDocument.duplicate(_:)), "s", [.command, .shift]),
       item("Rename…", #selector(NSDocument.rename(_:))),
       item("Move To…", #selector(NSDocument.move(_:))),
       item("Revert To Saved", #selector(NSDocument.revertToSaved(_:)), "r"),
+      item("Browse All Versions…", #selector(NSDocument.browseVersions(_:))),
+      .separator(),
+      item("Show in Finder", #selector(MarkdownFile.showInFinder(_:))),
+      item("Copy Path", #selector(MarkdownFile.copyPath(_:))),
+      submenu("Encoding", ["UTF-8", "UTF-8 with BOM", "UTF-16"].map { name -> NSMenuItem in
+        let i = item(name, #selector(MarkdownFile.changeEncoding(_:)))
+        i.representedObject = name
+        return i
+      }),
       .separator(),
       item("Import…", #selector(MarkdownFile.importWithPandoc(_:))),
       submenu("Export", [
@@ -96,7 +106,7 @@ enum MainMenu {
       item("Cut", #selector(NSText.cut(_:)), "x"),
       item("Copy", #selector(NSText.copy(_:)), "c"),
       item("Paste", #selector(NSText.paste(_:)), "v"),
-      item("Paste as Plain Text", #selector(EditorViewController.pasteAsPlainText(_:)), "v", [.command, .shift]),
+      item("Paste as Plain Text", #selector(NSTextView.pasteAsPlainText(_:)), "v", [.command, .shift]),
       item("Copy as Markdown", #selector(EditorViewController.copyAsMarkdown(_:)), "c", [.command, .shift]),
       item("Copy as HTML", #selector(EditorViewController.copyAsHTML(_:))),
       item("Delete", #selector(NSText.delete(_:))),
@@ -143,6 +153,7 @@ enum MainMenu {
       item("Demote Heading", #selector(EditorViewController.demoteHeading(_:)), "-", [.command, .shift]),
       .separator(),
       item("Table", #selector(EditorViewController.insertTable(_:)), "t", [.command, .shift]),
+      item("Format Table", #selector(EditorViewController.formatTable(_:)), "t", [.command, .shift, .option]),
       item("Code Fences", #selector(EditorViewController.insertCodeFence(_:)), "c", [.command, .option]),
       item("Math Block", #selector(EditorViewController.insertMathBlock(_:)), "m", [.command, .option]),
       item("Quote Block", #selector(EditorViewController.toggleBlockQuote(_:)), "q", [.command, .option]),

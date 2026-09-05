@@ -22,10 +22,13 @@ struct MathLayout {
   let baseSize: Double
   /// Font used for `\text{}` runs (the surrounding document's font).
   let textFont: CTFont
+  /// Ink colour; boxes capture it so drawing needs nothing global.
+  let color: CGColor
 
-  init(font: MathFont = .shared, size: Double) {
+  init(font: MathFont = .shared, size: Double, color: CGColor) {
     self.font = font
     baseSize = size
+    self.color = color
     textFont = CTFontCreateUIFontForLanguage(.system, size, nil) ?? CTFontCreateWithName("Helvetica" as CFString, size, nil)
   }
 
@@ -77,8 +80,13 @@ struct MathLayout {
       let b = layout(inner, style)
       let pad = size(style) * 0.25
       let lw = rule(style)
+      let color = self.color
       return MathBox(width: b.width + pad * 2, ascent: b.ascent + pad, descent: b.descent + pad, atom: .ord) { ctx, o in
-        ctx.stroke(CGRect(x: o.x + lw / 2, y: o.y - b.ascent - pad + lw / 2, width: b.width + pad * 2 - lw, height: b.height + pad * 2 - lw), width: lw)
+        ctx.saveGState()
+        ctx.setLineWidth(lw)
+        ctx.setStrokeColor(color)
+        ctx.stroke(CGRect(x: o.x + lw / 2, y: o.y - b.ascent - pad + lw / 2, width: b.width + pad * 2 - lw, height: b.height + pad * 2 - lw))
+        ctx.restoreGState()
         b.draw(ctx, CGPoint(x: o.x + pad, y: o.y))
       }
     case .phantom(let inner, let keepWidth, let keepHeight):
@@ -157,14 +165,14 @@ struct MathLayout {
     let line = CTLineCreateWithAttributedString(attributed)
     var ascent: CGFloat = 0, descent: CGFloat = 0
     let width = CTLineGetTypographicBounds(line, &ascent, &descent, nil)
+    let colored = NSMutableAttributedString(attributedString: attributed)
+    colored.addAttribute(kCTForegroundColorAttributeName as NSAttributedString.Key, value: color, range: NSRange(location: 0, length: colored.length))
+    let coloredLine = CTLineCreateWithAttributedString(colored)
     return MathBox(width: width, ascent: ascent, descent: descent, atom: isOperator ? .op : .ord) { ctx, o in
       ctx.saveGState()
       ctx.textMatrix = CGAffineTransform(scaleX: 1, y: -1)
       ctx.textPosition = o
-      // Use the current fill colour for the text.
-      let colored = NSMutableAttributedString(attributedString: attributed)
-      if let color = ctx.fillColor { colored.addAttribute(kCTForegroundColorAttributeName as NSAttributedString.Key, value: color, range: NSRange(location: 0, length: colored.length)) }
-      CTLineDraw(CTLineCreateWithAttributedString(colored), ctx)
+      CTLineDraw(coloredLine, ctx)
       ctx.restoreGState()
     }
   }
@@ -536,19 +544,6 @@ struct MathLayout {
       }
     }
   }
-}
-
-private extension CGContext {
-  func stroke(_ rect: CGRect, width: Double) {
-    saveGState()
-    setLineWidth(width)
-    if let c = fillColor { setStrokeColor(c) }
-    stroke(rect)
-    restoreGState()
-  }
-
-  /// The current fill colour (tracked by `MathRenderer` since CGContext cannot report it).
-  var fillColor: CGColor? { MathRenderer.currentColor }
 }
 
 /// Unicode Mathematical Alphanumeric Symbols mapping for font variants.

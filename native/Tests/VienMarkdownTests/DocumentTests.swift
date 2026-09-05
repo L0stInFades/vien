@@ -76,7 +76,7 @@ struct IncrementalTests {
     let doc = MarkdownDocument(text: "héllo 😀 world\nsecond")
     #expect(doc.utf16Offset(forByte: doc.byteOffset(forUTF16: 9)) == 9)
     #expect(doc.byteOffset(forUTF16: 6) == 7)  // "héllo " is 7 bytes
-    #expect(doc.lines.utf16Starts[1] == 15)
+    #expect(doc.lines.utf16Start(1) == 15)
   }
 }
 

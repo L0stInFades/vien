@@ -9,7 +9,7 @@
 import Foundation
 import VienDiagrams
 import VienMarkdown
-@testable import VienMath
+import VienMath
 import ImageIO
 import UniformTypeIdentifiers
 
@@ -163,21 +163,6 @@ func syntheticDocument(paragraphs: Int) -> String {
   print("math → \(outDir.path)")
 }
 
-/// Prints MATH-table facts for a few delimiters (variants and assembly parts).
-@MainActor func runMathFont() {
-  let f = MathFont.shared
-  print("font available: \(f.available), upem \(f.unitsPerEm), axis \(f.constant(.axisHeight, size: 100)), scriptScale \(f.constant(.scriptPercentScaleDown, size: 1))")
-  for ch in ["|", "(", "[", "{", "√", "‖", "⟨"] {
-    guard let g = f.glyph(for: ch.unicodeScalars.first!) else { print("\(ch): no glyph"); continue }
-    let m = f.metrics(g, size: 100)
-    print("\(ch): glyph \(g) adv \(m.advance) bounds \(m.bounds)")
-    if let c = f.variants(g, vertical: true) {
-      for v in c.variants { let vm = f.metrics(v.glyph, size: 100); print("   variant \(v.glyph): height \(vm.bounds.height) adv-measure \(v.advance)") }
-      for p in c.assembly { let pm = f.metrics(p.glyph, size: 100); print("   part \(p.glyph) ext=\(p.isExtender) full=\(p.fullAdvance) start=\(p.startConnector) end=\(p.endConnector) bounds=\(pm.bounds)") }
-    } else { print("   no variants") }
-  }
-}
-
 let selected = arguments.isEmpty ? ["perf", "diagrams", "math"] : Array(arguments)
 for step in selected {
   switch step {
@@ -185,7 +170,6 @@ for step in selected {
   case "dump": runDump()
   case "diagrams": runDiagrams()
   case "math": runMath()
-  case "math-font": runMathFont()
   default: fail("unknown step \(step)")
   }
 }
