@@ -1,0 +1,22 @@
+=== quadratic
+x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+=== gaussian
+\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
+=== sum
+\sum_{n=1}^{\infty} \frac{1}{n^2} = \frac{\pi^2}{6}
+=== matrix
+A = \begin{pmatrix} a & b \\ c & d \end{pmatrix}, \quad \det A = ad - bc
+=== cases
+f(x) = \begin{cases} x^2 & x \ge 0 \\ -x & \text{otherwise} \end{cases}
+=== aligned
+\begin{aligned} (a+b)^2 &= a^2 + 2ab + b^2 \\ &= a^2 + b^2 + 2ab \end{aligned}
+=== limits
+\lim_{x \to 0} \frac{\sin x}{x} = 1, \qquad \nabla \cdot \vec{E} = \frac{\rho}{\varepsilon_0}
+=== sets
+\mathbb{R}^n \subset \mathbb{C}^n, \; \forall \epsilon > 0 \; \exists \delta : |x - y| < \delta \Rightarrow \left| f(x) - f(y) \right| < \epsilon
+=== accents
+\hat{x} + \bar{y} + \dot{z} + \tilde{a} + \overline{AB} + \sqrt[3]{x^3 + y^3}
+=== euler
+e^{i\pi} + 1 = 0 \quad \mathcal{L}\{f\}(s) = \int_0^\infty f(t)\, e^{-st}\, dt
+=== inline
+E = mc^2

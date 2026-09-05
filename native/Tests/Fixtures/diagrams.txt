@@ -1,0 +1,78 @@
+=== flow-basic
+graph TD
+  A[Start] --> B{Is it working?}
+  B -->|Yes| C[Ship it]
+  B -->|No| D(Fix it)
+  D --> A
+  C --> E((Done))
+=== flow-lr-shapes
+flowchart LR
+  a[Rect] --> b(Rounded) --> c([Stadium]) --> d[[Subroutine]]
+  d --> e[(Database)] --> f((Circle)) --> g>Flag]
+  g --> h{Diamond} --> i{{Hexagon}} --> j[/Parallelogram/]
+  j -.-> k[\Alt\] ==> l[/Trapezoid\]
+  l --- m[\Alt trapezoid/]
+=== flow-subgraphs
+flowchart TB
+  subgraph Client
+    UI[Editor] --> Parser
+  end
+  subgraph Engine[Native engine]
+    Parser --> Layout --> Render
+  end
+  Render --> Screen[(Screen)]
+  UI -- typing --> Parser
+  style Screen fill:#e8f0fe,stroke:#4a7cf6
+=== sequence
+sequenceDiagram
+  autonumber
+  participant U as User
+  participant E as Editor
+  participant P as Parser
+  U->>E: types text
+  activate E
+  E->>P: replace(range, text)
+  P-->>E: affected range
+  deactivate E
+  loop every keystroke
+    E->>E: restyle visible paragraphs
+  end
+  alt diagram fence
+    E->>P: render mermaid
+    P-->>E: bitmap
+  else plain text
+    E-->>U: styled paragraph
+  end
+  Note over U,E: everything stays source text
+=== pie
+pie showData title Time spent
+  "Writing" : 55
+  "Reading" : 30
+  "Fixing diagrams" : 15
+=== class
+classDiagram
+  class Document {
+    +String text
+    +Block[] blocks
+    +replace(range, text)
+  }
+  class Block {
+    +Kind kind
+    +Range range
+  }
+  class Inline
+  Document *-- Block : contains
+  Block o-- Inline
+  Renderer <|-- HTMLRenderer
+  Renderer <|-- AttributedRenderer
+  Document ..> Renderer : uses
+=== state
+stateDiagram-v2
+  [*] --> Clean
+  Clean --> Dirty : edit
+  Dirty --> Saving : save
+  Saving --> Clean : ack
+  Saving --> Conflict : disk changed
+  Conflict --> Dirty : keep local
+  Conflict --> Clean : accept disk
+  Dirty --> [*] : close

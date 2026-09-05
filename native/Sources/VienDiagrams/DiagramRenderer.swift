@@ -1,2 +1,52 @@
-// placeholder — replaced by the real renderer
-public enum DiagramsPlaceholder {}
+import AppKit
+import Foundation
+
+/// A rendered diagram: a Retina bitmap sized in points plus the SVG for exports.
+public struct RenderedDiagram: Sendable {
+  public let image: CGImage
+  public let size: CGSize
+  public let svg: String
+}
+
+/// Public entry point: Mermaid source in, native bitmap and SVG out. Pure Swift, synchronous, and
+/// fast enough to run on the main actor for every diagram on screen.
+public enum DiagramRenderer {
+  public static func render(_ source: String, dark: Bool, maxWidth: Double, scale: CGFloat = 2) throws -> RenderedDiagram {
+    let theme = dark ? DiagramTheme.dark : DiagramTheme.light
+    let diagram = try Mermaid.parse(source)
+    var size: CGSize
+    var draw: (inout any Canvas) -> Void
+    switch diagram {
+    case .graph(let g):
+      let r = GraphRenderer(diagram: g, theme: theme)
+      size = r.size
+      draw = { c in r.draw(on: &c) }
+    case .sequence(let s):
+      let r = SequenceRenderer(diagram: s, theme: theme)
+      size = r.size
+      draw = { c in r.draw(on: &c) }
+    case .pie(let p):
+      let r = PieRenderer(diagram: p, theme: theme)
+      size = r.size
+      draw = { c in r.draw(on: &c) }
+    case .unsupported(let kind):
+      throw DiagramSyntaxError(line: 1, message: "“\(kind)” diagrams are not supported yet")
+    }
+    size = CGSize(width: max(24, size.width.rounded(.up)), height: max(24, size.height.rounded(.up)))
+    // Bitmap: drawn at the natural size; the editor scales wide diagrams down to fit.
+    guard let cg = CGCanvas.makeImage(size: size, scale: scale, background: nil, draw: { canvas in
+      var any: any Canvas = canvas
+      draw(&any)
+      canvas = any as! CGCanvas
+    }) else { throw DiagramSyntaxError(line: 1, message: "could not allocate a bitmap") }
+    var svgCanvas: any Canvas = SVGCanvas(size: size)
+    draw(&svgCanvas)
+    _ = maxWidth
+    return RenderedDiagram(image: cg, size: size, svg: (svgCanvas as! SVGCanvas).svg)
+  }
+
+  /// Parses without rendering (used to report syntax errors early).
+  public static func validate(_ source: String) -> String? {
+    do { _ = try Mermaid.parse(source); return nil } catch { return "\(error)" }
+  }
+}

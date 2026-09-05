@@ -1,13 +1,15 @@
-// swift-tools-version: 6.2
+// swift-tools-version: 6.3
 import PackageDescription
 
 // Vien — native macOS Markdown editor.
 //
 // Modules (each owns exactly one responsibility):
 //   VienMarkdown  — pure Swift CommonMark/GFM(+extensions) parser, source-span AST, incremental reparse, HTML.
-//   VienDiagrams  — Mermaid / KaTeX rendering through one hidden WebKit host, cached as images + SVG.
+//   VienDiagrams  — native Mermaid: parser, layered graph layout, Core Graphics + SVG rendering.
+//   VienMath      — native TeX math: parser, box layout with the system math font, Core Text + MathML.
 //   Vien          — AppKit document app (TextKit 2 editor, sidebar, settings, export).
-//   vien-check    — spec ratchet + corpus + incremental + perf checks (no XCTest needed).
+//   vien-tool     — perf timings, diagram PNG rendering and parse-tree dumps for manual inspection.
+//   Tests/        — swift-testing suites (spec conformance, corpus, incremental parsing, diagrams, math).
 
 let strict: [SwiftSetting] = [
   .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
@@ -24,20 +26,21 @@ let package = Package(
   ],
   targets: [
     .target(name: "VienMarkdown", swiftSettings: strict),
-    .target(
-      name: "VienDiagrams",
-      swiftSettings: strict + [.defaultIsolation(MainActor.self)]
-    ),
+    .target(name: "VienDiagrams", swiftSettings: strict),
+    .target(name: "VienMath", swiftSettings: strict),
     .executableTarget(
       name: "Vien",
-      dependencies: ["VienMarkdown", "VienDiagrams"],
+      dependencies: ["VienMarkdown", "VienDiagrams", "VienMath"],
       swiftSettings: strict + [.defaultIsolation(MainActor.self)]
     ),
     .executableTarget(
-      name: "vien-check",
-      dependencies: ["VienMarkdown"],
-      path: "Tests/vien-check",
+      name: "vien-tool",
+      dependencies: ["VienMarkdown", "VienDiagrams", "VienMath"],
+      path: "Tests/vien-tool",
       swiftSettings: strict
     ),
+    .testTarget(name: "VienMarkdownTests", dependencies: ["VienMarkdown"], swiftSettings: strict),
+    .testTarget(name: "VienDiagramsTests", dependencies: ["VienDiagrams"], swiftSettings: strict),
+    .testTarget(name: "VienMathTests", dependencies: ["VienMath"], swiftSettings: strict),
   ]
 )

@@ -16,6 +16,7 @@ Vien 是 MarkText 的现代化 fork：安静、本地优先、无损、即时响
 | renderer Node 能力清单与迁移状态 | [docs/capability-inventory.md](docs/capability-inventory.md) |
 | 无损基线 | [test/corpus/known-lossy.json](test/corpus/known-lossy.json)（棘轮测试 `test/unit/specs/corpus-roundtrip.spec.js`） |
 | 测试数量 / 通过状态 | 运行 `pnpm run verify`（CI 同源） |
+| 原生 Swift 实验分支 | [native/README.md](native/README.md)（`experimental/swift-native`，`native/Scripts/swift.sh test`） |
 
 ## 技术栈（当前）
 

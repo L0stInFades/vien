@@ -1144,6 +1144,20 @@ M3 “功能完整 RC”在此结束。
 
 ## 17. 进度日志（§16 维护规则要求）
 
+### 2026-09-06 — 实验分支：纯 Swift 原生实现（`experimental/swift-native`）
+
+在 `native/` 下用纯 Swift（Swift 6.3.3，无 JavaScript / WebKit / 第三方包）重建整个应用；细节见
+[native/README.md](native/README.md) 与 [ADR-004](docs/adr/ADR-004-native-swift.md)。本分支不改动 Electron 代码。
+
+| 模块 | 结果 | 证据 |
+| --- | --- | --- |
+| `VienMarkdown` 解析器 | CommonMark 0.31.2 652/652、GFM 0.29 28/28；源区间精确到字节；增量重解析 0.5 MB 0.05 ms / 15 MB ≈ 2 ms | `swift test`（SpecTests、CorpusTests、IncrementalTests） |
+| `VienDiagrams` | 原生 Mermaid：flowchart / sequence / pie / class / state，分层布局 + Core Graphics + SVG 导出 | DiagramTests、`vien-tool diagrams` |
+| `VienMath` | 原生 TeX 数学：STIX Two Math 的 OpenType MATH 表驱动排版，Core Graphics + MathML 导出 | MathTests、`vien-tool math` |
+| `Vien` 应用 | NSDocument（自动保存 / 版本 / 恢复 / 外部修改）、TextKit 2 源码即真相编辑器、侧栏（文件 / 目录 / 全文搜索）、设置窗口、HTML / PDF 导出、Pandoc 导入导出、快速打开、原生标签页 | `VIEN_SNAPSHOT` 截图、`--export` 无头导出 |
+
+未做：非 Mermaid 图表库（flowchart.js / sequence / PlantUML / Vega）、图片上传服务、截图工具；其余以本计划 §2.2 指标为准继续推进。
+
 ### 2026-07-16 — Phase 0 完成 + Phase 1/2 核心工作包落地
 
 **已完成工作包**（每项均带回归测试并通过完整验证循环：unit + tsc + biome + build + Electron E2E）：

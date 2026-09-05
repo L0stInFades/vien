@@ -181,43 +181,50 @@ public struct MarkdownDocument: Sendable {
     public var all = 0
   }
 
-  /// Word statistics compatible with the original app: CJK ideographs count as one word each.
+  /// Word statistics: whitespace-separated tokens that contain a letter or digit count as words
+  /// (so `#`, `-`, `|` and fences do not), and CJK ideographs count as one word each.
   public func wordCount() -> WordCount {
     var wc = WordCount()
-    var inWord = false
+    var inToken = false
+    var tokenHasContent = false
     var inParagraph = false
     var newlines = 0
+    func endToken() {
+      if inToken, tokenHasContent { wc.words += 1 }
+      inToken = false
+      tokenHasContent = false
+    }
     for scalar in text.unicodeScalars {
       wc.all += 1
-      let isCJK = scalar.value >= 0x4E00 && scalar.value <= 0x9FA5
-      if scalar == "\n" {
+      if scalar == "\n" || scalar == "\r" {
         newlines += 1
         if newlines >= 2 { inParagraph = false }
-        inWord = false
+        endToken()
         continue
       }
-      if scalar.properties.isWhitespace {
-        inWord = false
-        continue
-      }
+      if scalar.properties.isWhitespace { endToken(); continue }
       newlines = 0
       if !inParagraph { inParagraph = true; wc.paragraphs += 1 }
       wc.characters += 1
+      let isCJK = (scalar.value >= 0x4E00 && scalar.value <= 0x9FFF) || (scalar.value >= 0x3040 && scalar.value <= 0x30FF) || (scalar.value >= 0xAC00 && scalar.value <= 0xD7AF)
       if isCJK {
+        endToken()
         wc.words += 1
-        inWord = false
-      } else if !inWord {
-        wc.words += 1
-        inWord = true
+      } else {
+        inToken = true
+        if scalar.properties.isAlphabetic || scalar.properties.numericType != nil { tokenHasContent = true }
       }
     }
+    endToken()
     return wc
   }
 
   // MARK: - Incremental editing
 
   /// Replaces `range` (in bytes) with `replacement`, reparsing only the affected top-level blocks.
-  public mutating func replace(_ range: Range<Int>, with replacement: [Byte]) {
+  /// Returns the byte range (new coordinates) whose block structure was rebuilt.
+  @discardableResult
+  public mutating func replace(_ range: Range<Int>, with replacement: [Byte]) -> Range<Int> {
     precondition(range.lowerBound >= 0 && range.upperBound <= bytes.count && range.lowerBound <= range.upperBound)
     let delta = replacement.count - range.count
 
@@ -228,7 +235,7 @@ public struct MarkdownDocument: Sendable {
       entries = parser.parse(fromLine: 0).blocks.map(Entry.init)
       shifts = Array(repeating: 0, count: entries.count)
       collectDefinitions()
-      return
+      return 0..<bytes.count
     }
 
     // Restart one top-level block before the one touched by the edit.
@@ -278,6 +285,9 @@ public struct MarkdownDocument: Sendable {
       for i in (restart + freshEntries.count)..<shifts.count { shifts[i] += delta }
     }
     if removedDefinitions || freshEntries.contains(where: { $0.hasDefinitions }) { collectDefinitions() }
+    let tailIndex = restart + freshEntries.count
+    let affectedEnd = tailIndex < entries.count ? start(tailIndex) : bytes.count
+    return min(restartOffset, affectedEnd)..<affectedEnd
   }
 
   /// Non-mutating form of `replace(_:with:)`.
@@ -288,10 +298,11 @@ public struct MarkdownDocument: Sendable {
   }
 
   /// Convenience for UTF-16 based text views: `range` and `replacement` are in UTF-16 units.
-  public mutating func replace(utf16Range: Range<Int>, with replacement: String) {
+  @discardableResult
+  public mutating func replace(utf16Range: Range<Int>, with replacement: String) -> Range<Int> {
     let lo = lines.byteOffset(forUTF16: utf16Range.lowerBound, in: bytes)
     let hi = lines.byteOffset(forUTF16: utf16Range.upperBound, in: bytes)
-    replace(lo..<hi, with: Array(replacement.utf8))
+    return replace(lo..<hi, with: Array(replacement.utf8))
   }
 
   public func utf16Offset(forByte offset: Int) -> Int { lines.utf16Offset(forByte: offset, in: bytes) }
