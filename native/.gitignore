@@ -1,0 +1,4 @@
+.build/
+*.xcodeproj
+Vien.app/
+dist/
