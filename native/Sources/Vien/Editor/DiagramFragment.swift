@@ -235,9 +235,18 @@ nonisolated final class DecoratedFragment: NSTextLayoutFragment {
     case .rule:
       ctx.setStrokeColor(NSColor.separatorColor.cgColor)
       ctx.setLineWidth(1)
-      let y = point.y + frame.height / 2
+      // The fragment frame only spans the marker's glyphs; the rule spans the container.
+      let width = textLayoutManager?.textContainer?.size.width ?? frame.width
+      // Through the middle of the marker's dashes: a hyphen sits about half an x-height up.
+      var y = frame.height / 2
+      if let line = textLineFragments.first, line.attributedString.length > 0,
+        let font = line.attributedString.attribute(.font, at: 0, effectiveRange: nil) as? NSFont
+      {
+        y = line.typographicBounds.minY + line.glyphOrigin.y - font.xHeight / 2  // glyphOrigin is relative to the line's bounds
+      }
+      y = (point.y + y).rounded() + 0.5
       ctx.move(to: CGPoint(x: point.x, y: y))
-      ctx.addLine(to: CGPoint(x: point.x + frame.width, y: y))
+      ctx.addLine(to: CGPoint(x: point.x + width, y: y))
       ctx.strokePath()
       // Draw the text faintly so it stays editable but recedes behind the rule.
       ctx.setAlpha(0.35)
