@@ -4,6 +4,7 @@ Clone the repository:
 
 ```
 git clone https://github.com/L0stInFades/vien.git
+cd vien
 ```
 
 ### Prerequisites
