@@ -250,8 +250,12 @@ extension EditorViewController {
 
   /// Inserts `text` as its own block at the caret, surrounded by blank lines as needed.
   func insertBlockText(_ text: String) {
-    let sel = textView.selectedRange()
+    var sel = textView.selectedRange()
     let ns = textView.string as NSString
+    // Inside a table the new block goes after the table, never between its rows.
+    if let context = tableAtCaret(), let last = TableModel.lines(of: context.block, in: document.markdown, text: ns).last {
+      sel = NSRange(location: max(last.range.location, NSMaxRange(last.range) - 1), length: 0)
+    }
     let line = ns.lineRange(for: NSRange(location: sel.location, length: 0))
     let current = textView.lineText(line)
     var insertion = text + "\n"

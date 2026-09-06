@@ -139,6 +139,38 @@ struct HighlightTests {
     #expect(kind(of: "$(CC)", in: mk, "makefile") == .variable)
   }
 
+  @Test func auditRegressions() {
+    let py = "s = f\"hi {name}\" + other\nt = rb'raw' + more"
+    #expect(kind(of: "f\"hi", in: py, "python") == .string)
+    #expect(kind(of: "other", in: py, "python") == nil)
+    #expect(kind(of: "more", in: py, "python") == nil)
+    let rust = "let a = b\"bytes\";\nlet c = \"second\";\nlet d = r#\"raw\"#; x"
+    #expect(kind(of: "second", in: rust, "rust") == .string)
+    #expect(kind(of: "raw", in: rust, "rust") == .string)
+    #expect(kind(of: "x", in: rust, "rust") == nil)
+    let diff = " - context item\n-removed\n +1 context plus\n+added"
+    #expect(kind(of: "context item", in: diff, "diff") == nil)
+    #expect(kind(of: "-removed", in: diff, "diff") == .deleted)
+    #expect(kind(of: "context plus", in: diff, "diff") == nil)
+    #expect(kind(of: "+added", in: diff, "diff") == .inserted)
+    let html = "<SCRIPT>var y = \"<b>\";</SCRIPT>\n<p>after</p>"
+    #expect(kind(of: "\"<b>\"", in: html, "html") == nil)
+    #expect(kind(of: "<p>", in: html, "html") == .tag)
+    let css = "a { background: url(https://example.com/bg.png) no-repeat; --main-color: red; }"
+    #expect(kind(of: "example", in: css, "css") == nil)
+    #expect(kind(of: "no-repeat", in: css, "css") == nil)
+    #expect(kind(of: "--main-color", in: css, "css") == .property)
+    let sh = "cat <<EOT\nDon't panic\nEOT\necho $HOME"
+    #expect(kind(of: "$HOME", in: sh, "bash") == .variable)
+    #expect(kind(of: "EOT\necho", in: sh, "bash") == nil)
+    let mk = "all: main.o\n\tcp a:b c\n"
+    #expect(kind(of: "all", in: mk, "makefile") == .function)
+    #expect(kind(of: "cp a", in: mk, "makefile") == nil)
+    #expect(kind(of: "Println", in: "fmt.Println(x)", "go") == .function)
+    #expect(kind(of: "5", in: "for i in 1...5 {}", "swift") == .number)
+    #expect(kind(of: "...", in: "for i in 1...5 {}", "swift") == nil)
+  }
+
   @Test func aliasesAndUnknown() {
     #expect(Language.named("C++")?.name == "cpp")
     #expect(Language.named("ts")?.name == "typescript")

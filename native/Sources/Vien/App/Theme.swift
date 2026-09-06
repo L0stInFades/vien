@@ -1,19 +1,21 @@
 import AppKit
 import VienCode
 
-/// Typography and colour tokens. Everything derives from the system font and semantic system colours
-/// so the editor looks native in light and dark mode without a theme engine.
+/// Typography and colour tokens: fonts from the preferences, colours from the chosen palette
+/// (the system palette by default, so the editor looks native in light and dark mode).
 struct Theme {
   let baseSize: CGFloat
   let lineHeightMultiple: CGFloat
   let fontFamily: String
   let codeFontFamily: String
+  let palette: Palette
 
-  init(preferences p: Preferences = .shared, zoom: CGFloat = 1) {
+  init(preferences p: Preferences = .shared, zoom: CGFloat = 1, palette: Palette? = nil) {
     baseSize = CGFloat(p.fontSize) * zoom
     lineHeightMultiple = CGFloat(p.lineHeight)
     fontFamily = p.fontFamily
     codeFontFamily = p.codeFontFamily
+    self.palette = palette ?? Palette.named(p.theme)
   }
 
   func body(weight: NSFont.Weight = .regular, size: CGFloat? = nil, italic: Bool = false) -> NSFont {
@@ -40,37 +42,32 @@ struct Theme {
     return body(weight: weight, size: baseSize * scale[max(0, min(5, level - 1))])
   }
 
-  static let text = NSColor.labelColor
-  static let secondary = NSColor.secondaryLabelColor
-  static let marker = NSColor.tertiaryLabelColor
-  static let quote = NSColor.secondaryLabelColor
-  static let link = NSColor.linkColor
-  static let codeBackground = NSColor.quaternarySystemFill
-  static let rule = NSColor.separatorColor
-  static let accent = NSColor.controlAccentColor
-  static let background = NSColor.textBackgroundColor
+  /// The theme the editor is using; the static colour tokens read from it.
+  static var current = Theme()
+
+  static var text: NSColor { current.palette.text }
+  static var secondary: NSColor { current.palette.secondary }
+  static var marker: NSColor { current.palette.marker }
+  static var quote: NSColor { current.palette.quote }
+  static var link: NSColor { current.palette.link }
+  static var codeBackground: NSColor { current.palette.codeBackground }
+  static var rule: NSColor { current.palette.rule }
+  static var accent: NSColor { current.palette.accent }
+  static var background: NSColor { current.palette.background }
   /// Makes markup take (almost) no space: a hairline font in a clear colour. The characters stay
   /// in the text, so nothing is rewritten and the caret can still land on them.
   static let hiddenAttributes: [NSAttributedString.Key: Any] = [.font: NSFont.systemFont(ofSize: 0.01), .foregroundColor: NSColor.clear]
 
-  /// Colour for a code token; light and dark values follow Xcode's default presentation.
-  static func syntax(_ kind: TokenKind) -> NSColor { syntaxColors[kind] ?? text }
+  /// Colour for a code token in the current palette.
+  static func syntax(_ kind: TokenKind) -> NSColor { current.palette.syntax[kind] ?? current.palette.text }
 
-  private static let syntaxColors: [TokenKind: NSColor] = {
-    func dynamic(_ light: UInt32, _ dark: UInt32) -> NSColor {
-      func color(_ hex: UInt32) -> NSColor {
-        NSColor(srgbRed: CGFloat((hex >> 16) & 0xFF) / 255, green: CGFloat((hex >> 8) & 0xFF) / 255, blue: CGFloat(hex & 0xFF) / 255, alpha: 1)
-      }
-      return NSColor(name: nil) { $0.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? color(dark) : color(light) }
-    }
-    return [
-      .keyword: dynamic(0x9B2393, 0xFC5FA3), .type: dynamic(0x0B4F79, 0x5DD8FF), .tag: dynamic(0x0B4F79, 0x5DD8FF),
-      .constant: dynamic(0x1C00CF, 0xD0BF69), .number: dynamic(0x1C00CF, 0xD0BF69), .string: dynamic(0xC41A16, 0xFC6A5D),
-      .comment: dynamic(0x5D6C79, 0x6C7986), .function: dynamic(0x326D74, 0x67B7A4), .property: dynamic(0x326D74, 0x67B7A4),
-      .variable: dynamic(0x6C36A5, 0xA167E6), .attribute: dynamic(0x643820, 0xBF8555), .meta: dynamic(0x643820, 0xBF8555),
-      .heading: dynamic(0x9B2393, 0xFC5FA3), .inserted: dynamic(0x008A00, 0x6AD26A), .deleted: dynamic(0xC41A16, 0xFC6A5D),
-    ]
-  }()
+  /// Runs `body` with another palette current (printing uses the system palette whatever the editor shows).
+  static func using<T>(_ palette: Palette, _ body: () throws -> T) rethrows -> T {
+    let saved = current
+    current = Theme(zoom: saved.baseSize / CGFloat(Preferences.shared.fontSize), palette: palette)
+    defer { current = saved }
+    return try body()
+  }
 
   var paragraphSpacing: CGFloat { baseSize * 0.6 }
   var headingSpacingBefore: CGFloat { baseSize * 1.1 }

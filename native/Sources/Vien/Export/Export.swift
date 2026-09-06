@@ -74,6 +74,7 @@ enum HTMLExport {
     options.headingIDs = true
     options.showFrontMatter = Preferences.shared.showFrontMatterInExport
     options.diagrams = true
+    options.codeBlock = { language, code in highlightedCodeBlock(language: language, code: code) }
     let doc = file.markdown
     var body = HTMLRenderer.render(doc, options: options)
 
@@ -90,7 +91,6 @@ enum HTMLExport {
       if let mathml = try? MathRenderer.mathML(unescape(src), display: false) { return mathml }
       return "<code>\(src)</code>"
     }
-    body = highlightCodeBlocks(in: body)
     return """
     <!doctype html>
     <html lang="en">
@@ -124,36 +124,18 @@ enum HTMLExport {
     return out
   }
 
-  /// `<pre><code class="language-x">…</code></pre>` → token spans from the editor's tokenizer.
-  static func highlightCodeBlocks(in html: String) -> String {
-    let open = "<pre><code class=\"language-"
-    var out = ""
-    var rest = Substring(html)
-    while let r = rest.range(of: open) {
-      out += rest[..<r.lowerBound]
-      let after = rest[r.upperBound...]
-      guard let quote = after.firstIndex(of: "\""), let gt = after[quote...].firstIndex(of: ">"),
-        let close = after[gt...].range(of: "</code></pre>")
-      else { out += rest[r.lowerBound...]; return out }
-      let name = String(after[..<quote])
-      let escaped = String(after[after.index(after: gt)..<close.lowerBound])
-      out += open + name + "\">"
-      if let language = Language.named(name) {
-        let code = Array(unescape(escaped).utf8)
-        var pos = 0
-        for token in Highlighter.tokens(code, language: language) {
-          out += escape(String(decoding: code[pos..<token.range.lowerBound], as: UTF8.self))
-          out += "<span class=\"\(token.kind.cssClass)\">" + escape(String(decoding: code[token.range], as: UTF8.self)) + "</span>"
-          pos = token.range.upperBound
-        }
-        out += escape(String(decoding: code[pos...], as: UTF8.self))
-      } else {
-        out += escaped
-      }
-      out += "</code></pre>"
-      rest = after[close.upperBound...]
+  /// A fenced code block with the editor's tokens as `tk-*` spans (nil for unknown languages).
+  nonisolated static func highlightedCodeBlock(language: String, code: String) -> String? {
+    guard let lang = Language.named(language) else { return nil }
+    let bytes = Array(code.utf8)
+    var out = "<pre><code class=\"language-\(escape(language))\">"
+    var pos = 0
+    for token in Highlighter.tokens(bytes, language: lang) {
+      out += escape(String(decoding: bytes[pos..<token.range.lowerBound], as: UTF8.self))
+      out += "<span class=\"\(token.kind.cssClass)\">" + escape(String(decoding: bytes[token.range], as: UTF8.self)) + "</span>"
+      pos = token.range.upperBound
     }
-    out += rest
+    out += escape(String(decoding: bytes[pos...], as: UTF8.self)) + "</code></pre>\n"
     return out
   }
 
@@ -282,7 +264,7 @@ enum Pandoc {
 }
 
 extension HTMLExport {
-  static func escape(_ s: String) -> String {
+  nonisolated static func escape(_ s: String) -> String {
     s.replacingOccurrences(of: "&", with: "&amp;").replacingOccurrences(of: "<", with: "&lt;").replacingOccurrences(of: ">", with: "&gt;").replacingOccurrences(of: "\"", with: "&quot;")
   }
 }

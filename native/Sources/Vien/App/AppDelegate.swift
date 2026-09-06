@@ -197,6 +197,16 @@ enum Automation {
           tv.textLayoutManager?.textViewportLayoutController.layoutViewport()
         }
       case "recycle": wc.editor.recycleElements()
+      case "theme": Preferences.shared.theme = arg
+      case "key":
+        // A real key event through the application's event loop (undo grouping, key bindings).
+        if let window = tv.window, let down = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil, characters: arg, charactersIgnoringModifiers: arg, isARepeat: false, keyCode: 0) {
+          NSApp.postEvent(down, atStart: false)
+        }
+      case "undoinfo": print("undo: canUndo \(tv.undoManager?.canUndo ?? false) level \(tv.undoManager?.groupingLevel ?? -1) groupsByEvent \(tv.undoManager?.groupsByEvent ?? false) name '\(tv.undoManager?.undoActionName ?? "")'")
+      case "inserttable":
+        let n = arg.split(separator: ",").compactMap { Int($0) }
+        if n.count == 2 { wc.editor.insertTable(rows: n[0], columns: n[1]) }
       case "action":
         let selector = NSSelectorFromString(arg)
         if wc.editor.responds(to: selector) { _ = wc.editor.perform(selector, with: nil) } else if tv.responds(to: selector) { _ = tv.perform(selector, with: nil) } else { print("unknown action \(arg)") }

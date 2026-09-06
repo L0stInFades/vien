@@ -203,9 +203,10 @@ final class EditorTextView: NSTextView {
     let sel = selectedRange()
     let line = lineRange(at: sel.location)
     let text = lineText(line)
-    // Table row: jump to the next cell.
-    if text.contains("|"), let next = nextCellRange(in: line, after: sel.location) {
-      setSelectedRange(next)
+    // Table row: jump to the next cell; from the last cell, add a row.
+    if caretInTable() {
+      if let next = nextCellRange(in: line, after: sel.location) { setSelectedRange(next); return }
+      if let editor = delegate as? EditorViewController, editor.appendTableRow() { return }
       return
     }
     // List item: indent the whole item line(s).
@@ -219,12 +220,29 @@ final class EditorTextView: NSTextView {
   override func insertBacktab(_ sender: Any?) {
     let sel = selectedRange()
     let line = lineRange(at: sel.location)
-    let text = lineText(line)
-    if text.contains("|"), let prev = previousCellRange(in: line, before: sel.location) {
-      setSelectedRange(prev)
+    if caretInTable() {
+      if let prev = previousCellRange(in: line, before: sel.location) { setSelectedRange(prev); return }
+      // First cell: the last cell of the previous row (skipping the delimiter line).
+      var cursor = line.location
+      while cursor > 0 {
+        let previous = lineRange(at: cursor - 1)
+        let text = lineText(previous)
+        if !text.contains("|") { break }
+        if !text.allSatisfy({ "|:- \t".contains($0) }), let last = lastCellRange(in: previous) { setSelectedRange(last); return }
+        cursor = previous.location
+      }
       return
     }
     indentSelectedLines(by: -preferences.tabSize)
+  }
+
+  /// Whether the caret is inside a parsed table block (not just on a line with a pipe).
+  func caretInTable() -> Bool {
+    guard let doc = document?.markdown else { return false }
+    let b = doc.byteOffset(forUTF16: selectedRange().location)
+    var path = doc.path(at: b)
+    if path.isEmpty, b > 0 { path = doc.path(at: b - 1) }
+    return path.contains { if case .table = $0.kind { return true }; return false }
   }
 
   override func deleteBackward(_ sender: Any?) {
@@ -330,50 +348,63 @@ final class EditorTextView: NSTextView {
     }
   }
 
-  private func nextCellRange(in line: NSRange, after location: Int) -> NSRange? {
+  /// Positions of the unescaped pipes on `line` (the text, without its terminator).
+  private func pipes(in line: NSRange) -> [Int] {
     let ns = string as NSString
-    var i = location
-    let end = NSMaxRange(lineRange(at: location)) - (lineText(line).utf16.count < line.length ? 1 : 0)
+    var out: [Int] = []
+    var i = line.location
+    let end = NSMaxRange(line)
+    var escaped = false
     while i < end {
-      if ns.substring(with: NSRange(location: i, length: 1)) == "|" {
-        var s = i + 1
-        while s < end, ns.substring(with: NSRange(location: s, length: 1)) == " " { s += 1 }
-        var e = s
-        while e < end, ns.substring(with: NSRange(location: e, length: 1)) != "|" { e += 1 }
-        while e > s, ns.substring(with: NSRange(location: e - 1, length: 1)) == " " { e -= 1 }
-        if s >= end { break }
-        return NSRange(location: s, length: e - s)
-      }
+      let c = ns.character(at: i)
+      if c == 0x0A || c == 0x0D { break }
+      if escaped { escaped = false } else if c == 0x5C { escaped = true } else if c == 0x7C { out.append(i) }
       i += 1
     }
-    // Last cell: continue on the next row if it exists.
-    let nextLineStart = NSMaxRange(lineRange(at: location))
-    if nextLineStart < ns.length {
-      let next = lineRange(at: nextLineStart)
-      if lineText(next).contains("|") { return nextCellRange(in: next, after: next.location) }
+    return out
+  }
+
+  /// The trimmed content range between two pipe positions.
+  private func cellRange(from a: Int, to b: Int) -> NSRange {
+    let ns = string as NSString
+    var s = a + 1, e = b
+    while s < e, ns.character(at: s) == 0x20 { s += 1 }
+    while e > s, ns.character(at: e - 1) == 0x20 { e -= 1 }
+    return NSRange(location: s, length: e - s)
+  }
+
+  private func nextCellRange(in line: NSRange, after location: Int) -> NSRange? {
+    let ps = pipes(in: line)
+    if let i = ps.firstIndex(where: { $0 >= location }), i + 1 < ps.count { return cellRange(from: ps[i], to: ps[i + 1]) }
+    // Last cell: continue on the next row if it exists (skipping the delimiter line).
+    var cursor = NSMaxRange(lineRange(at: location))
+    let ns = string as NSString
+    while cursor < ns.length {
+      let next = lineRange(at: cursor)
+      let text = lineText(next)
+      guard text.contains("|") else { break }
+      if !text.allSatisfy({ "|:- \t".contains($0) }) {
+        let nps = pipes(in: next)
+        if nps.count >= 2 { return cellRange(from: nps[0], to: nps[1]) }
+        if let first = nps.first { return NSRange(location: first + 1, length: 0) }
+      }
+      cursor = NSMaxRange(next)
+      if next.length == 0 { break }
     }
     return nil
   }
 
   private func previousCellRange(in line: NSRange, before location: Int) -> NSRange? {
-    let ns = string as NSString
-    var i = location - 1
-    var pipes = 0
-    while i >= line.location {
-      if ns.substring(with: NSRange(location: i, length: 1)) == "|" {
-        pipes += 1
-        if pipes == 2 || (i == line.location) {
-          var s = i + 1
-          let e0 = (0..<location).reversed().first(where: { ns.substring(with: NSRange(location: $0, length: 1)) == "|" }) ?? location
-          while s < e0, ns.substring(with: NSRange(location: s, length: 1)) == " " { s += 1 }
-          var e = e0
-          while e > s, ns.substring(with: NSRange(location: e - 1, length: 1)) == " " { e -= 1 }
-          return NSRange(location: s, length: max(0, e - s))
-        }
-      }
-      i -= 1
-    }
-    return nil
+    let ps = pipes(in: line)
+    // The pipe that opens the caret's cell, then the one before it.
+    guard let open = ps.lastIndex(where: { $0 < location }), open >= 1 else { return nil }
+    return cellRange(from: ps[open - 1], to: ps[open])
+  }
+
+  private func lastCellRange(in line: NSRange) -> NSRange? {
+    let ps = pipes(in: line)
+    guard ps.count >= 2 else { return nil }
+    return cellRange(from: ps[ps.count - 2], to: ps[ps.count - 1])
   }
 
   // MARK: - Links

@@ -21,12 +21,15 @@ private struct Scanner {
   let lineComments: [[UInt8]]
   let blockComments: [([UInt8], [UInt8])]
   let strings: [([UInt8], [UInt8], Language.StringRule)]
+  /// Per-byte identifier membership (letters, digits, `_`, non-ASCII, the language's extras).
+  let identTable: [Bool]
   var i = 0
   var out: [Token] = []
   var lineStart = true
   var depth = 0  // brace depth (CSS)
   var inTag = false  // markup: between `<` and `>`
   var rawUntil: [UInt8]? = nil  // markup: plain text until this closing tag
+  var selectorCache: (end: Int, value: Bool)? = nil  // CSS: selectorAhead memo
 
   init(_ bytes: [UInt8], _ language: Language) {
     b = bytes
@@ -35,6 +38,12 @@ private struct Scanner {
     lineComments = language.lineComments.map { Array($0.utf8) }
     blockComments = language.blockComments.map { (Array($0.0.utf8), Array($0.1.utf8)) }
     strings = language.strings.map { (Array($0.open.utf8), Array($0.close.utf8), $0) }
+    var table = [Bool](repeating: false, count: 256)
+    for c in 0..<256 {
+      let u = UInt8(c)
+      table[c] = (u | 0x20) >= 0x61 && (u | 0x20) <= 0x7A || (u >= 0x30 && u <= 0x39) || u == 0x5F || u >= 0x80 || language.identifierExtras.contains(u)
+    }
+    identTable = table
   }
 
   // MARK: Helpers
@@ -45,11 +54,21 @@ private struct Scanner {
   @inline(__always) func isUpper(_ c: UInt8) -> Bool { c >= 0x41 && c <= 0x5A }
   @inline(__always) func isSpace(_ c: UInt8) -> Bool { c == 0x20 || c == 0x09 || c == 0x0D }
   @inline(__always) func isIdentStart(_ c: UInt8) -> Bool { isLetter(c) || c == 0x5F || c >= 0x80 }
-  @inline(__always) func isIdent(_ c: UInt8) -> Bool { isIdentStart(c) || isDigit(c) || lang.identifierExtras.contains(c) }
+  @inline(__always) func isIdent(_ c: UInt8) -> Bool { identTable[Int(c)] }
 
   func match(_ pattern: [UInt8], at k: Int) -> Bool {
     guard k + pattern.count <= n else { return false }
     for j in 0..<pattern.count where b[k + j] != pattern[j] { return false }
+    return true
+  }
+
+  /// `pattern` is lowercase; ASCII letters in the input match either case.
+  func matchIgnoringCase(_ pattern: [UInt8], at k: Int) -> Bool {
+    guard k + pattern.count <= n else { return false }
+    for j in 0..<pattern.count {
+      let x = b[k + j]
+      if (x >= 0x41 && x <= 0x5A ? x | 0x20 : x) != pattern[j] { return false }
+    }
     return true
   }
 
@@ -77,12 +96,17 @@ private struct Scanner {
     while i < n {
       let c = b[i]
       if c == 0x0A { i += 1; lineStart = true; continue }
+      if lineStart {
+        // Rules that must see the line's first byte, blank or not.
+        if lang.flavor == .diff { lineStart = false; _ = lineStartRule(c); continue }
+        if lang.flavor == .makefile, c == 0x09 { lineStart = false; i += 1; continue }  // recipe line
+      }
       if isSpace(c) { i += 1; continue }
       let atLineStart = lineStart
       lineStart = false
       if let raw = rawUntil {
         // Plain text (script/style bodies) until the closing tag.
-        if match(raw, at: i) { rawUntil = nil } else { i += 1; continue }
+        if matchIgnoringCase(raw, at: i) { rawUntil = nil } else { i += 1; continue }
       }
       if atLineStart, lineStartRule(c) { continue }
       if comment(c) { continue }
@@ -241,7 +265,7 @@ private struct Scanner {
       if at(i + hashes) == 0x22 { scanRaw(from: i, quoteAt: i + hashes, hashes: hashes); return true }
     }
     for (open, close, rule) in strings where open[0] == c && match(open, at: i) {
-      scanString(from: i, open: open, close: close, rule: rule)
+      scanString(from: i, openAt: i, open: open, close: close, rule: rule)
       return true
     }
     if lang.charLiterals, c == 0x27 {
@@ -261,8 +285,10 @@ private struct Scanner {
     return false
   }
 
-  mutating func scanString(from start: Int, open: [UInt8], close: [UInt8], rule: Language.StringRule) {
-    var k = start + open.count
+  /// A string token from `start` (a prefix like `f` or `r`, or the quote itself) whose opening
+  /// delimiter is at `openAt`.
+  mutating func scanString(from start: Int, openAt: Int, open: [UInt8], close: [UInt8], rule: Language.StringRule) {
+    var k = openAt + open.count
     while k < n {
       let c = b[k]
       if rule.escapes, c == 0x5C { k += 2; continue }
@@ -294,7 +320,7 @@ private struct Scanner {
   // MARK: Numbers
 
   mutating func number(_ c: UInt8) -> Bool {
-    guard isDigit(c) || (c == 0x2E && isDigit(at(i + 1))) else { return false }
+    guard isDigit(c) || (c == 0x2E && isDigit(at(i + 1)) && at(i - 1) != 0x2E && !isIdent(at(i - 1))) else { return false }
     var k = i
     if c == 0x30, (at(k + 1) | 0x20) == 0x78 || (at(k + 1) | 0x20) == 0x62 || (at(k + 1) | 0x20) == 0x6F {
       k += 2
@@ -347,36 +373,36 @@ private struct Scanner {
     } else if c == 0x40, lang.flavor == .css, isIdentStart(at(i + 1)) {
       prefixKind = .keyword
       i += 1
-    } else if !(isIdentStart(c) || (lang.identifierExtras.contains(c) && isIdentStart(at(i + 1)))) {
+    } else if !(isIdentStart(c) || (lang.identifierExtras.contains(c) && (isIdentStart(at(i + 1)) || at(i + 1) == c))) {
       return false
     }
     var k = i
-    while k < n, isIdent(b[k]) { k += 1 }
+    var hash: UInt64 = 0xCBF29CE484222325
+    while k < n, isIdent(b[k]) {
+      hash = (hash ^ UInt64(b[k])) &* 0x100000001B3
+      k += 1
+    }
     if k == i { i = start + 1; return true }
-    let name = word(i, k)
     // String prefixes: r"…", f'…', br"…", r#"…"#.
-    if lang.stringPrefixes.contains(name) {
+    if k - i <= lang.stringPrefixMaxLength, lang.stringPrefixes.contains(word(i, k)) {
       if lang.hashRawStrings, at(k) == 0x23 {
         var hashes = 0
         while at(k + hashes) == 0x23 { hashes += 1 }
         if at(k + hashes) == 0x22 { scanRaw(from: start, quoteAt: k + hashes, hashes: hashes); return true }
       }
       for (open, close, rule) in strings where match(open, at: k) {
-        scanString(from: start, open: open, close: close, rule: rule)
+        scanString(from: start, openAt: k, open: open, close: close, rule: rule)
         return true
       }
     }
     let followedByParen = at(k) == 0x28
     var kind: TokenKind? = prefixKind
     if kind == nil {
-      if lang.keywords.contains(name) { kind = .keyword }
-      else if lang.constants.contains(name) { kind = .constant }
-      else if lang.types.contains(name) { kind = .type }
-      else if lang.builtins.contains(name) { kind = .function }
-      else if lang.flavor == .css { kind = cssIdentifier(name, end: k) }
-      else if lang.upperConstants, name.count > 1, name.utf8.allSatisfy({ isUpper($0) || isDigit($0) || $0 == 0x5F }), name.utf8.contains(where: isUpper) { kind = .constant }
-      else if lang.capitalizedTypes, isUpper(b[i]) { kind = .type }
+      if let known = lang.kind(ofWord: b[i..<k], hash: hash) { kind = known }
+      else if lang.flavor == .css { kind = cssIdentifier(end: k) }
+      else if lang.upperConstants, k - i > 1, b[i..<k].allSatisfy({ isUpper($0) || isDigit($0) || $0 == 0x5F }), b[i..<k].contains(where: isUpper) { kind = .constant }
       else if lang.functionCalls, followedByParen { kind = .function }
+      else if lang.capitalizedTypes, isUpper(b[i]) { kind = .type }
     }
     if let kind { emit(kind, start, k) }
     i = k
@@ -385,17 +411,21 @@ private struct Scanner {
 
   // MARK: CSS
 
-  /// True when a `{` comes before any `;` or `}`: the text up to it is a selector, not a declaration.
-  func selectorAhead(from k: Int) -> Bool {
+  /// True when a `{` comes before any `;` or `}`: the text up to it is a selector, not a
+  /// declaration. Memoised per statement so a block is scanned once, not once per token.
+  mutating func selectorAhead(from k: Int) -> Bool {
+    if let cache = selectorCache, k < cache.end { return cache.value }
     var e = k
-    while e < n {
+    var value = false
+    scan: while e < n {
       switch b[e] {
-      case 0x7B: return true
-      case 0x3B, 0x7D: return false
+      case 0x7B: value = true; break scan
+      case 0x3B, 0x7D: break scan
       default: e += 1
       }
     }
-    return false
+    selectorCache = (end: e + 1, value: value)
+    return value
   }
 
   mutating func cssPrefix(_ c: UInt8) -> Bool {
@@ -428,7 +458,7 @@ private struct Scanner {
     return false
   }
 
-  func cssIdentifier(_ name: String, end k: Int) -> TokenKind? {
+  mutating func cssIdentifier(end k: Int) -> TokenKind? {
     if selectorAhead(from: k) { return .tag }
     if at(nextNonSpace(from: k)) == 0x3A { return .property }
     return at(k) == 0x28 ? .function : nil

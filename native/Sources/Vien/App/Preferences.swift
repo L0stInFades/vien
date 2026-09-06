@@ -19,6 +19,7 @@ final class Preferences {
     focus = defaults.bool(forKey: "focus")
     sourceMode = defaults.bool(forKey: "sourceMode")
     foldMarkup = defaults.object(forKey: "foldMarkup") as? Bool ?? true
+    theme = defaults.string(forKey: "theme") ?? "System"
     autoPairBrackets = defaults.object(forKey: "autoPairBrackets") as? Bool ?? true
     autoPairMarkdown = defaults.object(forKey: "autoPairMarkdown") as? Bool ?? true
     autoPairQuotes = defaults.object(forKey: "autoPairQuotes") as? Bool ?? true
@@ -54,6 +55,8 @@ final class Preferences {
   var sourceMode: Bool { didSet { defaults.set(sourceMode, forKey: "sourceMode") } }
   /// Markup outside the paragraph being edited is hidden: links show their text, tables their grid.
   var foldMarkup: Bool { didSet { defaults.set(foldMarkup, forKey: "foldMarkup") } }
+  /// Palette name (see Palette.all); "System" follows the macOS appearance.
+  var theme: String { didSet { defaults.set(theme, forKey: "theme") } }
 
   // Editing
   var autoPairBrackets: Bool { didSet { defaults.set(autoPairBrackets, forKey: "autoPairBrackets") } }

@@ -50,6 +50,11 @@ struct SettingsView: View {
 
   private var editor: some View {
     Form {
+      Section("Appearance") {
+        Picker("Theme", selection: $prefs.theme) {
+          ForEach(Palette.all, id: \.name) { Text($0.name).tag($0.name) }
+        }
+      }
       Section("Typography") {
         Slider(value: $prefs.fontSize, in: 11...28, step: 1) { Text("Font size") }
         Text("\(Int(prefs.fontSize)) pt").foregroundStyle(.secondary).font(.caption)

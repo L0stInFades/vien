@@ -15,6 +15,9 @@ public struct HTMLRenderer {
     public var headingIDs = false
     /// GFM "tagfilter": neutralise `<script>`, `<style>`, `<iframe>`… by escaping their `<`.
     public var filterDisallowedHTML = false
+    /// Renders a fenced code block (`language` may be empty) to HTML, e.g. with syntax colouring;
+    /// nil keeps the plain `<pre><code>` output.
+    public var codeBlock: (@Sendable (_ language: String, _ code: String) -> String?)? = nil
 
     public init() {}
   }
@@ -97,6 +100,8 @@ public struct HTMLRenderer {
         out += "<pre class=\"mermaid\">" + Text.escapeHTML(codeText(block)) + "</pre>\n"
       } else if lang == "math" {
         out += "<div class=\"math display\">" + Text.escapeHTML(codeText(block)) + "</div>\n"
+      } else if let html = options.codeBlock?(lang ?? "", codeText(block)) {
+        out += html
       } else {
         out += "<pre><code"
         if let lang, !lang.isEmpty { out += " class=\"language-\(Text.escapeHTML(lang))\"" }

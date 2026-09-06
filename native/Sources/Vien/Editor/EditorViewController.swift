@@ -70,7 +70,7 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
   private func observePreferences() {
     withObservationTracking {
       let p = Preferences.shared
-      _ = (p.fontSize, p.lineHeight, p.contentWidth, p.fontFamily, p.codeFontFamily, p.foldMarkup)
+      _ = (p.fontSize, p.lineHeight, p.contentWidth, p.fontFamily, p.codeFontFamily, p.foldMarkup, p.theme)
     } onChange: {
       Task { @MainActor [weak self] in
         guard let self else { return }
@@ -84,6 +84,7 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
   override func viewDidAppear() {
     super.viewDidAppear()
     trace("editor: viewDidAppear")
+    view.window?.appearance = styler.theme.palette.appearance
     view.window?.makeFirstResponder(textView)
   }
 
@@ -175,9 +176,22 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
     let old = styler.activeRange
     styler.activeRange = active
     guard styler.foldMarkup, !styler.sourceMode else { return }
-    for r in [old, active].compactMap({ $0 }) {
+    restyle(from: old, to: active)
+  }
+
+  /// Rebuilds the paragraphs whose folding/focus state changed between two block ranges. While
+  /// typing, the block only grows or shrinks at its end, so just that difference is rebuilt.
+  private func restyle(from old: Range<Int>?, to new: Range<Int>?) {
+    let doc = document.markdown
+    func invalidate(_ r: Range<Int>) {
+      guard !r.isEmpty else { return }
       let lo = doc.utf16Offset(forByte: r.lowerBound), hi = doc.utf16Offset(forByte: r.upperBound)
       textView.invalidateParagraphs(in: NSRange(location: lo, length: max(0, hi - lo)))
+    }
+    if let old, let new, old.lowerBound == new.lowerBound {
+      invalidate(min(old.upperBound, new.upperBound)..<max(old.upperBound, new.upperBound))
+    } else {
+      for r in [old, new].compactMap({ $0 }) { invalidate(r) }
     }
   }
 
@@ -189,8 +203,15 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
 
   func applyTheme(invalidate: Bool = true) {
     styler.theme = Theme(zoom: zoom)
+    Theme.current = styler.theme
+    let palette = styler.theme.palette
+    textView.backgroundColor = palette.background
+    textView.insertionPointColor = palette.accent
+    scrollView.backgroundColor = palette.background
+    view.window?.appearance = palette.appearance
     textView.contentWidth = CGFloat(Preferences.shared.contentWidth) * zoom
-    textView.typingAttributes = [.font: styler.theme.body(), .foregroundColor: Theme.text]
+    textView.typingAttributes = [.font: styler.theme.body(), .foregroundColor: palette.text]
+    OverlayStore.shared.clear()
     if invalidate { restyleEverything() }
   }
 
@@ -238,10 +259,7 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
     styler.focusRange = newRange
     if Preferences.shared.focus {
       if old == nil { restyleEverything(); return }
-      for r in [old, newRange].compactMap({ $0 }) {
-        let lo = document.markdown.utf16Offset(forByte: r.lowerBound), hi = document.markdown.utf16Offset(forByte: r.upperBound)
-        textView.invalidateParagraphs(in: NSRange(location: lo, length: hi - lo))
-      }
+      restyle(from: old, to: newRange)
     }
   }
 

@@ -15,7 +15,9 @@ enum PrintView {
     view.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
     view.textContainer?.containerSize = NSSize(width: width, height: .greatestFiniteMagnitude)
     view.textContainer?.widthTracksTextView = true
-    view.textStorage?.setAttributedString(AttributedRenderer(document: document.markdown, theme: Theme(zoom: 0.85)).render())
+    // Paper is white whatever the editor's palette.
+    let rendered = Theme.using(.system) { AttributedRenderer(document: document.markdown, theme: Theme(zoom: 0.85, palette: .system)).render() }
+    view.textStorage?.setAttributedString(rendered)
     view.sizeToFit()
     return view
   }

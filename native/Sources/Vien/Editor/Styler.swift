@@ -88,10 +88,10 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
       default: break
       }
       if let overlay = p.overlay {
-        return OverlayFragment(textElement: p, range: p.elementRange, overlay: overlay, contentWidth: contentWidth, dark: isDark)
+        return OverlayFragment(textElement: p, range: p.elementRange, overlay: overlay, contentWidth: contentWidth, dark: isDark, palette: theme.palette)
       }
       if case .none = p.decoration {} else {
-        return DecoratedFragment(textElement: p, range: p.elementRange, decoration: p.decoration, theme: theme)
+        return DecoratedFragment(textElement: p, range: p.elementRange, decoration: p.decoration, palette: theme.palette)
       }
     }
     return NSTextLayoutFragment(textElement: textElement, range: textElement.elementRange)
@@ -228,7 +228,7 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
     s.addAttribute(.paragraphStyle, value: style, range: full)
 
     if focusMode, !inFocus {
-      s.addAttribute(.foregroundColor, value: NSColor.tertiaryLabelColor, range: full)
+      s.addAttribute(.foregroundColor, value: Theme.marker, range: full)
     }
   }
 
@@ -243,7 +243,7 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
     let doc = document.markdown
     let renderer = AttributedRenderer(document: doc, theme: theme)
     let size = theme.baseSize * 0.95
-    let grid = TableGrid(table: table, width: width) { cell, header in
+    let grid = TableGrid(table: table, width: width, palette: theme.palette) { cell, header in
       renderer.inlines(doc.inlines(of: cell), font: header ? theme.body(weight: .semibold, size: size) : theme.body(size: size), color: Theme.text)
     }
     if let grid { gridCache[table.range] = grid }

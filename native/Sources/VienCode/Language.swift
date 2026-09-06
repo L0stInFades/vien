@@ -47,8 +47,46 @@ public struct Language: Sendable {
   public var functionCalls = true
   /// Extra bytes allowed inside identifiers (`-` for CSS and Lisp, `?`/`!` for Ruby, `$` for JS).
   public var identifierExtras: Set<UInt8> = []
+  /// keywords ∪ constants ∪ types ∪ builtins, keyed by an FNV-1a hash of the bytes so lookups
+  /// need no String; resolved once per language.
+  var words: [UInt64: [(bytes: [UInt8], kind: TokenKind)]] = [:]
+  var stringPrefixMaxLength = 0
+
+  /// FNV-1a over the bytes; the scanner computes the same while it reads an identifier.
+  static func hash(_ bytes: some Sequence<UInt8>) -> UInt64 {
+    var h: UInt64 = 0xCBF29CE484222325
+    for b in bytes { h = (h ^ UInt64(b)) &* 0x100000001B3 }
+    return h
+  }
+
+  /// The kind of a word, or nil when it is not a known word.
+  func kind(ofWord bytes: ArraySlice<UInt8>, hash: UInt64) -> TokenKind? {
+    guard let candidates = words[hash] else { return nil }
+    for c in candidates where c.bytes.count == bytes.count && c.bytes.elementsEqual(bytes) { return c.kind }
+    return nil
+  }
 
   public init(name: String) { self.name = name }
+
+  /// The language with `words` filled in (keywords win over constants, types and builtins).
+  func resolved() -> Language {
+    var l = self
+    var map: [UInt64: [(bytes: [UInt8], kind: TokenKind)]] = [:]
+    func put(_ set: Set<String>, _ kind: TokenKind) {
+      for w in set {
+        let bytes = Array(w.utf8)
+        let h = Self.hash(bytes)
+        if let i = map[h]?.firstIndex(where: { $0.bytes == bytes }) { map[h]![i].kind = kind } else { map[h, default: []].append((bytes, kind)) }
+      }
+    }
+    put(builtins, .function)
+    put(types, .type)
+    put(constants, .constant)
+    put(keywords, .keyword)
+    l.words = map
+    l.stringPrefixMaxLength = stringPrefixes.map { $0.utf8.count }.max() ?? 0
+    return l
+  }
 
   static func words(_ s: String) -> Set<String> { Set(s.split(separator: " ").map(String.init)) }
 }
@@ -82,7 +120,7 @@ extension Language {
 
   private static let table: [String: Language] = {
     var t: [String: Language] = [:]
-    func add(_ l: Language) { t[l.name] = l }
+    func add(_ l: Language) { t[l.name] = l.resolved() }
 
     let cComments: [(String, String)] = [("/*", "*/")]
     let cStrings = [StringRule("\""), StringRule("'")]
@@ -315,7 +353,6 @@ extension Language {
     css.flavor = .css
     css.keywords = words("important @media @import @font-face @keyframes @supports @charset @namespace @page @layer @container @property from to and not only screen print")
     css.blockComments = cComments
-    css.lineComments = ["//"]
     css.strings = [StringRule("\""), StringRule("'")]
     css.identifierExtras = [0x2D]  // -
     add(css)
@@ -335,7 +372,7 @@ extension Language {
     bash.keywords = words("if then else elif fi for while until do done case esac in function select time coproc return exit break continue local export readonly declare typeset unset shift source alias set eval exec trap")
     bash.builtins = words("echo printf read cd pwd ls cp mv rm mkdir rmdir touch cat grep sed awk find xargs sort uniq head tail wc tr cut chmod chown curl wget tar zip unzip ssh scp git make sudo test true false kill ps which env date sleep")
     bash.lineComments = ["#"]
-    bash.strings = [StringRule("\"", multiline: true), StringRule("'", multiline: true, escapes: false)]
+    bash.strings = [StringRule("\"", multiline: true), StringRule("'", escapes: false)]
     bash.dollarPrefix = .variable
     bash.functionCalls = false
     add(bash)

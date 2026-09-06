@@ -57,15 +57,25 @@ struct AttributedRenderer {
     case .listItem:
       for child in block.children { append(child, to: out, indent: indent, tight: tight) }
     case .fencedCode, .indentedCode, .htmlBlock, .mathBlock, .frontMatter:
-      // Same tokens and colours as the editor; segments are decoded straight from the block's bytes.
+      // Content lines only (no fences or quote prefixes), with the editor's tokens and colours.
       let base: [NSAttributedString.Key: Any] = [.font: theme.code(), .foregroundColor: Theme.text, .backgroundColor: Theme.codeBackground]
-      var pos = block.range.lowerBound
-      for token in CodeHighlight.compute(block, in: document) {
-        out.append(NSAttributedString(string: String(decoding: document.bytes[pos..<token.range.lowerBound], as: UTF8.self), attributes: base))
-        out.append(NSAttributedString(string: String(decoding: document.bytes[token.range], as: UTF8.self), attributes: base.merging([.foregroundColor: Theme.syntax(token.kind)]) { $1 }))
-        pos = token.range.upperBound
+      let tokens = CodeHighlight.compute(block, in: document)
+      var t = 0
+      for (n, line) in block.lines.enumerated() {
+        if n > 0 { out.append(NSAttributedString(string: "\n", attributes: base)) }
+        var pos = line.range.lowerBound
+        while t < tokens.count, tokens[t].range.upperBound <= pos { t += 1 }
+        var k = t
+        while k < tokens.count, tokens[k].range.lowerBound < line.range.upperBound {
+          let token = tokens[k]
+          let lo = max(pos, token.range.lowerBound), hi = min(line.range.upperBound, token.range.upperBound)
+          if lo > pos { out.append(NSAttributedString(string: String(decoding: document.bytes[pos..<lo], as: UTF8.self), attributes: base)) }
+          if hi > lo { out.append(NSAttributedString(string: String(decoding: document.bytes[lo..<hi], as: UTF8.self), attributes: base.merging([.foregroundColor: Theme.syntax(token.kind)]) { $1 })) }
+          pos = max(pos, hi)
+          k += 1
+        }
+        if pos < line.range.upperBound { out.append(NSAttributedString(string: String(decoding: document.bytes[pos..<line.range.upperBound], as: UTF8.self), attributes: base)) }
       }
-      out.append(NSAttributedString(string: String(decoding: document.bytes[pos..<block.range.upperBound], as: UTF8.self), attributes: base))
       out.append(paragraphEnd(spacing: theme.paragraphSpacing, indent: indent, lineHeight: 1.3))
     case .table(let info):
       let cols = info.alignments.count

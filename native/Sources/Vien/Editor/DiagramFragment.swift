@@ -125,13 +125,15 @@ nonisolated final class OverlayFragment: NSTextLayoutFragment {
   let overlay: Overlay
   let contentWidth: CGFloat
   let dark: Bool
+  let palette: Palette
   private let padding: CGFloat = 10
   private let placeholderHeight: CGFloat = 56
 
-  init(textElement: NSTextElement, range: NSTextRange?, overlay: Overlay, contentWidth: CGFloat, dark: Bool) {
+  init(textElement: NSTextElement, range: NSTextRange?, overlay: Overlay, contentWidth: CGFloat, dark: Bool, palette: Palette) {
     self.overlay = overlay
     self.contentWidth = max(120, contentWidth - 24)
     self.dark = dark
+    self.palette = palette
     super.init(textElement: textElement, range: range)
   }
 
@@ -196,7 +198,7 @@ nonisolated final class OverlayFragment: NSTextLayoutFragment {
     } else {
       let label = entry?.error.map { "⚠︎ \($0)" } ?? "Rendering…"
       let attrs: [NSAttributedString.Key: Any] = [
-        .font: NSFont.systemFont(ofSize: 12), .foregroundColor: NSColor.tertiaryLabelColor,
+        .font: NSFont.systemFont(ofSize: 12), .foregroundColor: palette.marker,
       ]
       NSGraphicsContext.saveGraphicsState()
       NSGraphicsContext.current = NSGraphicsContext(cgContext: ctx, flipped: true)
@@ -210,11 +212,11 @@ nonisolated final class OverlayFragment: NSTextLayoutFragment {
 /// Draws block decorations: a rule for `---`, a bar for quotes, a background for code blocks.
 nonisolated final class DecoratedFragment: NSTextLayoutFragment {
   let decoration: MarkdownParagraph.Decoration
-  let theme: Theme
+  let palette: Palette
 
-  init(textElement: NSTextElement, range: NSTextRange?, decoration: MarkdownParagraph.Decoration, theme: Theme) {
+  init(textElement: NSTextElement, range: NSTextRange?, decoration: MarkdownParagraph.Decoration, palette: Palette) {
     self.decoration = decoration
-    self.theme = theme
+    self.palette = palette
     super.init(textElement: textElement, range: range)
   }
 
@@ -233,7 +235,7 @@ nonisolated final class DecoratedFragment: NSTextLayoutFragment {
     ctx.saveGState()
     switch decoration {
     case .rule:
-      ctx.setStrokeColor(NSColor.separatorColor.cgColor)
+      ctx.setStrokeColor(palette.rule.cgColor)
       ctx.setLineWidth(1)
       // The fragment frame only spans the marker's glyphs; the rule spans the container.
       let width = textLayoutManager?.textContainer?.size.width ?? frame.width
@@ -252,11 +254,11 @@ nonisolated final class DecoratedFragment: NSTextLayoutFragment {
       ctx.setAlpha(0.35)
       super.draw(at: point, in: ctx)
     case .quote:
-      ctx.setFillColor(NSColor.quaternaryLabelColor.cgColor)
+      ctx.setFillColor(palette.rule.cgColor)
       ctx.fill(CGRect(x: point.x - 10, y: point.y, width: 3, height: frame.height))
       super.draw(at: point, in: ctx)
     case .codeBlock(let first, let last):
-      let bg = NSColor.quaternarySystemFill.cgColor
+      let bg = palette.codeBackground.cgColor
       let width = textLayoutManager?.textContainer?.size.width ?? frame.width
       var rect = CGRect(x: point.x - 8, y: point.y, width: width + 16, height: frame.height)
       // Paragraph spacing after the last line is not part of the background.

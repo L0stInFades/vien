@@ -18,12 +18,15 @@ nonisolated struct TableGrid {
   /// Source byte range of every cell, so a click can put the caret into it.
   let sources: [[Range<Int>]]
 
+  let palette: Palette
+
   static let padX: CGFloat = 10
   static let padY: CGFloat = 6
   static let minColumn: CGFloat = 64
 
-  init?(table: Block, width: CGFloat, attributed: (Block, Bool) -> NSAttributedString) {
+  init?(table: Block, width: CGFloat, palette: Palette, attributed: (Block, Bool) -> NSAttributedString) {
     guard case .table(let info) = table.kind, !info.alignments.isEmpty else { return nil }
+    self.palette = palette
     let columns = info.alignments.count
     var strings: [[NSAttributedString]] = []
     var sources: [[Range<Int>]] = []
@@ -122,10 +125,10 @@ nonisolated struct TableGrid {
     ctx.saveGState()
     ctx.translateBy(x: origin.x, y: origin.y)
     if rowEdges.count > 1 {
-      ctx.setFillColor(NSColor.quaternarySystemFill.cgColor)
+      ctx.setFillColor(palette.codeBackground.cgColor)
       ctx.fill(CGRect(x: 0, y: 0, width: size.width, height: rowEdges[1]))
     }
-    ctx.setStrokeColor(NSColor.separatorColor.cgColor)
+    ctx.setStrokeColor(palette.rule.cgColor)
     ctx.setLineWidth(1)
     for x in columnEdges {
       ctx.move(to: CGPoint(x: x.rounded() + 0.5, y: 0))
