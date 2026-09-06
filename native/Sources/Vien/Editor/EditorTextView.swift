@@ -129,6 +129,19 @@ final class EditorTextView: NSTextView {
     scroll(NSPoint(x: 0, y: max(0, fragment.layoutFragmentFrame.minY - offset + textContainerInset.height)))
   }
 
+  /// The standard menu, plus Table commands when the (moved) caret is inside a table.
+  override func menu(for event: NSEvent) -> NSMenu? {
+    let menu = super.menu(for: event)
+    if let editor = delegate as? EditorViewController, editor.tableAtCaret() != nil {
+      let table = NSMenuItem(title: "Table", action: nil, keyEquivalent: "")
+      table.submenu = NSMenu(title: "Table")
+      for item in MainMenu.tableItems() { table.submenu?.addItem(item) }
+      menu?.insertItem(table, at: 0)
+      menu?.insertItem(.separator(), at: 1)
+    }
+    return menu
+  }
+
   // MARK: - Keyboard behaviour
 
   override func insertNewline(_ sender: Any?) {

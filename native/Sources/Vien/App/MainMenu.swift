@@ -30,6 +30,34 @@ enum MainMenu {
     return holder
   }
 
+  /// The Table submenu; also offered in the editor's context menu when the caret is in a table.
+  static func tableItems() -> [NSMenuItem] {
+    [
+      item("Insert Table…", #selector(EditorViewController.insertTable(_:)), "t", [.command, .shift]),
+      item("Format Table", #selector(EditorViewController.formatTable(_:)), "t", [.command, .shift, .option]),
+      .separator(),
+      item("Add Row Above", #selector(EditorViewController.addRowAbove(_:))),
+      item("Add Row Below", #selector(EditorViewController.addRowBelow(_:)), "\r"),
+      item("Add Column Before", #selector(EditorViewController.addColumnBefore(_:))),
+      item("Add Column After", #selector(EditorViewController.addColumnAfter(_:))),
+      .separator(),
+      item("Move Row Up", #selector(EditorViewController.moveRowUp(_:))),
+      item("Move Row Down", #selector(EditorViewController.moveRowDown(_:))),
+      item("Move Column Left", #selector(EditorViewController.moveColumnLeft(_:))),
+      item("Move Column Right", #selector(EditorViewController.moveColumnRight(_:))),
+      .separator(),
+      item("Delete Row", #selector(EditorViewController.deleteRow(_:))),
+      item("Delete Column", #selector(EditorViewController.deleteColumn(_:))),
+      .separator(),
+      submenu("Align Column", [
+        item("Left", #selector(EditorViewController.alignColumnLeft(_:))),
+        item("Center", #selector(EditorViewController.alignColumnCenter(_:))),
+        item("Right", #selector(EditorViewController.alignColumnRight(_:))),
+        item("Default", #selector(EditorViewController.alignColumnNone(_:))),
+      ]),
+    ]
+  }
+
   private static func app() -> NSMenuItem {
     let name = "Vien"
     return submenu(name, [
@@ -152,8 +180,7 @@ enum MainMenu {
       item("Promote Heading", #selector(EditorViewController.promoteHeading(_:)), "=", [.command]),
       item("Demote Heading", #selector(EditorViewController.demoteHeading(_:)), "-", [.command, .shift]),
       .separator(),
-      item("Table", #selector(EditorViewController.insertTable(_:)), "t", [.command, .shift]),
-      item("Format Table", #selector(EditorViewController.formatTable(_:)), "t", [.command, .shift, .option]),
+      submenu("Table", tableItems()),
       item("Code Fences", #selector(EditorViewController.insertCodeFence(_:)), "c", [.command, .option]),
       item("Math Block", #selector(EditorViewController.insertMathBlock(_:)), "m", [.command, .option]),
       item("Quote Block", #selector(EditorViewController.toggleBlockQuote(_:)), "q", [.command, .option]),

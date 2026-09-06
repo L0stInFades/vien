@@ -2,64 +2,8 @@ import AppKit
 import UniformTypeIdentifiers
 import VienMarkdown
 
-/// Table formatting, image paste/drop and task toggling: small conveniences that keep the source
-/// text tidy without ever rewriting anything the user did not ask for.
-extension EditorViewController {
-  /// Aligns the pipes of the table at the caret (⌥⇧⌘T).
-  @IBAction func formatTable(_ sender: Any?) {
-    let sel = textView.selectedRange()
-    let doc = document.markdown
-    let b = doc.byteOffset(forUTF16: sel.location)
-    guard let table = doc.path(at: b).first(where: { if case .table = $0.kind { return true }; return false }), case .table(let info) = table.kind else {
-      NSSound.beep()
-      return
-    }
-    var rows: [[String]] = []
-    for row in table.children {
-      rows.append(row.children.map { doc.text(of: $0).trimmingCharacters(in: .whitespaces) })
-    }
-    let cols = info.alignments.count
-    var widths = [Int](repeating: 3, count: cols)
-    for r in rows { for (i, c) in r.enumerated() where i < cols { widths[i] = max(widths[i], displayWidth(c)) } }
-    func pad(_ s: String, _ w: Int, _ a: TableAlignment) -> String {
-      let extra = max(0, w - displayWidth(s))
-      switch a {
-      case .right: return String(repeating: " ", count: extra) + s
-      case .center: return String(repeating: " ", count: extra / 2) + s + String(repeating: " ", count: extra - extra / 2)
-      default: return s + String(repeating: " ", count: extra)
-      }
-    }
-    var lines: [String] = []
-    for (r, row) in rows.enumerated() {
-      var cells = row
-      while cells.count < cols { cells.append("") }
-      lines.append("| " + cells.prefix(cols).enumerated().map { pad($1, widths[$0], info.alignments[$0]) }.joined(separator: " | ") + " |")
-      if r == 0 {
-        lines.append("| " + (0..<cols).map { i -> String in
-          let w = widths[i]
-          switch info.alignments[i] {
-          case .left: return ":" + String(repeating: "-", count: w - 1)
-          case .right: return String(repeating: "-", count: w - 1) + ":"
-          case .center: return ":" + String(repeating: "-", count: max(1, w - 2)) + ":"
-          case .none: return String(repeating: "-", count: w)
-          }
-        }.joined(separator: " | ") + " |")
-      }
-    }
-    let lo = doc.utf16Offset(forByte: table.range.lowerBound), hi = doc.utf16Offset(forByte: table.range.upperBound)
-    // Keep the table's own indentation on the first line.
-    let lineStart = textView.lineRange(at: lo).location
-    let indent = (textView.string as NSString).substring(with: NSRange(location: lineStart, length: lo - lineStart))
-    let text = lines.map { indent + $0 }.joined(separator: "\n")
-    textView.insertText(text, replacementRange: NSRange(location: lineStart, length: hi - lineStart))
-    textView.setSelectedRange(NSRange(location: min(sel.location, lineStart + text.utf16.count), length: 0))
-  }
-
-  private func displayWidth(_ s: String) -> Int {
-    s.unicodeScalars.reduce(0) { $0 + (($1.value >= 0x1100 && $1.properties.isIdeographic) || ($1.value >= 0x3000 && $1.value <= 0x9FFF) || ($1.value >= 0xAC00 && $1.value <= 0xD7AF) ? 2 : 1) }
-  }
-}
-
+/// Image paste/drop and task toggling: small conveniences that keep the source text tidy without
+/// ever rewriting anything the user did not ask for.
 extension EditorTextView {
   // MARK: Images from the pasteboard or dropped files
 

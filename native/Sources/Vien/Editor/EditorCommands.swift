@@ -239,9 +239,6 @@ extension EditorViewController {
 
   @IBAction func insertHorizontalRule(_ sender: Any?) { insertBlockText("---") }
 
-  @IBAction func insertTable(_ sender: Any?) {
-    insertBlockText("| Column 1 | Column 2 | Column 3 |\n| --- | --- | --- |\n|  |  |  |")
-  }
 
   @IBAction func insertFrontMatter(_ sender: Any?) {
     guard !textView.string.hasPrefix("---\n") else { return }
@@ -252,7 +249,7 @@ extension EditorViewController {
   }
 
   /// Inserts `text` as its own block at the caret, surrounded by blank lines as needed.
-  private func insertBlockText(_ text: String) {
+  func insertBlockText(_ text: String) {
     let sel = textView.selectedRange()
     let ns = textView.string as NSString
     let line = ns.lineRange(for: NSRange(location: sel.location, length: 0))
@@ -348,6 +345,16 @@ extension EditorViewController: NSMenuItemValidation {
     case #selector(toggleSourceMode): item.state = Preferences.shared.sourceMode ? .on : .off
     case #selector(toggleTypewriterMode): item.state = Preferences.shared.typewriter ? .on : .off
     case #selector(toggleFocusMode): item.state = Preferences.shared.focus ? .on : .off
+    case let action? where Self.tableActions.contains(action):
+      guard let context = tableAtCaret() else { return false }
+      let current = context.model.alignments[context.column]
+      switch action {
+      case #selector(alignColumnLeft(_:)): item.state = current == .left ? .on : .off
+      case #selector(alignColumnCenter(_:)): item.state = current == .center ? .on : .off
+      case #selector(alignColumnRight(_:)): item.state = current == .right ? .on : .off
+      case #selector(alignColumnNone(_:)): item.state = current == .none ? .on : .off
+      default: break
+      }
     default: break
     }
     return true

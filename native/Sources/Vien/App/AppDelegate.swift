@@ -179,6 +179,9 @@ enum Automation {
           tv.textLayoutManager?.textViewportLayoutController.layoutViewport()
         }
       case "recycle": wc.editor.recycleElements()
+      case "action":
+        let selector = NSSelectorFromString(arg)
+        if wc.editor.responds(to: selector) { _ = wc.editor.perform(selector, with: nil) } else if tv.responds(to: selector) { _ = tv.perform(selector, with: nil) } else { print("unknown action \(arg)") }
       case "snap": Snapshot.write(window: wc.window!, to: arg)
       case "stats": print("elements: \(wc.editor.elementsCreated) · scroll y: \(Int(tv.visibleRect.minY)) · selection: \(tv.selectedRange())")
       case "time": print(String(format: "time: %.2f ms", Date().timeIntervalSince(t0) * 1000))
