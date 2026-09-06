@@ -1,0 +1,49 @@
+name: native release
+
+on:
+  push:
+    tags: ["native-v*"]
+
+jobs:
+  release:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: native
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Newest release toolchain (rolling)
+        run: Scripts/update-toolchain.sh
+      - name: Import the Developer ID certificate
+        env:
+          P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+          P12_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        run: |
+          [ -n "$P12" ] || { echo "MACOS_CERTIFICATE_P12 is not set (base64 of the Developer ID .p12)"; exit 1; }
+          echo "$P12" | base64 --decode > /tmp/cert.p12
+          security create-keychain -p ci /tmp/ci.keychain-db
+          security set-keychain-settings -lut 21600 /tmp/ci.keychain-db
+          security unlock-keychain -p ci /tmp/ci.keychain-db
+          security import /tmp/cert.p12 -k /tmp/ci.keychain-db -P "$P12_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple: -s -k ci /tmp/ci.keychain-db
+          security list-keychains -d user -s /tmp/ci.keychain-db login.keychain-db
+      - name: Build, sign, notarize, package
+        env:
+          SIGN_IDENTITY: ${{ secrets.SIGN_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          REQUIRE_NOTARIZATION: "1"
+        run: Scripts/release.sh "${GITHUB_REF_NAME#native-v}" "$GITHUB_RUN_NUMBER"
+      - name: Verify the notarized bundle launches headlessly
+        run: |
+          spctl --assess --type execute --verbose=2 dist/Vien.app
+          dist/Vien.app/Contents/MacOS/Vien --export html ../README.md /tmp/readme.html && test -s /tmp/readme.html
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/Vien-*.zip dist/Vien-*.dmg dist/appcast.json --title "Vien ${GITHUB_REF_NAME#native-v}" --generate-notes

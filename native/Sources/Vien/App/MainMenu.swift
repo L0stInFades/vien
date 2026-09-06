@@ -62,6 +62,7 @@ enum MainMenu {
     let name = "Vien"
     return submenu(name, [
       item("About \(name)", #selector(NSApplication.orderFrontStandardAboutPanel(_:))),
+      item("Check for Updates…", #selector(AppDelegate.checkForUpdates(_:))),
       .separator(),
       item("Settings…", #selector(AppDelegate.showSettings(_:)), ","),
       .separator(),

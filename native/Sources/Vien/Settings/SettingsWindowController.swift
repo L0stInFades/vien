@@ -32,6 +32,10 @@ struct SettingsView: View {
 
   private var general: some View {
     Form {
+      Section("Updates") {
+        Toggle("Check for updates automatically", isOn: $prefs.automaticUpdates)
+        Text("Updates come from Vien’s GitHub releases. Each one is checked against its checksum and code signature before it replaces the app.").foregroundStyle(.secondary).font(.caption)
+      }
       Section("Layout") {
         Slider(value: $prefs.contentWidth, in: 480...1100, step: 10) { Text("Line width") }
         Text("\(Int(prefs.contentWidth)) pt").foregroundStyle(.secondary).font(.caption)

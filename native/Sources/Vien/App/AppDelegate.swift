@@ -33,6 +33,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     if let script = env["VIEN_SCRIPT"] {
       Task { await Automation.run(script) }
     }
+    if env["VIEN_SCRIPT"] == nil, env["VIEN_SNAPSHOT"] == nil, env["VIEN_QUIT_WHEN_READY"] == nil {
+      Task {
+        try? await Task.sleep(for: .seconds(3))
+        Updater.shared.checkAutomatically()
+      }
+    }
     if env["VIEN_QUIT_WHEN_READY"] != nil {
       // Launch benchmark: report time-to-first-window and resident memory, then quit.
       Task {
@@ -50,6 +56,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.terminate(nil)
       }
     }
+  }
+
+  @IBAction func checkForUpdates(_ sender: Any?) {
+    Task { await Updater.shared.check(userInitiated: true) }
   }
 
   /// `Vien --export html|pdf input.md output` runs without a window (used by scripts and tests).
@@ -198,6 +208,8 @@ enum Automation {
         }
       case "recycle": wc.editor.recycleElements()
       case "theme": Preferences.shared.theme = arg
+      case "update":
+        if arg == "install" { await Updater.shared.checkAndInstall() } else { await Updater.shared.check(userInitiated: true) }
       case "key":
         // A real key event through the application's event loop (undo grouping, key bindings).
         if let window = tv.window, let down = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil, characters: arg, charactersIgnoringModifiers: arg, isARepeat: false, keyCode: 0) {

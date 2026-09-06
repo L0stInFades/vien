@@ -20,6 +20,9 @@ final class Preferences {
     sourceMode = defaults.bool(forKey: "sourceMode")
     foldMarkup = defaults.object(forKey: "foldMarkup") as? Bool ?? true
     theme = defaults.string(forKey: "theme") ?? "System"
+    automaticUpdates = defaults.object(forKey: "automaticUpdates") as? Bool ?? true
+    skippedUpdateVersion = defaults.string(forKey: "skippedUpdateVersion") ?? ""
+    lastUpdateCheck = defaults.double(forKey: "lastUpdateCheck")
     autoPairBrackets = defaults.object(forKey: "autoPairBrackets") as? Bool ?? true
     autoPairMarkdown = defaults.object(forKey: "autoPairMarkdown") as? Bool ?? true
     autoPairQuotes = defaults.object(forKey: "autoPairQuotes") as? Bool ?? true
@@ -57,6 +60,11 @@ final class Preferences {
   var foldMarkup: Bool { didSet { defaults.set(foldMarkup, forKey: "foldMarkup") } }
   /// Palette name (see Palette.all); "System" follows the macOS appearance.
   var theme: String { didSet { defaults.set(theme, forKey: "theme") } }
+
+  // Updates
+  var automaticUpdates: Bool { didSet { defaults.set(automaticUpdates, forKey: "automaticUpdates") } }
+  var skippedUpdateVersion: String { didSet { defaults.set(skippedUpdateVersion, forKey: "skippedUpdateVersion") } }
+  var lastUpdateCheck: Double { didSet { defaults.set(lastUpdateCheck, forKey: "lastUpdateCheck") } }
 
   // Editing
   var autoPairBrackets: Bool { didSet { defaults.set(autoPairBrackets, forKey: "autoPairBrackets") } }
