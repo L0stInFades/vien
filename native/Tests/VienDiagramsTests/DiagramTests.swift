@@ -47,8 +47,28 @@ struct DiagramTests {
     #expect(s.items.count == 3)
   }
 
+  @Test func newKindsParse() throws {
+    guard case .gantt(let g) = try Mermaid.parse("gantt\n  dateFormat YYYY-MM-DD\n  section S\n  A :a1, 2024-01-01, 3d\n  B :after a1, 2d\n  M :milestone, 2024-01-04, 0d\n") else { Issue.record("gantt"); return }
+    #expect(g.tasks.count == 3 && g.tasks[1].start == g.tasks[0].end && g.tasks[2].milestone)
+    guard case .graph(let er) = try Mermaid.parse("erDiagram\n  CUSTOMER ||--o{ ORDER : places\n  CUSTOMER {\n    string name PK\n  }\n") else { Issue.record("er"); return }
+    #expect(er.nodes.count == 2 && er.edges.first?.head == .erZeroOrMore && er.edges.first?.tail == .erOne)
+    #expect(er.nodes.first?.compartments[1].first == "string  name  PK")
+    guard case .gitGraph(let git) = try Mermaid.parse("gitGraph\n  commit\n  branch dev\n  commit id: \"x\" tag: \"v1\"\n  checkout main\n  merge dev\n") else { Issue.record("git"); return }
+    #expect(git.commits.count == 3 && git.commits[2].parents.count == 2 && git.commits[1].tag == "v1")
+    guard case .mindmap(let mm) = try Mermaid.parse("mindmap\n  root((Root))\n    A\n      A1\n    B[Box]\n") else { Issue.record("mindmap"); return }
+    #expect(mm.nodes.count == 4 && mm.nodes[0].children == [1, 3] && mm.nodes[3].shape == .square)
+    guard case .xychart(let xy) = try Mermaid.parse("xychart-beta\n  x-axis [a, b]\n  y-axis \"y\" 0 --> 10\n  bar [1, 2]\n  line [2, 3]\n") else { Issue.record("xy"); return }
+    #expect(xy.categories == ["a", "b"] && xy.series.count == 2)
+    guard case .timeline(let tl) = try Mermaid.parse("timeline\n  title T\n  2002 : LinkedIn\n  2004 : Facebook : Google\n       : Extra\n") else { Issue.record("timeline"); return }
+    #expect(tl.periods.count == 2 && tl.periods[1].events == ["Facebook", "Google", "Extra"])
+    guard case .journey(let j) = try Mermaid.parse("journey\n  section S\n    Make tea: 5: Me\n") else { Issue.record("journey"); return }
+    #expect(j.tasks.first?.score == 5 && j.actors == ["Me"])
+    guard case .quadrant(let q) = try Mermaid.parse("quadrantChart\n  x-axis Low --> High\n  quadrant-1 Q1\n  A: [0.3, 0.6]\n") else { Issue.record("quadrant"); return }
+    #expect(q.points.count == 1 && q.quadrants[0] == "Q1" && q.xRight == "High")
+  }
+
   @Test func unsupportedKindsFailClearly() {
-    #expect(throws: DiagramSyntaxError.self) { try DiagramRenderer.render("gantt\n  title x\n", dark: false, maxWidth: 400) }
+    #expect(throws: DiagramSyntaxError.self) { try DiagramRenderer.render("sankey-beta\n  a,b,1\n", dark: false, maxWidth: 400) }
     #expect(DiagramRenderer.validate("graph TD\n  A --> B\n") == nil)
   }
 }

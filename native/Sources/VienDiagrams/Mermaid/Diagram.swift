@@ -64,6 +64,13 @@ public enum Diagram: Sendable {
   case graph(GraphDiagram)
   case sequence(SequenceDiagram)
   case pie(PieDiagram)
+  case gantt(GanttDiagram)
+  case timeline(TimelineDiagram)
+  case journey(JourneyDiagram)
+  case quadrant(QuadrantDiagram)
+  case xychart(XYChartDiagram)
+  case gitGraph(GitGraphDiagram)
+  case mindmap(MindmapDiagram)
   case unsupported(String)
 }
 
@@ -116,6 +123,22 @@ public enum Mermaid {
       return .graph(try ClassParser.parse(ls))
     case "statediagram", "statediagram-v2":
       return .graph(try StateParser.parse(ls))
+    case "erdiagram":
+      return .graph(try ERParser.parse(ls))
+    case "gantt":
+      return .gantt(try GanttParser.parse(ls))
+    case "timeline":
+      return .timeline(try TimelineParser.parse(ls))
+    case "journey":
+      return .journey(try JourneyParser.parse(ls))
+    case "quadrantchart":
+      return .quadrant(try QuadrantParser.parse(ls))
+    case "xychart-beta", "xychart":
+      return .xychart(try XYChartParser.parse(ls))
+    case "gitgraph", "gitgraph:":
+      return .gitGraph(try GitGraphParser.parse(ls))
+    case "mindmap":
+      return .mindmap(try MindmapParser.parse(source.components(separatedBy: "\n").enumerated().map { ($0.offset + 1, $0.element) }.filter { !$0.1.trimmingCharacters(in: .whitespaces).isEmpty && !$0.1.trimmingCharacters(in: .whitespaces).hasPrefix("%%") }))
     default:
       return .unsupported(keyword.isEmpty ? head : keyword)
     }

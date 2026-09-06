@@ -29,6 +29,34 @@ public enum DiagramRenderer {
       let r = PieRenderer(diagram: p, theme: theme)
       size = r.size
       draw = { c in r.draw(on: &c) }
+    case .gantt(let g):
+      let r = GanttRenderer(diagram: g, theme: theme)
+      size = r.size
+      draw = { c in r.draw(on: &c) }
+    case .timeline(let t):
+      let r = TimelineRenderer(diagram: t, theme: theme)
+      size = r.size
+      draw = { c in r.draw(on: &c) }
+    case .journey(let j):
+      let r = JourneyRenderer(diagram: j, theme: theme)
+      size = r.size
+      draw = { c in r.draw(on: &c) }
+    case .quadrant(let q):
+      let r = QuadrantRenderer(diagram: q, theme: theme)
+      size = r.size
+      draw = { c in r.draw(on: &c) }
+    case .xychart(let x):
+      let r = XYChartRenderer(diagram: x, theme: theme)
+      size = r.size
+      draw = { c in r.draw(on: &c) }
+    case .gitGraph(let g):
+      let r = GitGraphRenderer(diagram: g, theme: theme)
+      size = r.size
+      draw = { c in r.draw(on: &c) }
+    case .mindmap(let m):
+      let r = MindmapRenderer(diagram: m, theme: theme)
+      size = r.size
+      draw = { c in r.draw(on: &c) }
     case .unsupported(let kind):
       throw DiagramSyntaxError(line: 1, message: "“\(kind)” diagrams are not supported yet")
     }

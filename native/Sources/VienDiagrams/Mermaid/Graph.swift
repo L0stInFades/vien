@@ -40,7 +40,11 @@ public struct GraphDiagram: Sendable {
     }
   }
 
-  public enum ArrowHead: Sendable, Equatable { case none, arrow, circle, cross, triangle, diamond, diamondFilled }
+  public enum ArrowHead: Sendable, Equatable {
+    case none, arrow, circle, cross, triangle, diamond, diamondFilled
+    /// Entity-relationship cardinalities (crow's foot).
+    case erOne, erZeroOrOne, erZeroOrMore, erOneOrMore
+  }
   public enum LineStyle: Sendable, Equatable { case solid, dotted, thick, invisible }
 
   public struct Edge: Sendable {

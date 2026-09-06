@@ -257,6 +257,25 @@ struct GraphRenderer {
       let left = CGPoint(x: mid.x - uy * size * 0.6, y: mid.y + ux * size * 0.6)
       let right = CGPoint(x: mid.x + uy * size * 0.6, y: mid.y - ux * size * 0.6)
       canvas.polygon([tip, left, back, right], fill: head == .diamondFilled ? stroke.color : (theme.text.r > 0.5 ? DiagramColor(hex: 0x1E1E1E) : DiagramColor(hex: 0xFFFFFF)), stroke: solid)
+    case .erOne, .erZeroOrOne, .erZeroOrMore, .erOneOrMore:
+      // Crow's foot notation, read from the entity outwards: bar = one, circle = zero, foot = many.
+      let nx = -uy, ny = ux
+      func bar(_ d: Double) { canvas.line(CGPoint(x: tip.x - ux * d - nx * 6, y: tip.y - uy * d - ny * 6), CGPoint(x: tip.x - ux * d + nx * 6, y: tip.y - uy * d + ny * 6), stroke: solid) }
+      func foot() {
+        let heel = CGPoint(x: tip.x - ux * 12, y: tip.y - uy * 12)
+        canvas.line(heel, CGPoint(x: tip.x + nx * 7, y: tip.y + ny * 7), stroke: solid)
+        canvas.line(heel, CGPoint(x: tip.x - nx * 7, y: tip.y - ny * 7), stroke: solid)
+      }
+      func circle(_ d: Double) {
+        let c = CGPoint(x: tip.x - ux * d, y: tip.y - uy * d)
+        canvas.ellipse(in: CGRect(x: c.x - 4, y: c.y - 4, width: 8, height: 8), fill: theme.background.a > 0 ? theme.background : DiagramColor(hex: 0xFFFFFF), stroke: solid)
+      }
+      switch head {
+      case .erOne: bar(6); bar(11)
+      case .erZeroOrOne: bar(6); circle(15)
+      case .erZeroOrMore: foot(); circle(18)
+      default: foot(); bar(14)
+      }
     case .none: break
     }
   }
