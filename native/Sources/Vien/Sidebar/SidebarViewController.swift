@@ -8,11 +8,6 @@ final class SidebarViewController: NSViewController {
 
   unowned let windowController: DocumentWindowController
   private(set) var pane: Pane = .outline
-  private let segments = NSSegmentedControl(images: [
-    NSImage(systemSymbolName: "folder", accessibilityDescription: "Files")!,
-    NSImage(systemSymbolName: "list.bullet.indent", accessibilityDescription: "Outline")!,
-    NSImage(systemSymbolName: "magnifyingglass", accessibilityDescription: "Search")!,
-  ], trackingMode: .selectOne, target: nil, action: nil)
   private let container = NSView()
   let files: FileTreeViewController
   let outline: OutlineViewController
@@ -30,18 +25,11 @@ final class SidebarViewController: NSViewController {
 
   override func loadView() {
     view = NSView()
-    segments.segmentStyle = .automatic
-    segments.controlSize = .small
-    segments.target = self
-    segments.action = #selector(switchPane)
-    segments.translatesAutoresizingMaskIntoConstraints = false
     container.translatesAutoresizingMaskIntoConstraints = false
-    view.addSubview(segments)
     view.addSubview(container)
+    // The container fills the sidebar; its top tracks the safe area so content clears the toolbar.
     NSLayoutConstraint.activate([
-      segments.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-      segments.topAnchor.constraint(equalTo: view.topAnchor, constant: 8),
-      container.topAnchor.constraint(equalTo: segments.bottomAnchor, constant: 8),
+      container.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
       container.leadingAnchor.constraint(equalTo: view.leadingAnchor),
       container.trailingAnchor.constraint(equalTo: view.trailingAnchor),
       container.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -62,15 +50,11 @@ final class SidebarViewController: NSViewController {
 
   func show(_ p: Pane) {
     pane = p
-    segments.selectedSegment = p.rawValue
+    windowController.updatePaneSwitcher(p)
     files.view.isHidden = p != .files
     outline.view.isHidden = p != .outline
     search.view.isHidden = p != .search
     if p == .search { search.focusSearchField() }
-  }
-
-  @objc private func switchPane() {
-    show(Pane(rawValue: segments.selectedSegment) ?? .outline)
   }
 
   func outlineChanged() { outline.reload() }
