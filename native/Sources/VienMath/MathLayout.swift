@@ -251,7 +251,10 @@ struct MathLayout {
     }
     // TeX Appendix G rules 18a–f, using MATH constants.
     var supShift = 0.0, subShift = 0.0
-    let isSimple: Bool = { if case .symbol = baseNode { return true }; return false }()
+    // A tall large operator (∫, ∮…) positions its scripts by its own height, so they sit near the
+    // top and bottom of the sign rather than cramped at the baseline like a plain symbol's do.
+    let isLargeOp = base.atom == .op && (base.ascent + base.descent) > 1.5 * em
+    let isSimple: Bool = { if case .symbol = baseNode { return true }; return false }() && !isLargeOp
     if !isSimple {
       supShift = base.ascent - c(.superscriptBaselineDropMax, style)
       subShift = base.descent + c(.subscriptBaselineDropMin, style)
