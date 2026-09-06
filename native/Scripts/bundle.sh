@@ -5,9 +5,12 @@ here="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$here"
 config="${1:-release}"
 
-"$here/Scripts/swift.sh" build -c "$config" --product Vien 2>&1 | grep -E "error|warning: unre|Compiling|Build" || true
+log="$(mktemp)"
+if ! "$here/Scripts/swift.sh" build -c "$config" --product Vien >"$log" 2>&1; then
+  grep -E "error" "$log" >&2; rm -f "$log"; echo "build failed" >&2; exit 1
+fi
+grep -E "warning: unre|Build" "$log" || true; rm -f "$log"
 bin=".build/$config/Vien"
-[ -x "$bin" ] || { echo "build failed" >&2; exit 1; }
 app="dist/Vien.app"
 rm -rf "$app"
 mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"

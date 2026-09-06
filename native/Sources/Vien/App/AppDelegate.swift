@@ -164,10 +164,13 @@ enum Automation {
     try? await Task.sleep(for: .milliseconds(300))
     guard let wc = Snapshot.frontWindow?.windowController as? DocumentWindowController else { NSApp.terminate(nil); return }
     let tv = wc.editor.textView!
+    var elapsed: TimeInterval = 0  // of the previous step, for `time`
+    var detail = "", lastDetail = ""
     for step in script.components(separatedBy: "§") {
       let parts = step.split(separator: ":", maxSplits: 1).map(String.init)
       let name = parts[0], arg = parts.count > 1 ? parts[1] : ""
       let t0 = Date()
+      defer { elapsed = Date().timeIntervalSince(t0); lastDetail = detail; detail = "" }
       switch name {
       case "type": tv.insertText(arg.replacingOccurrences(of: "\\n", with: "\n"), replacementRange: tv.selectedRange())
       case "enter": tv.insertNewline(nil)
@@ -206,8 +209,14 @@ enum Automation {
       case "wait": try? await Task.sleep(for: .milliseconds(Int(arg) ?? 0))
       case "pagedown":
         for _ in 0..<(Int(arg) ?? 1) {
+          let styled = Styler.paragraphsStyled
+          let styling = Styler.stylingTime
+          let a = Date()
           tv.scrollPageDown(nil)
           tv.textLayoutManager?.textViewportLayoutController.layoutViewport()
+          let b = Date()
+          tv.displayIfNeeded()
+          detail = String(format: " (layout %.1f of which styling %.1f · draw %.1f · %d paragraphs)", b.timeIntervalSince(a) * 1000, (Styler.stylingTime - styling) * 1000, Date().timeIntervalSince(b) * 1000, Styler.paragraphsStyled - styled)
         }
       case "recycle": wc.editor.recycleElements()
       case "fullscreen": wc.window?.toggleFullScreen(nil)
@@ -227,14 +236,14 @@ enum Automation {
         if n.count == 2 { wc.editor.insertTable(rows: n[0], columns: n[1]) }
       case "action":
         let selector = NSSelectorFromString(arg)
-        if wc.editor.responds(to: selector) { _ = wc.editor.perform(selector, with: nil) } else if tv.responds(to: selector) { _ = tv.perform(selector, with: nil) } else { print("unknown action \(arg)") }
+        if let target = ([wc.editor, tv, wc] as [NSObject]).first(where: { $0.responds(to: selector) }) { _ = target.perform(selector, with: nil) } else { print("unknown action \(arg)") }
       case "snap": Snapshot.write(window: wc.window!, to: arg)
       case "top":
         // Scroll so the phrase sits 60pt below the top edge (diagrams render beneath their fence).
+        // The caret stays put, so the block keeps its folded look.
         let ns = tv.string as NSString
         let r = ns.range(of: arg)
         if r.location != NSNotFound, let lm = tv.textLayoutManager, let cs = lm.textContentManager as? NSTextContentStorage, let loc = cs.location(cs.documentRange.location, offsetBy: r.location) {
-          tv.setSelectedRange(NSRange(location: r.location, length: 0))
           lm.ensureLayout(for: NSTextRange(location: loc))
           if let frag = lm.textLayoutFragment(for: loc) {
             let y = frag.layoutFragmentFrame.minY + tv.textContainerInset.height - 60
@@ -250,8 +259,10 @@ enum Automation {
       case "window":
         let n = arg.split(separator: ",").compactMap { Double($0) }
         if n.count == 2, let w = wc.window { w.setFrame(NSRect(x: w.frame.minX, y: max(0, w.frame.maxY - n[1]), width: n[0], height: n[1]), display: true) }
-      case "stats": print("elements: \(wc.editor.elementsCreated) · scroll y: \(Int(tv.visibleRect.minY)) · selection: \(tv.selectedRange()) · window: \(Int(wc.window?.frame.width ?? 0))x\(Int(wc.window?.frame.height ?? 0))")
-      case "time": print(String(format: "time: %.2f ms", Date().timeIntervalSince(t0) * 1000))
+      case "stats":
+        let scroll = wc.editor.scrollView!
+        print("elements: \(wc.editor.elementsCreated) · scroll y: \(Int(tv.visibleRect.minY)) · selection: \(tv.selectedRange()) · window: \(Int(wc.window?.frame.width ?? 0))x\(Int(wc.window?.frame.height ?? 0)) · clip \(Int(scroll.contentView.bounds.origin.y)) inset \(Int(scroll.contentInsets.top)) doc \(Int(tv.frame.height)) view \(Int(scroll.contentSize.height))")
+      case "time": print(String(format: "time: %.2f ms", elapsed * 1000) + lastDetail)
       case "dump": print("--- text ---\n" + tv.string + "--- end ---")
       case "selection": print("selection: \(tv.selectedRange())")
       case "quit":

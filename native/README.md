@@ -35,11 +35,15 @@ round it out. The Electron sources in the repository root are untouched referenc
   `NSTextLayoutFragment` that reserves space and draws the rendered bitmap beneath the closing line;
   the text stays editable above it. Rendering is synchronous native code (5–20 ms per diagram,
   <2 ms per formula) with an in-memory cache.
-* **Markup folds away.** Outside the paragraph being edited, emphasis, code, link and image
-  markup is hidden (hairline transparent font, nothing rewritten); links show their text, images
-  show in place, tables become a native grid with wrapped cells. Click a grid cell and the caret
-  lands in that cell's source. Settings › Editor › Markup turns this off; Source Code Mode shows
-  everything.
+* **Markup folds away.** Outside the block being edited, markup is hidden (hairline transparent
+  font, nothing rewritten) and each fragment draws what it stood for: heading hashes vanish, `>`
+  becomes a bar with the text set in from it, `-` becomes a bullet (•, ◦, ▪ by depth) drawn over
+  the transparent marker, fences collapse into the padding of a code background whose header strip
+  carries the language tag, `---` becomes a rule, blank lines become half-height gaps, inline code
+  sits in a rounded box, links show their text, images show in place, tables become a native grid
+  with wrapped cells. Click anywhere and the block under the caret shows its source again; click a
+  grid cell and the caret lands in that cell's source. Settings › Editor › Markup turns this off;
+  Source Code Mode shows everything.
 * **Tables are edited as tables.** The Table menu (also in the context menu) inserts, formats, adds,
   moves and deletes rows and columns and sets alignment; the model is read from the raw rows, so
   escaped pipes, extra cells and list or quote prefixes survive. Tab and Shift-Tab move between
@@ -56,7 +60,9 @@ round it out. The Electron sources in the repository root are untouched referenc
   Downloads instead.
 * **macOS does the rest.** `NSDocument` provides autosave, versions, crash recovery, rename/move from
   the title bar and external-change detection; `NSWindow` tabbing, the system find bar, spell checking,
-  Quick Look-style Open Recent, Dark Mode and the Help menu's command search come for free.
+  Quick Look-style Open Recent, Dark Mode and the Help menu's command search come for free. The
+  sidebar is a full-height source list beside a unified toolbar, the title lives in the content
+  area, and resizing the window or the sidebar never moves the paragraph at the top of the view.
 
 ## Build, run, test
 
@@ -92,6 +98,9 @@ VIEN_SCRIPT="type:- a§enter§type:b§dump§quit" Vien file.md   # drives the ed
 #        dump selection time quit
 # type: inserts text outside an event, so it does not close the undo group or mark the document
 # edited; use key: for a real key event. quit clears change counts, so scripted edits are discarded.
+# time prints how long the previous step took; after pagedown it also splits layout (and the
+# styling inside it) from drawing. action: reaches the editor, the text view or the window
+# controller (action:toggleSidebar:). NSUserDefaults arguments work: Vien -sourceMode 0 file.md.
 ```
 
 ## Conformance and performance (release build, 2020 Intel MacBook, Swift 6.3.3)
@@ -106,6 +115,7 @@ VIEN_SCRIPT="type:- a§enter§type:b§dump§quit" Vien file.md   # drives the ed
 | Keystroke reparse (parser only) | 0.02 ms (0.5 MB) · 0.14 ms (5 MB) |
 | Keystroke in the editor (insert, reparse, relayout) | 2 ms (0.6 MB) · 3 ms (5 MB) · 4 ms (15 MB), unchanged after reading the whole document |
 | Keystroke inside a 3,000-line code block | 5 ms (CSS) · 10 ms (JavaScript), retokenized in full each time |
+| Page down in a 1 MB document (1100×900 window, ~38 paragraphs laid out and drawn) | 16 ms, of which styling 2 ms; the same on page 2 and page 400 |
 | HTML render | ~150 ms / MB |
 | App bundle | 3.6 MB (with icon) |
 | Launch to editable window | 0.35 s (1 KB file) · 0.42 s (0.6 MB) · 0.57 s (5.3 MB) · 0.96 s (15 MB) |

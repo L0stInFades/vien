@@ -121,20 +121,18 @@ final class ImageLoader {
 }
 
 /// Draws a rendered diagram / formula / image below the paragraph's text and reserves the space.
-nonisolated final class OverlayFragment: NSTextLayoutFragment {
+nonisolated final class OverlayFragment: MarkdownFragment {
   let overlay: Overlay
   private let initialWidth: CGFloat
   let dark: Bool
-  let palette: Palette
   private let padding: CGFloat = 10
   private let placeholderHeight: CGFloat = 56
 
-  init(textElement: NSTextElement, range: NSTextRange?, overlay: Overlay, contentWidth: CGFloat, dark: Bool, palette: Palette) {
+  init(textElement: NSTextElement, range: NSTextRange?, overlay: Overlay, contentWidth: CGFloat, dark: Bool, decor: Decor, palette: Palette) {
     self.overlay = overlay
     self.initialWidth = contentWidth
     self.dark = dark
-    self.palette = palette
-    super.init(textElement: textElement, range: range)
+    super.init(textElement: textElement, range: range, decor: decor, palette: palette)
   }
 
   /// Follows the container, so a window resized after layout still scales the image to fit.
@@ -183,8 +181,7 @@ nonisolated final class OverlayFragment: NSTextLayoutFragment {
 
   override func draw(at point: CGPoint, in ctx: CGContext) {
     super.draw(at: point, in: ctx)
-    let textHeight = super.layoutFragmentFrame.height
-    let top = point.y + textHeight + padding
+    let top = point.y + baseHeight + padding
     let entry = lookup()
     ctx.saveGState()
     if let entry, let image = entry.image {
@@ -207,86 +204,6 @@ nonisolated final class OverlayFragment: NSTextLayoutFragment {
       NSGraphicsContext.current = NSGraphicsContext(cgContext: ctx, flipped: true)
       (label as NSString).draw(at: CGPoint(x: point.x + 12, y: top), withAttributes: attrs)
       NSGraphicsContext.restoreGraphicsState()
-    }
-    ctx.restoreGState()
-  }
-}
-
-/// Draws block decorations: a rule for `---`, a bar for quotes, a background for code blocks.
-nonisolated final class DecoratedFragment: NSTextLayoutFragment {
-  let decoration: MarkdownParagraph.Decoration
-  let palette: Palette
-
-  init(textElement: NSTextElement, range: NSTextRange?, decoration: MarkdownParagraph.Decoration, palette: Palette) {
-    self.decoration = decoration
-    self.palette = palette
-    super.init(textElement: textElement, range: range)
-  }
-
-  required init?(coder: NSCoder) { fatalError() }
-
-  override var renderingSurfaceBounds: CGRect {
-    var b = super.renderingSurfaceBounds
-    let width = textLayoutManager?.textContainer?.size.width ?? b.width
-    b.origin.x -= 12
-    b.size.width = max(b.width, width) + 24
-    return b
-  }
-
-  override func draw(at point: CGPoint, in ctx: CGContext) {
-    let frame = super.layoutFragmentFrame
-    ctx.saveGState()
-    switch decoration {
-    case .rule:
-      ctx.setStrokeColor(palette.rule.cgColor)
-      ctx.setLineWidth(1)
-      // The fragment frame only spans the marker's glyphs; the rule spans the container.
-      let width = textLayoutManager?.textContainer?.size.width ?? frame.width
-      // Through the middle of the marker's dashes: a hyphen sits about half an x-height up.
-      var y = frame.height / 2
-      if let line = textLineFragments.first, line.attributedString.length > 0,
-        let font = line.attributedString.attribute(.font, at: 0, effectiveRange: nil) as? NSFont
-      {
-        y = line.typographicBounds.minY + line.glyphOrigin.y - font.xHeight / 2  // glyphOrigin is relative to the line's bounds
-      }
-      y = (point.y + y).rounded() + 0.5
-      ctx.move(to: CGPoint(x: point.x, y: y))
-      ctx.addLine(to: CGPoint(x: point.x + width, y: y))
-      ctx.strokePath()
-      // Draw the text faintly so it stays editable but recedes behind the rule.
-      ctx.setAlpha(0.35)
-      super.draw(at: point, in: ctx)
-    case .quote:
-      ctx.setFillColor(palette.rule.cgColor)
-      ctx.fill(CGRect(x: point.x - 10, y: point.y, width: 3, height: frame.height))
-      super.draw(at: point, in: ctx)
-    case .codeBlock(let first, let last):
-      let bg = palette.codeBackground.cgColor
-      let width = textLayoutManager?.textContainer?.size.width ?? frame.width
-      var rect = CGRect(x: point.x - 8, y: point.y, width: width + 16, height: frame.height)
-      // Paragraph spacing after the last line is not part of the background.
-      if last, let style = (textElement as? NSTextParagraph)?.attributedString.attribute(.paragraphStyle, at: 0, effectiveRange: nil) as? NSParagraphStyle {
-        rect.size.height -= style.paragraphSpacing
-      }
-      let path = CGMutablePath()
-      let radius: CGFloat = 6
-      if first && last {
-        path.addRoundedRect(in: rect, cornerWidth: radius, cornerHeight: radius)
-      } else if first {
-        path.addRoundedRect(in: rect.insetBy(dx: 0, dy: 0), cornerWidth: radius, cornerHeight: radius)
-        path.addRect(CGRect(x: rect.minX, y: rect.midY, width: rect.width, height: rect.height / 2))
-      } else if last {
-        path.addRoundedRect(in: rect, cornerWidth: radius, cornerHeight: radius)
-        path.addRect(CGRect(x: rect.minX, y: rect.minY, width: rect.width, height: rect.height / 2))
-      } else {
-        path.addRect(rect)
-      }
-      ctx.setFillColor(bg)
-      ctx.addPath(path)
-      ctx.fillPath()
-      super.draw(at: point, in: ctx)
-    case .none, .table, .hiddenLine:
-      super.draw(at: point, in: ctx)
     }
     ctx.restoreGState()
   }

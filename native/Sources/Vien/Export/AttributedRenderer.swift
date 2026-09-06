@@ -121,7 +121,7 @@ struct AttributedRenderer {
     case .text(let s): out.append(NSAttributedString(string: s, attributes: [.font: styled(), .foregroundColor: color]))
     case .softBreak: out.append(NSAttributedString(string: " ", attributes: [.font: styled()]))
     case .hardBreak: out.append(NSAttributedString(string: "\u{2028}", attributes: [.font: styled()]))
-    case .code(let s, _): out.append(NSAttributedString(string: s, attributes: [.font: theme.code(size: font.pointSize), .foregroundColor: color, .backgroundColor: Theme.codeBackground]))
+    case .code(let s, _): out.append(NSAttributedString(string: s, attributes: [.font: theme.code(size: font.pointSize), .foregroundColor: color, .backgroundColor: Theme.codeBackground, .inlineCode: true]))
     case .emphasis: italic = true
     case .strong: bold = true
     case .strikethrough:

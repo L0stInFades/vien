@@ -150,35 +150,52 @@ nonisolated struct TableGrid: @unchecked Sendable {
         ctx.scaleBy(x: 1, y: -1)
         ctx.textMatrix = .identity
         let path = CGPath(rect: CGRect(x: 0, y: 0, width: rect.width, height: cell.textHeight), transform: nil)
-        CTFrameDraw(CTFramesetterCreateFrame(cell.framesetter, CFRange(), path, nil), ctx)
+        let frame = CTFramesetterCreateFrame(cell.framesetter, CFRange(), path, nil)
+        drawInlineCode(in: frame, ctx: ctx)
+        CTFrameDraw(frame, ctx)
         ctx.restoreGState()
       }
     }
     ctx.restoreGState()
   }
+
+  /// Rounded boxes under inline code runs of a laid-out frame (y up, as CTFrameDraw expects).
+  private func drawInlineCode(in frame: CTFrame, ctx: CGContext) {
+    let lines = CTFrameGetLines(frame) as! [CTLine]
+    var origins = [CGPoint](repeating: .zero, count: lines.count)
+    CTFrameGetLineOrigins(frame, CFRange(), &origins)
+    for (line, origin) in zip(lines, origins) {
+      for run in CTLineGetGlyphRuns(line) as! [CTRun] {
+        guard (CTRunGetAttributes(run) as NSDictionary)[NSAttributedString.Key.inlineCode] != nil else { continue }
+        var ascent: CGFloat = 0, descent: CGFloat = 0
+        CTRunGetTypographicBounds(run, CFRange(), &ascent, &descent, nil)
+        let r = CTRunGetStringRange(run)
+        let x0 = CTLineGetOffsetForStringIndex(line, r.location, nil), x1 = CTLineGetOffsetForStringIndex(line, r.location + r.length, nil)
+        ctx.addPath(CGPath(roundedRect: CGRect(x: origin.x + x0 - 2, y: origin.y - descent - 1, width: x1 - x0 + 4, height: ascent + descent + 2), cornerWidth: 3, cornerHeight: 3, transform: nil))
+      }
+    }
+    ctx.setFillColor(palette.codeBackground.cgColor)
+    ctx.fillPath()
+  }
 }
 
 /// The first row of a folded table: its (hidden) text line plus the whole grid beneath it.
 /// The grid is fetched for the container's current width, so it follows window resizes.
-nonisolated final class TableFragment: NSTextLayoutFragment {
+nonisolated final class TableFragment: MarkdownFragment {
   private let table: Block
   private let provider: (Block, CGFloat) -> TableGrid?
   private let initialWidth: CGFloat
-  /// Container indent (list marker, quote prefix) the grid sits under, and whether to draw a quote bar.
+  /// Container indent (list marker, quote bars) the grid sits under.
   let indent: CGFloat
-  let quoted: Bool
-  let palette: Palette
   let bottomPadding: CGFloat
 
-  init(textElement: NSTextElement, range: NSTextRange?, table: Block, width: CGFloat, indent: CGFloat, quoted: Bool, palette: Palette, bottomPadding: CGFloat, provider: @escaping (Block, CGFloat) -> TableGrid?) {
+  init(textElement: NSTextElement, range: NSTextRange?, table: Block, width: CGFloat, indent: CGFloat, decor: Decor, palette: Palette, bottomPadding: CGFloat, provider: @escaping (Block, CGFloat) -> TableGrid?) {
     self.table = table
     self.provider = provider
     self.initialWidth = width
     self.indent = indent
-    self.quoted = quoted
-    self.palette = palette
     self.bottomPadding = bottomPadding
-    super.init(textElement: textElement, range: range)
+    super.init(textElement: textElement, range: range, decor: decor, palette: palette)
   }
 
   required init?(coder: NSCoder) { fatalError() }
@@ -190,7 +207,7 @@ nonisolated final class TableFragment: NSTextLayoutFragment {
   }
 
   /// Where the grid sits, relative to the fragment's origin.
-  var gridOrigin: CGPoint { CGPoint(x: indent, y: super.layoutFragmentFrame.height) }
+  var gridOrigin: CGPoint { CGPoint(x: indent, y: baseHeight) }
 
   override var layoutFragmentFrame: CGRect {
     var f = super.layoutFragmentFrame
@@ -201,28 +218,12 @@ nonisolated final class TableFragment: NSTextLayoutFragment {
   override var renderingSurfaceBounds: CGRect {
     var b = super.renderingSurfaceBounds
     b.size.height += (grid?.size.height ?? 0) + bottomPadding
-    b.size.width = max(b.size.width, (grid?.size.width ?? 0) + 2)
+    b.size.width = max(b.size.width, indent + (grid?.size.width ?? 0) + 2)
     return b
   }
 
   override func draw(at point: CGPoint, in ctx: CGContext) {
     super.draw(at: point, in: ctx)
-    guard let grid else { return }
-    if quoted {
-      ctx.setFillColor(palette.rule.cgColor)
-      ctx.fill(CGRect(x: point.x + indent - 10, y: point.y + gridOrigin.y, width: 3, height: grid.size.height))
-    }
-    grid.draw(at: CGPoint(x: point.x + gridOrigin.x, y: point.y + gridOrigin.y), in: ctx)
+    grid?.draw(at: CGPoint(x: point.x + gridOrigin.x, y: point.y + gridOrigin.y), in: ctx)
   }
-}
-
-/// A table row other than the first while the table is folded: takes no space, draws nothing.
-nonisolated final class HiddenLineFragment: NSTextLayoutFragment {
-  override var layoutFragmentFrame: CGRect {
-    var f = super.layoutFragmentFrame
-    f.size.height = 0
-    return f
-  }
-
-  override func draw(at point: CGPoint, in ctx: CGContext) {}
 }

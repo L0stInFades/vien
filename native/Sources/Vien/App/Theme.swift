@@ -37,7 +37,7 @@ struct Theme {
   }
 
   func heading(level: Int) -> NSFont {
-    let scale: [CGFloat] = [1.9, 1.5, 1.25, 1.1, 1.0, 1.0]
+    let scale: [CGFloat] = [2.0, 1.5, 1.25, 1.1, 1.0, 1.0]
     let weight: NSFont.Weight = level <= 2 ? .bold : .semibold
     return body(weight: weight, size: baseSize * scale[max(0, min(5, level - 1))])
   }
@@ -69,8 +69,22 @@ struct Theme {
     return try body()
   }
 
-  var paragraphSpacing: CGFloat { baseSize * 0.6 }
-  var headingSpacingBefore: CGFloat { baseSize * 1.1 }
+  // Vertical rhythm and block insets, all in proportion to the body size so zoom keeps them.
+  var paragraphSpacing: CGFloat { baseSize * 0.5 }
+  var headingSpacingBefore: CGFloat { baseSize * 0.75 }
+  var headingSpacingAfter: CGFloat { baseSize * 0.35 }
+  var listItemSpacing: CGFloat { baseSize * 0.15 }
+  /// Text inside a quote starts this far right of its bar.
+  var quoteIndent: CGFloat { baseSize * 1.1 }
+  var codeInset: CGFloat { baseSize * 0.6 }
+  /// Height of a folded fence line: the block's top and bottom padding.
+  var codePadding: CGFloat { baseSize * 0.55 }
+  /// Height of a folded opening fence that carries a language tag.
+  var codeHeader: CGFloat { baseSize * 1.35 }
+  var ruleHeight: CGFloat { baseSize * 1.4 }
+  let codeLineHeight: CGFloat = 1.4
+  /// A blank source line is a gap between blocks, not a line of text.
+  let blankLineHeight: CGFloat = 0.5
 
   func paragraphStyle(lineHeight: CGFloat? = nil, indent: CGFloat = 0, firstLineIndent: CGFloat? = nil, spacingBefore: CGFloat = 0, spacingAfter: CGFloat = 0) -> NSParagraphStyle {
     let s = NSMutableParagraphStyle()

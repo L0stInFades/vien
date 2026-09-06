@@ -81,26 +81,29 @@ final class OutlineViewController: NSViewController, NSOutlineViewDataSource, NS
   func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
     guard let i = item as? Int, i < headings.count else { return nil }
     let h = headings[i]
-    let id = NSUserInterfaceItemIdentifier("cell")
-    let cell = outlineView.makeView(withIdentifier: id, owner: nil) as? NSTableCellView ?? {
-      let c = NSTableCellView()
-      c.identifier = id
-      let f = NSTextField(labelWithString: "")
-      f.lineBreakMode = .byTruncatingTail
-      f.translatesAutoresizingMaskIntoConstraints = false
-      c.addSubview(f)
-      c.textField = f
-      NSLayoutConstraint.activate([
-        f.leadingAnchor.constraint(equalTo: c.leadingAnchor, constant: 8),
-        f.trailingAnchor.constraint(equalTo: c.trailingAnchor, constant: -4),
-        f.centerYAnchor.constraint(equalTo: c.centerYAnchor),
-      ])
-      return c
-    }()
-    cell.textField?.stringValue = h.text.isEmpty ? "(untitled)" : h.text
-    cell.textField?.font = h.level <= 1 ? .systemFont(ofSize: 13, weight: .semibold) : .systemFont(ofSize: 12)
-    cell.textField?.textColor = h.level <= 2 ? .labelColor : .secondaryLabelColor
-    cell.textField?.constraints.first(where: { $0.firstAttribute == .leading })?.constant = 8 + CGFloat(max(0, h.level - 1)) * 12
+    let cell = outlineView.makeView(withIdentifier: OutlineCell.id, owner: nil) as? OutlineCell ?? OutlineCell()
+    cell.label.stringValue = h.text.isEmpty ? "(untitled)" : h.text
+    cell.label.font = .systemFont(ofSize: h.level <= 2 ? 13 : 12, weight: h.level <= 1 ? .semibold : .regular)
+    cell.label.textColor = h.level <= 2 ? .labelColor : .secondaryLabelColor
+    cell.indent.constant = 8 + CGFloat(max(0, h.level - 1)) * 12
     return cell
   }
+}
+
+/// One outline row: a label whose leading inset says how deep the heading is.
+private final class OutlineCell: NSTableCellView {
+  static let id = NSUserInterfaceItemIdentifier("heading")
+  let label = NSTextField(labelWithString: "")
+  private(set) lazy var indent = label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8)
+
+  init() {
+    super.init(frame: .zero)
+    identifier = Self.id
+    label.lineBreakMode = .byTruncatingTail
+    label.translatesAutoresizingMaskIntoConstraints = false
+    addSubview(label)
+    NSLayoutConstraint.activate([indent, label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -4), label.centerYAnchor.constraint(equalTo: centerYAnchor)])
+  }
+
+  required init?(coder: NSCoder) { fatalError() }
 }

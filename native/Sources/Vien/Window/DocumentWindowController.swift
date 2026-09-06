@@ -12,7 +12,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
   init() {
     let window = NSWindow(
       contentRect: NSRect(x: 0, y: 0, width: 1040, height: 760),
-      styleMask: [.titled, .closable, .miniaturizable, .resizable],
+      styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
       backing: .buffered, defer: false)
     window.minSize = NSSize(width: 480, height: 320)
     window.tabbingMode = .preferred
@@ -44,6 +44,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
     side.maximumThickness = 420
     side.canCollapse = true
     side.isCollapsed = true
+    side.allowsFullHeightLayout = true
     side.titlebarSeparatorStyle = .automatic
     let main = NSSplitViewItem(viewController: editor)
     main.minimumThickness = 360

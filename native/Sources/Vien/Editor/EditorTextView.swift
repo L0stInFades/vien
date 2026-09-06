@@ -53,6 +53,21 @@ final class EditorTextView: NSTextView {
     updateInsets()
   }
 
+  /// AppKit ends a live resize (window edge, sidebar animation) by scrolling the selection into a
+  /// centred, page-sized rect, which shifts the document by up to half the inset. The paragraph at
+  /// the top was already kept in place on every reflow, so that scroll is dropped.
+  private var endingLiveResize = false
+
+  override func viewDidEndLiveResize() {
+    endingLiveResize = true
+    super.viewDidEndLiveResize()
+    endingLiveResize = false
+  }
+
+  override func scrollToVisible(_ rect: NSRect) -> Bool {
+    endingLiveResize ? false : super.scrollToVisible(rect)
+  }
+
   private func updateInsets() {
     guard let scroll = enclosingScrollView else { return }
     let available = scroll.contentSize.width
@@ -64,9 +79,12 @@ final class EditorTextView: NSTextView {
     let inset = NSSize(width: side, height: vertical)
     if textContainerInset != inset || textContainer?.size.width != width {
       trace("textview: container width \(Int(width)) inset \(Int(side)) (available \(Int(available)))")
-      textContainerInset = inset
-      textContainer?.widthTracksTextView = false
-      textContainer?.size = NSSize(width: width, height: CGFloat.greatestFiniteMagnitude)
+      // Reflowing moves every line; the paragraph at the top of the window stays where it was.
+      keepingViewport {
+        textContainerInset = inset
+        textContainer?.widthTracksTextView = false
+        textContainer?.size = NSSize(width: width, height: CGFloat.greatestFiniteMagnitude)
+      }
     }
   }
 
@@ -126,7 +144,8 @@ final class EditorTextView: NSTextView {
     lm.textViewportLayoutController.layoutViewport()
     lm.ensureLayout(for: NSTextRange(location: location))
     guard let fragment = lm.textLayoutFragment(for: location) else { return }
-    scroll(NSPoint(x: 0, y: max(0, fragment.layoutFragmentFrame.minY - offset + textContainerInset.height)))
+    let minY = -(enclosingScrollView?.contentInsets.top ?? 0)  // the scroll view starts under the toolbar
+    scroll(NSPoint(x: 0, y: max(minY, fragment.layoutFragmentFrame.minY - offset + textContainerInset.height)))
   }
 
   /// UTF-16 offset of the cell under `point` in a folded table's grid, if any.

@@ -3,19 +3,28 @@ import CoreText
 import VienCode
 import VienMarkdown
 
-/// A paragraph element that knows whether something is drawn beneath it (diagram, math, images).
+/// A paragraph element that carries what its fragment draws around the text.
 nonisolated final class MarkdownParagraph: NSTextParagraph {
   var overlay: Overlay?
-  var decoration: Decoration = .none
+  var decor = Decor()
 
-  enum Decoration { case none, rule, codeBlock(first: Bool, last: Bool), quote, table(Block, indent: CGFloat, quoted: Bool), hiddenLine }
+  convenience init(attributedString: NSAttributedString, overlay: Overlay?, decor: Decor) {
+    self.init(attributedString: attributedString)
+    self.overlay = overlay
+    self.decor = decor
+  }
 }
 
 /// Produces styled paragraphs on demand for the text view (TextKit 2 asks for them lazily as it lays
 /// out the viewport), so styling cost is proportional to what is visible, never to document length.
+///
+/// Outside the block that holds the selection, markup folds away: heading hashes, quote prefixes,
+/// fences, rules and inline delimiters keep their bytes but take no space, and the fragment draws
+/// what they stood for (a bar, a background, a bullet, a rule). The active block shows its source.
 final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerDelegate {
-  /// Diagnostics: how many paragraphs have been styled since launch (reported by VIEN_QUIT_WHEN_READY).
+  /// Diagnostics: how many paragraphs have been styled since launch, and for how long in total.
   static var paragraphsStyled = 0
+  static var stylingTime: TimeInterval = 0
   /// Paragraph elements handed to TextKit since the last recycling (see `EditorViewController`).
   var elementsCreated = 0
   unowned let document: MarkdownFile
@@ -54,6 +63,7 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
   }
 
   private func prefixWidth(_ prefix: NSAttributedString) -> CGFloat {
+    guard prefix.length > 0 else { return 0 }
     let key = prefix.string + "|" + String(describing: (prefix.attribute(.font, at: 0, effectiveRange: nil) as? NSFont)?.pointSize ?? 0)
     if let w = prefixWidths[key] { return w }
     let line = CTLineCreateWithAttributedString(prefix)
@@ -69,34 +79,27 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
     Self.paragraphsStyled += 1
     elementsCreated += 1
     guard let storage = textContentStorage.textStorage else { return nil }
-    let text = (storage.string as NSString).substring(with: range)
-    let styled = NSMutableAttributedString(string: text)
-    let paragraph = MarkdownParagraph(attributedString: styled)
-    style(styled, paragraph: paragraph, utf16Range: range)
-    return MarkdownParagraph(attributedString: styled, overlay: paragraph.overlay, decoration: paragraph.decoration)
+    let styled = NSMutableAttributedString(string: (storage.string as NSString).substring(with: range))
+    let t0 = Date()
+    let result = style(styled, utf16Range: range)
+    Self.stylingTime += Date().timeIntervalSince(t0)
+    return MarkdownParagraph(attributedString: styled, overlay: result.overlay, decor: result.decor)
   }
 
   // MARK: - NSTextLayoutManagerDelegate
 
   func textLayoutManager(_ textLayoutManager: NSTextLayoutManager, textLayoutFragmentFor location: any NSTextLocation, in textElement: NSTextElement) -> NSTextLayoutFragment {
-    if let p = textElement as? MarkdownParagraph {
-      switch p.decoration {
-      case .table(let block, let indent, let quoted):
-        // The fragment asks for the grid at the container's current width (cached per width).
-        return TableFragment(textElement: p, range: p.elementRange, table: block, width: contentWidth - indent, indent: indent, quoted: quoted, palette: theme.palette, bottomPadding: theme.paragraphSpacing) { [weak self] table, width in
-          self?.grid(for: table, width: width)
-        }
-      case .hiddenLine: return HiddenLineFragment(textElement: p, range: p.elementRange)
-      default: break
-      }
-      if let overlay = p.overlay {
-        return OverlayFragment(textElement: p, range: p.elementRange, overlay: overlay, contentWidth: contentWidth, dark: isDark, palette: theme.palette)
-      }
-      if case .none = p.decoration {} else {
-        return DecoratedFragment(textElement: p, range: p.elementRange, decoration: p.decoration, palette: theme.palette)
+    guard let p = textElement as? MarkdownParagraph else { return NSTextLayoutFragment(textElement: textElement, range: textElement.elementRange) }
+    if case .table(let block, let indent) = p.decor.kind {
+      // The fragment asks for the grid at the container's current width (cached per width).
+      return TableFragment(textElement: p, range: p.elementRange, table: block, width: contentWidth - indent, indent: indent, decor: p.decor, palette: theme.palette, bottomPadding: theme.paragraphSpacing) { [weak self] table, width in
+        self?.grid(for: table, width: width)
       }
     }
-    return NSTextLayoutFragment(textElement: textElement, range: textElement.elementRange)
+    if let overlay = p.overlay {
+      return OverlayFragment(textElement: p, range: p.elementRange, overlay: overlay, contentWidth: contentWidth, dark: isDark, decor: p.decor, palette: theme.palette)
+    }
+    return MarkdownFragment(textElement: p, range: p.elementRange, decor: p.decor, palette: theme.palette)
   }
 
   private var contentWidth: CGFloat {
@@ -110,12 +113,29 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
 
   // MARK: - Styling
 
-  private func style(_ s: NSMutableAttributedString, paragraph: MarkdownParagraph, utf16Range: NSRange) {
+  private struct Styled {
+    var decor = Decor()
+    var overlay: Overlay?
+  }
+
+  /// Vertical rhythm and horizontal inset a leaf block asks for.
+  private struct Layout {
+    var lineHeight: CGFloat? = nil
+    var before: CGFloat = 0
+    var after: CGFloat = 0
+    var inset: CGFloat = 0
+    /// The block's box starts at the container edge even when its lines begin with spaces.
+    var flush = false
+  }
+
+  private func style(_ s: NSMutableAttributedString, utf16Range: NSRange) -> Styled {
+    var out = Styled()
     let doc = document.markdown
+    let bytes = doc.bytes
     let full = NSRange(location: 0, length: s.length)
     let bodyFont = sourceMode ? theme.code(size: theme.baseSize) : theme.body()
     s.setAttributes([.font: bodyFont, .foregroundColor: Theme.text, .paragraphStyle: theme.paragraphStyle()], range: full)
-    guard s.length > 0 else { return }
+    guard s.length > 0 else { return out }
 
     let byteStart = doc.byteOffset(forUTF16: utf16Range.location)
     let byteEnd = doc.byteOffset(forUTF16: NSMaxRange(utf16Range))
@@ -124,7 +144,6 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
     do {
       var i = byteStart
       var u = 0
-      let bytes = doc.bytes
       while i < byteEnd {
         u16[i - byteStart] = u
         let b = bytes[i]
@@ -143,20 +162,21 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
       let n = nsRange(r)
       if n.length > 0 { s.addAttribute(.foregroundColor, value: color, range: n) }
     }
-    func hideText(_ r: Range<Int>) {
+    func hide(_ r: Range<Int>) {
       let n = nsRange(r)
       if n.length > 0 { s.addAttributes(Theme.hiddenAttributes, range: n) }
     }
+    func onLine(_ r: Range<Int>) -> Bool { r.lowerBound >= byteStart && r.lowerBound < byteEnd }
+    func width(upTo end: Int) -> CGFloat { prefixWidth(s.attributedSubstring(from: nsRange(byteStart..<end))) }
+
     // Markup is folded on every line outside the block that holds the selection.
-    var active = false
-    if let r = activeRange { active = r.lowerBound == byteStart || (byteEnd > r.lowerBound && byteStart < r.upperBound) }
-    var hide: ((Range<Int>) -> Void)? = nil
-    if foldMarkup, !sourceMode, !active { hide = hideText }
+    let active = activeRange.map { $0.lowerBound == byteStart || (byteEnd > $0.lowerBound && byteStart < $0.upperBound) } ?? false
+    let folded = foldMarkup && !sourceMode && !active
 
     // Locate the innermost block on this line: start at the first non-blank byte, then step past
     // container prefixes (`>`, list markers) until the path ends in a leaf.
     var probe = byteStart
-    while probe < byteEnd, doc.bytes[probe] == 0x20 || doc.bytes[probe] == 0x09 { probe += 1 }
+    while probe < byteEnd, bytes[probe] == 0x20 || bytes[probe] == 0x09 { probe += 1 }
     var path = doc.path(at: probe)
     var guardCount = 0
     while let deepest = path.last, deepest.isContainer, guardCount < 8 {
@@ -166,12 +186,12 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
       case .listItem(let info):
         if info.marker.lowerBound >= byteStart, info.marker.upperBound <= byteEnd { next = max(next, info.task?.range.upperBound ?? info.marker.upperBound) }
       case .blockQuote(let prefixes):
-        if let p = prefixes.last(where: { $0.lowerBound >= byteStart && $0.lowerBound < byteEnd }) { next = max(next, p.upperBound) }
+        if let p = prefixes.last(where: { onLine($0) }) { next = max(next, p.upperBound) }
       case .footnoteDefinition(_, let marker):
         if marker.lowerBound >= byteStart, marker.upperBound <= byteEnd { next = max(next, marker.upperBound) }
       default: break
       }
-      while next < byteEnd, doc.bytes[next] == 0x20 || doc.bytes[next] == 0x09 { next += 1 }
+      while next < byteEnd, bytes[next] == 0x20 || bytes[next] == 0x09 { next += 1 }
       guard next > probe else { break }
       probe = next
       let deeper = doc.path(at: probe)
@@ -180,73 +200,93 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
     }
     let inFocus = focusRange.map { $0.contains(probe) || $0.upperBound == probe } ?? true
 
-    var indent: CGFloat = 0
     var textColor = Theme.text
     var leaf: Block? = nil
+    var listDepth = 0
     for block in path {
       switch block.kind {
       case .blockQuote(let prefixes):
         textColor = Theme.quote
-        for p in prefixes where p.lowerBound >= byteStart && p.lowerBound < byteEnd { mark(p) }
-        paragraph.decoration = .quote
+        for p in prefixes where onLine(p) {
+          guard folded else { mark(p); continue }
+          // A bar stands in for the marker: `>` and the space after it fold away.
+          let end = p.upperBound < byteEnd && bytes[p.upperBound] == 0x20 ? p.upperBound + 1 : p.upperBound
+          out.decor.quoteBars.append(width(upTo: p.lowerBound) + CGFloat(out.decor.quoteBars.count) * theme.quoteIndent)
+          hide(p.lowerBound..<end)
+        }
+      case .list:
+        listDepth += 1
       case .listItem(let info):
-        if info.marker.lowerBound >= byteStart, info.marker.lowerBound < byteEnd {
-          mark(info.marker, Theme.secondary)
-          if let task = info.task { mark(task.range, Theme.accent) }
+        guard onLine(info.marker) else { break }
+        if folded, "-*+".utf8.contains(bytes[info.marker.lowerBound]) {
+          // The bullet is drawn over its marker, which stays in the text at full width.
+          s.addAttribute(.foregroundColor, value: NSColor.clear, range: nsRange(info.marker))
+          out.decor.bullet = Decor.Bullet(index: nsRange(info.marker).location, glyph: Decor.bulletGlyph(depth: listDepth))
+        } else {
+          mark(info.marker, folded ? Theme.text : Theme.secondary)
         }
-      case .list, .tableRow, .footnoteDefinition:
-        if case .footnoteDefinition(_, let marker) = block.kind, marker.lowerBound >= byteStart, marker.lowerBound < byteEnd {
-          mark(marker, Theme.secondary)
-        }
+        if let task = info.task { mark(task.range, Theme.accent) }
+      case .footnoteDefinition(_, let marker):
+        if onLine(marker) { mark(marker, Theme.secondary) }
       case .table:
         leaf = block  // the delimiter line has no row; rows and cells that follow replace this
+      case .tableRow:
+        break
       default:
         leaf = block
       }
     }
-    if hide != nil, let table = path.first(where: { if case .table = $0.kind { return true }; return false }) {
+    let quoteShift = CGFloat(out.decor.quoteBars.count) * theme.quoteIndent
+
+    if folded, let table = path.first(where: { if case .table = $0.kind { return true }; return false }) {
       // A folded table: every row's text is hidden; the first row's fragment draws the grid under
-      // the same indent as the surrounding text (list marker, quote prefix).
-      hideText(byteStart..<byteEnd)
-      let first = table.range.lowerBound >= byteStart && table.range.lowerBound < byteEnd
-      var tableIndent: CGFloat = 0
-      if first, table.range.lowerBound > byteStart {
-        let prefix = String(decoding: doc.bytes[byteStart..<table.range.lowerBound], as: UTF8.self)
-        tableIndent = prefixWidth(NSAttributedString(string: prefix, attributes: [.font: theme.body()]))
-      }
-      let quoted = path.contains { if case .blockQuote = $0.kind { return true }; return false }
-      paragraph.decoration = first ? .table(table, indent: tableIndent, quoted: quoted) : .hiddenLine
+      // the same indent as the surrounding text (list marker, quote bars).
+      let first = onLine(table.range)
+      out.decor.kind = first ? .table(table, indent: width(upTo: table.range.lowerBound) + quoteShift) : .hiddenLine
+      out.decor.fixedHeight = 0
+      hide(byteStart..<byteEnd)
       s.addAttribute(.paragraphStyle, value: theme.paragraphStyle(lineHeight: 1, indent: 0), range: full)
-      return
-    }
-    if !sourceMode {
-      // Wrapped lines align under the text that follows the line's prefix (markers, spaces).
-      var prefixEnd = probe
-      if let leaf, case .paragraph = leaf.kind, let first = leaf.lines.first, first.range.lowerBound >= byteStart, first.range.lowerBound <= byteEnd {
-        prefixEnd = max(prefixEnd, first.range.lowerBound)
-      } else if let leaf, case .heading = leaf.kind, let first = leaf.lines.first, first.range.lowerBound >= byteStart, first.range.lowerBound <= byteEnd {
-        prefixEnd = max(prefixEnd, first.range.lowerBound)
-      }
-      if prefixEnd > byteStart {
-        let prefix = s.attributedSubstring(from: nsRange(byteStart..<prefixEnd))
-        indent = prefixWidth(prefix)
-      }
+      return out
     }
     if textColor != Theme.text { s.addAttribute(.foregroundColor, value: textColor, range: full) }
 
-    var style = theme.paragraphStyle(indent: indent, firstLineIndent: 0)
-    if let leaf { style = leafStyle(leaf, s: s, full: full, byteStart: byteStart, byteEnd: byteEnd, indent: indent, paragraph: paragraph, nsRange: nsRange, mark: mark, hide: hide) }
+    var layout = Layout()
+    if let leaf {
+      layout = styleLeaf(leaf, in: path, s: s, full: full, byteStart: byteStart, byteEnd: byteEnd, folded: folded, out: &out, nsRange: nsRange, mark: mark, hide: hide)
+    } else if folded, probe == byteEnd || bytes[probe] == 0x0A || bytes[probe] == 0x0D {
+      layout.lineHeight = theme.blankLineHeight  // a blank line is a gap, not an empty line of text
+    }
+
+    // Wrapped lines align under the text that follows the line's prefix (markers, spaces). Folded
+    // quote prefixes measure nothing, so the bars' indent is added back on every line.
+    var indent: CGFloat = 0
+    if !sourceMode {
+      var prefixEnd = probe
+      if let leaf, let first = leaf.lines.first, first.range.lowerBound >= byteStart, first.range.lowerBound <= byteEnd {
+        switch leaf.kind {
+        case .paragraph, .heading: prefixEnd = max(prefixEnd, first.range.lowerBound)
+        default: break
+        }
+      }
+      if prefixEnd > byteStart { indent = width(upTo: prefixEnd) }
+    }
+    out.decor.indent = (layout.flush ? 0 : indent) + quoteShift
+    let isFirst = leaf.map { onLine($0.range) } ?? false
+    let isLast = leaf.map { $0.range.upperBound >= byteStart && $0.range.upperBound <= byteEnd } ?? false
+    let style = theme.paragraphStyle(lineHeight: layout.lineHeight, indent: indent + quoteShift + layout.inset, firstLineIndent: quoteShift + layout.inset,
+      spacingBefore: isFirst ? layout.before : 0, spacingAfter: isLast ? layout.after : 0)
     s.addAttribute(.paragraphStyle, value: style, range: full)
+
     if !sourceMode, let row = path.first(where: { if case .tableRow = $0.kind { return true }; return false }) {
       // A table row being edited: links, code and markers get their colours; the font stays
       // monospaced so the pipes line up.
       for cell in row.children { styleInlines(inlines(of: cell), s: s, nsRange: nsRange, mark: mark, hide: nil, base: theme.code()) }
       s.addAttribute(.font, value: theme.code(), range: full)
     }
-
     if focusMode, !inFocus {
       s.addAttribute(.foregroundColor, value: Theme.marker, range: full)
     }
+    return out
   }
 
   private func grid(for table: Block, width: CGFloat) -> TableGrid? {
@@ -266,75 +306,109 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
     return grid
   }
 
-  private func leafStyle(_ leaf: Block, s: NSMutableAttributedString, full: NSRange, byteStart: Int, byteEnd: Int, indent: CGFloat,
-    paragraph: MarkdownParagraph, nsRange: (Range<Int>) -> NSRange, mark: (Range<Int>, NSColor) -> Void, hide: ((Range<Int>) -> Void)?) -> NSParagraphStyle
+  private func styleLeaf(_ leaf: Block, in path: [Block], s: NSMutableAttributedString, full: NSRange, byteStart: Int, byteEnd: Int, folded: Bool, out: inout Styled,
+    nsRange: (Range<Int>) -> NSRange, mark: (Range<Int>, NSColor) -> Void, hide: @escaping (Range<Int>) -> Void) -> Layout
   {
     let doc = document.markdown
-    let isLastLine = leaf.range.upperBound >= byteStart && leaf.range.upperBound <= byteEnd
     let isFirstLine = leaf.range.lowerBound >= byteStart && leaf.range.lowerBound < byteEnd
+    let isLastLine = leaf.range.upperBound >= byteStart && leaf.range.upperBound <= byteEnd
+    let inlineHide: ((Range<Int>) -> Void)? = folded ? hide : nil
+    func onLine(_ r: Range<Int>) -> Bool { r.lowerBound >= byteStart && r.lowerBound < byteEnd }
+    func codeFont() { s.addAttribute(.font, value: theme.code(), range: full) }
+    let codeLayout = Layout(lineHeight: theme.codeLineHeight, after: isLastLine ? theme.paragraphSpacing : 0)
+
     switch leaf.kind {
     case .heading(let level, let marker, let trailing, let underline):
       if !sourceMode { s.addAttribute(.font, value: theme.heading(level: level), range: full) }
-      if let marker { mark(marker, Theme.marker) }
-      if let trailing { mark(trailing, Theme.marker) }
-      if let underline, underline.lowerBound >= byteStart { mark(underline, Theme.marker) }
-      styleInlines(inlines(of: leaf), s: s, nsRange: nsRange, mark: mark, hide: hide, base: theme.heading(level: level))
-      return theme.paragraphStyle(lineHeight: 1.25, indent: indent, firstLineIndent: 0, spacingBefore: sourceMode ? 0 : theme.headingSpacingBefore, spacingAfter: theme.paragraphSpacing * 0.5)
+      if let marker {
+        if folded { hide(marker.lowerBound..<(leaf.lines.first?.range.lowerBound ?? marker.upperBound)) } else { mark(marker, Theme.marker) }
+      }
+      if let trailing { if folded { hide(trailing) } else { mark(trailing, Theme.marker) } }
+      if let underline, underline.lowerBound >= byteStart {
+        if folded { hide(underline); out.decor = Decor(kind: .hiddenLine, fixedHeight: 0) } else { mark(underline, Theme.marker) }
+      }
+      styleInlines(inlines(of: leaf), s: s, nsRange: nsRange, mark: mark, hide: inlineHide, base: theme.heading(level: level))
+      return Layout(lineHeight: 1.25, before: sourceMode ? 0 : theme.headingSpacingBefore, after: theme.headingSpacingAfter)
     case .paragraph:
       let inlines = inlines(of: leaf)
-      styleInlines(inlines, s: s, nsRange: nsRange, mark: mark, hide: hide, base: nil)
+      styleInlines(inlines, s: s, nsRange: nsRange, mark: mark, hide: inlineHide, base: nil)
       if !sourceMode {
         let images = Styler.imageSources(inlines)
         if !images.isEmpty {
-          if isLastLine { paragraph.overlay = .images(images.map { document.resolveImageURL($0) }) }
+          if isLastLine { out.overlay = .images(images.map { document.resolveImageURL($0) }) }
           // A paragraph that is only images shows the images in its place.
-          if let hide, Styler.isImagesOnly(inlines) { hide(byteStart..<byteEnd) }
+          if folded, Styler.isImagesOnly(inlines) { hide(byteStart..<byteEnd) }
         }
       }
-      return theme.paragraphStyle(indent: indent, firstLineIndent: 0, spacingAfter: isLastLine ? theme.paragraphSpacing : 0)
+      // Items of a tight list sit close together; the list's last paragraph keeps the usual gap.
+      var after = theme.paragraphSpacing
+      if let list = path.last(where: { if case .list = $0.kind { return true }; return false }), case .list(let info) = list.kind, info.tight, leaf.range.upperBound < list.range.upperBound {
+        after = theme.listItemSpacing
+      }
+      return Layout(after: isLastLine ? after : 0)
     case .fencedCode(let fence):
-      s.addAttribute(.font, value: theme.code(), range: full)
-      if isFirstLine { mark(fence.open, Theme.marker); if let info = fence.info { mark(info, Theme.secondary) } }
-      if let close = fence.close, close.lowerBound >= byteStart, close.lowerBound < byteEnd { mark(close, Theme.marker) }
-      paragraph.decoration = .codeBlock(first: isFirstLine, last: isLastLine)
+      codeFont()
+      let language = leaf.language(in: doc.bytes)
+      if isFirstLine {
+        if folded {
+          hide(byteStart..<byteEnd)
+          out.decor.fixedHeight = language == nil ? theme.codePadding : theme.codeHeader
+        } else {
+          mark(fence.open, Theme.marker)
+          if let info = fence.info { mark(info, Theme.secondary) }
+        }
+      }
+      if let close = fence.close, onLine(close) {
+        if folded { hide(byteStart..<byteEnd); out.decor.fixedHeight = theme.codePadding } else { mark(close, Theme.marker) }
+      }
+      out.decor.kind = .codeBlock(first: isFirstLine, last: isLastLine, label: folded && isFirstLine ? language : nil)
       if !sourceMode {
         for token in highlight.tokens(for: leaf, in: document, intersecting: byteStart..<byteEnd) { mark(token.range, Theme.syntax(token.kind)) }
       }
-      if isLastLine, !sourceMode, let lang = leaf.language(in: doc.bytes)?.lowercased() {
-        if lang == "mermaid" { paragraph.overlay = .mermaid(doc.text(of: leaf)) }
-        else if lang == "math" || lang == "latex" || lang == "tex" { paragraph.overlay = .math(doc.text(of: leaf)) }
+      if isLastLine, !sourceMode, let lang = language?.lowercased() {
+        if lang == "mermaid" { out.overlay = .mermaid(doc.text(of: leaf)) }
+        else if ["math", "latex", "tex"].contains(lang) { out.overlay = .math(doc.text(of: leaf)) }
       }
-      return theme.paragraphStyle(lineHeight: 1.35, indent: 0, spacingAfter: isLastLine ? theme.paragraphSpacing : 0)
+      var layout = codeLayout
+      layout.inset = theme.codeInset
+      return layout
     case .indentedCode:
-      s.addAttribute(.font, value: theme.code(), range: full)
-      paragraph.decoration = .codeBlock(first: isFirstLine, last: isLastLine)
-      return theme.paragraphStyle(lineHeight: 1.35, indent: 0, spacingAfter: isLastLine ? theme.paragraphSpacing : 0)
+      codeFont()
+      out.decor.kind = .codeBlock(first: isFirstLine, last: isLastLine, label: nil)
+      var layout = codeLayout
+      layout.flush = true
+      return layout
     case .htmlBlock, .linkReferenceDefinition:
-      s.addAttribute(.font, value: theme.code(), range: full)
+      codeFont()
       s.addAttribute(.foregroundColor, value: Theme.secondary, range: full)
-      return theme.paragraphStyle(lineHeight: 1.35, indent: indent, spacingAfter: isLastLine ? theme.paragraphSpacing : 0)
+      return codeLayout
     case .mathBlock(let open, let close):
-      s.addAttribute(.font, value: theme.code(), range: full)
-      if open.lowerBound >= byteStart, open.lowerBound < byteEnd { mark(open, Theme.marker) }
-      if let close, close.lowerBound >= byteStart, close.lowerBound < byteEnd { mark(close, Theme.marker) }
-      if isLastLine, !sourceMode { paragraph.overlay = .math(doc.text(of: leaf)) }
-      return theme.paragraphStyle(lineHeight: 1.35, indent: indent, spacingAfter: isLastLine ? theme.paragraphSpacing : 0)
+      codeFont()
+      if onLine(open) { mark(open, Theme.marker) }
+      if let close, onLine(close) { mark(close, Theme.marker) }
+      if isLastLine, !sourceMode { out.overlay = .math(doc.text(of: leaf)) }
+      return codeLayout
     case .frontMatter(_, let open, let close):
-      s.addAttribute(.font, value: theme.code(), range: full)
+      codeFont()
       s.addAttribute(.foregroundColor, value: Theme.secondary, range: full)
-      if open.lowerBound >= byteStart, open.lowerBound < byteEnd { mark(open, Theme.marker) }
-      if let close, close.lowerBound >= byteStart, close.lowerBound < byteEnd { mark(close, Theme.marker) }
-      return theme.paragraphStyle(lineHeight: 1.35, indent: 0, spacingAfter: isLastLine ? theme.paragraphSpacing : 0)
+      if onLine(open) { mark(open, Theme.marker) }
+      if let close, onLine(close) { mark(close, Theme.marker) }
+      return codeLayout
     case .thematicBreak:
+      out.decor.kind = .rule
+      guard !folded else {
+        hide(byteStart..<byteEnd)
+        out.decor.fixedHeight = theme.ruleHeight
+        return Layout()
+      }
       s.addAttribute(.foregroundColor, value: Theme.marker, range: full)
-      paragraph.decoration = .rule
-      return theme.paragraphStyle(indent: indent, spacingBefore: theme.paragraphSpacing * 0.5, spacingAfter: theme.paragraphSpacing)
+      return Layout(before: theme.paragraphSpacing * 0.5, after: theme.paragraphSpacing)
     case .tableCell, .table, .tableRow:
       // The table block's rows are children; a line inside the table is styled as a whole row.
-      s.addAttribute(.font, value: theme.code(), range: full)
-      return theme.paragraphStyle(lineHeight: 1.35, indent: 0, spacingAfter: isLastLine ? theme.paragraphSpacing : 0)
+      codeFont()
+      return codeLayout
     default:
-      return theme.paragraphStyle(indent: indent, firstLineIndent: 0)
+      return Layout()
     }
   }
 
@@ -346,7 +420,7 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
     let r = nsRange(node.range)
     var bold = bold, italic = italic
     func applyFont() {
-      guard r.length > 0, (bold || italic) else { return }
+      guard r.length > 0, bold || italic else { return }
       let size = (base ?? theme.body()).pointSize
       s.addAttribute(.font, value: theme.body(weight: bold ? .bold : .regular, size: size, italic: italic), range: r)
     }
@@ -354,13 +428,8 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
     case .emphasis: italic = true; applyFont()
     case .strong: bold = true; applyFont()
     case .code:
-      if r.length > 0 {
-        s.addAttribute(.font, value: theme.code(size: base?.pointSize), range: r)
-        s.addAttribute(.backgroundColor, value: Theme.codeBackground, range: r)
-      }
-    case .link, .image:
-      if r.length > 0 { s.addAttribute(.foregroundColor, value: Theme.link, range: r) }
-    case .autolink, .extendedAutolink:
+      if r.length > 0 { s.addAttributes([.font: theme.code(size: base?.pointSize), .inlineCode: true], range: r) }
+    case .link, .image, .autolink, .extendedAutolink:
       if r.length > 0 { s.addAttribute(.foregroundColor, value: Theme.link, range: r) }
     case .html:
       if r.length > 0 { s.addAttribute(.foregroundColor, value: Theme.secondary, range: r) }
@@ -419,14 +488,6 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
       out.append(contentsOf: imageSources(n.children))
     }
     return out
-  }
-}
-
-extension MarkdownParagraph {
-  convenience init(attributedString: NSAttributedString, overlay: Overlay?, decoration: Decoration) {
-    self.init(attributedString: attributedString)
-    self.overlay = overlay
-    self.decoration = decoration
   }
 }
 
