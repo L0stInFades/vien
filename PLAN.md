@@ -1157,6 +1157,13 @@ M3 “功能完整 RC”在此结束。
 | `Vien` 应用 | NSDocument（自动保存 / 版本 / 恢复 / 外部修改）、TextKit 2 源码即真相编辑器、侧栏（文件 / 目录 / 全文搜索）、设置窗口、HTML / PDF 导出、Pandoc 导入导出、快速打开、原生标签页 | `VIEN_SNAPSHOT` 截图、`--export` 无头导出 |
 | 性能（release，2020 Intel MacBook） | 启动到可编辑窗口 0.35 s（1 KB）/ 0.96 s（15 MB）；常驻内存 49 MB / 259 MB；按键 2 ms（0.6 MB）/ 4 ms（15 MB），读完整篇后不变 | `VIEN_QUIT_WHEN_READY`、`VIEN_SCRIPT` 基准（README 表） |
 
+2026-09-06 补齐（按"必须做 / 应该做 / 可放弃"三档）：代码块语法高亮（`VienCode`，45 种语言，编辑器 / HTML 导出 / 打印共用）、
+表格编辑命令（Table 子菜单与右键菜单，模型读自原始行，`\|`、多余单元格、列表 / 引用前缀均保留）、标记折叠（非编辑段落隐藏标记，
+链接显示文字，图片原位显示，表格折叠为原生网格，点击单元格定位光标）、七套配色（System / Paper / Graphite / Solarized ×2 / Nord / One Dark）、
+Mermaid 新增 ER / gantt / timeline / journey / quadrant / xychart / gitGraph / mindmap、代码绘制的应用图标、
+签名 + 公证 + 打包脚本与 `native-v*` tag 发布工作流、纯 Apple 框架的应用内更新（校验 SHA-256 与签名 Team ID 后原位替换并重启）。
+放弃：图片上传 / Unsplash / 截图工具与非 Mermaid 图表库。两轮子代理审计（表格数据损坏、Tab 导航、高亮边界、打印回归）已修复。
+
 发现并规避的平台陷阱：TextKit 2 会缓存创建过的每个段落元素，且每次按键都改写光标之后所有元素的区间——
 通读长文档后按键会线性变慢（纯 `NSTextView` 翻完 15 MB 后每键 440 ms）。原生实现从不在视口之外枚举元素，
 并在滚动创建约两千个元素后用整篇属性失效丢弃缓存（锚定视口不动），按键延迟与阅读量无关。

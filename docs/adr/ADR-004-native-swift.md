@@ -25,6 +25,14 @@ Rebuild the application as a pure Swift macOS app under `native/`, with these co
    conflicts), window tabs, sidebar split view, settings window, system find bar and spell checking,
    Dark Mode, Help-menu command search.
 
+5. **WYSIWYG by folding, not by rewriting.** The editor stays a styled-source editor; markup
+   outside the paragraph being edited is hidden with a hairline transparent font and tables and
+   images are drawn by custom layout fragments. The text is never transformed, so undo, find,
+   selection and the file on disk all see the same characters.
+6. **Distribution without third parties.** Updates use GitHub Releases plus a checksum and a
+   code-signature/Team ID check implemented with CryptoKit and the Security framework; no Sparkle,
+   no update server.
+
 ## Consequences
 
 - Start-up, memory and per-keystroke cost are bounded by AppKit and the incremental parser, not by a
