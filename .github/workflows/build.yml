@@ -20,8 +20,8 @@ jobs:
         run: |
           Scripts/swift.sh build -c release --product vien-tool
           .build/release/vien-tool perf diagrams math
-      - name: App bundle
-        run: Scripts/bundle.sh release
+      - name: App bundle (arm64 + x86_64)
+        run: UNIVERSAL=1 Scripts/bundle.sh release
       - name: Headless export smoke
         run: |
           dist/Vien.app/Contents/MacOS/Vien --export html README.md /tmp/readme.html

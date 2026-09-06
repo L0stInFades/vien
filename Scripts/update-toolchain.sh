@@ -2,8 +2,7 @@
 # Installs the newest Swift release toolchain from swift.org into ~/Library/Developer/Toolchains
 # (no administrator rights needed) and points `swift-latest` at it. Re-run any time to roll forward.
 set -eu
-page="$(curl -sSL https://www.swift.org/install/macos/)"
-version="$(printf '%s' "$page" | grep -o 'swift-[0-9][0-9.]*-RELEASE-osx\.pkg' | head -1 | sed -E 's/swift-([0-9.]+)-RELEASE-osx\.pkg/\1/')"
+version="$(curl -sSL https://www.swift.org/api/v1/install/releases.json | /usr/bin/python3 -c 'import json, sys; print(json.load(sys.stdin)[-1]["name"])')"
 [ -n "$version" ] || { echo "could not find the latest release on swift.org" >&2; exit 1; }
 dir="$HOME/Library/Developer/Toolchains"
 if [ -d "$dir/swift-$version-RELEASE.xctoolchain" ]; then echo "Swift $version is already installed"; exit 0; fi

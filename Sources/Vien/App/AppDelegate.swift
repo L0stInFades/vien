@@ -74,9 +74,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
   }
 
   func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool {
-    // Reopen the last workspace's window instead of a blank sheet when a folder is remembered? No —
-    // an empty document is the calmer start; the sidebar still shows the last folder.
-    true
+    // An empty document is the calmer start; the sidebar still shows the last folder. Not when a
+    // file was named on the command line (it opens a moment later) or the run is headless.
+    let env = ProcessInfo.processInfo.environment
+    let named = CommandLine.arguments.dropFirst().contains { !$0.hasPrefix("-") && FileManager.default.fileExists(atPath: $0) }
+    return !named && env["VIEN_SCRIPT"] == nil && env["VIEN_SNAPSHOT"] == nil && env["VIEN_QUIT_WHEN_READY"] == nil && exportRequest() == nil
   }
 
   func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }

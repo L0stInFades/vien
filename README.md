@@ -114,18 +114,20 @@ swift.org is the supported one).
 ```sh
 Scripts/update-toolchain.sh        # installs the newest release toolchain into ~/Library (no admin)
 Scripts/run.sh path/to/file.md     # debug build + launch
-Scripts/bundle.sh                  # release build → dist/Vien.app (ad-hoc signed)
+Scripts/bundle.sh                  # release build → dist/Vien.app (ad-hoc signed); UNIVERSAL=1 for arm64 + x86_64
 Scripts/swift.sh test              # swift-testing suites (spec conformance, corpus, incremental, diagrams, math)
 Scripts/swift.sh run vien-tool     # perf numbers + PNG renders in /tmp/vien-diagrams and /tmp/vien-math
 Scripts/make-icon.sh               # redraws Resources/AppIcon.icns from Scripts/make-icon.swift
 Scripts/release.sh 1.2.0           # signed + notarized zip/DMG + appcast.json (see the script header)
 ```
 
-Releases: push a `native-v1.2.0` tag and `.github/workflows/release.yml` signs, notarizes and
-publishes `Vien-1.2.0.zip`, `Vien-1.2.0.dmg` and `appcast.json` with the repository's secrets
-(`MACOS_CERTIFICATE_P12`, `MACOS_CERTIFICATE_PASSWORD`, `SIGN_IDENTITY`, `APPLE_ID`,
-`APPLE_TEAM_ID`, `APPLE_APP_PASSWORD`). The in-app updater reads the newest such release; the
-`native-` prefix keeps it clear of the archived app's `v0.x` releases.
+Releases: push a `native-v1.2.0` tag and `.github/workflows/release.yml` builds a universal
+binary (Apple silicon and Intel) and publishes `Vien-1.2.0.zip`, `Vien-1.2.0.dmg` and
+`appcast.json`. With the repository's secrets (`MACOS_CERTIFICATE_P12`,
+`MACOS_CERTIFICATE_PASSWORD`, `SIGN_IDENTITY`, `APPLE_ID`, `APPLE_TEAM_ID`, `APPLE_APP_PASSWORD`)
+it also signs and notarizes; without them the build is ad-hoc signed and the release notes say so.
+The in-app updater reads the newest such release; the `native-` prefix keeps it clear of the
+archived app's `v0.x` releases.
 
 Headless helpers used by scripts and CI:
 
@@ -142,7 +144,8 @@ VIEN_SCRIPT="type:- a§enter§type:b§dump§quit" Vien file.md   # drives the ed
 # type: inserts text outside an event, so it does not close the undo group or mark the document
 # edited; use key: for a real key event. quit clears change counts, so scripted edits are discarded.
 # time prints how long the previous step took; after pagedown it also splits layout (and the
-# styling inside it) from drawing. NSUserDefaults arguments work: Vien -sourceMode 0 file.md.
+# styling inside it) from drawing. NSUserDefaults arguments work: Vien -sourceMode 0 file.md;
+# add -ApplePersistenceIgnoreState YES so a scripted run does not also restore last session's windows.
 ```
 
 ## Conformance And Performance
