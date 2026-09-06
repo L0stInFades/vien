@@ -19,7 +19,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
       Task { await Headless.export(out); NSApp.terminate(nil) }
       return
     }
-    NSApp.activate()
+    // Scripted runs (screenshots, benchmarks, automation) must not steal the keyboard from whoever
+    // is using the Mac: a stray keystroke would land in the document.
+    let scripted = env["VIEN_SCRIPT"] != nil || env["VIEN_SNAPSHOT"] != nil || env["VIEN_QUIT_WHEN_READY"] != nil
+    if !scripted { NSApp.activate() }
     // Paths given on the command line (`swift run Vien file.md`).
     let paths = CommandLine.arguments.dropFirst().filter { !$0.hasPrefix("-") && FileManager.default.fileExists(atPath: $0) }
     if !paths.isEmpty { application(NSApp, open: paths.map { URL(fileURLWithPath: $0) }) }
@@ -212,6 +215,7 @@ enum Automation {
         if arg == "install" { await Updater.shared.checkAndInstall() } else { await Updater.shared.check(userInitiated: true) }
       case "key":
         // A real key event through the application's event loop (undo grouping, key bindings).
+        NSApp.activate()
         if let window = tv.window, let down = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil, characters: arg, charactersIgnoringModifiers: arg, isARepeat: false, keyCode: 0) {
           NSApp.postEvent(down, atStart: false)
         }
@@ -248,7 +252,11 @@ enum Automation {
       case "time": print(String(format: "time: %.2f ms", Date().timeIntervalSince(t0) * 1000))
       case "dump": print("--- text ---\n" + tv.string + "--- end ---")
       case "selection": print("selection: \(tv.selectedRange())")
-      case "quit": NSApp.terminate(nil); return
+      case "quit":
+        // Scripted edits stay in memory: never autosave them over the file that was opened.
+        for document in NSDocumentController.shared.documents { document.updateChangeCount(.changeCleared) }
+        NSApp.terminate(nil)
+        return
       default: print("unknown step \(name)")
       }
       if name == "type" || name == "enter" { print(String(format: "%@: %.2f ms", name, Date().timeIntervalSince(t0) * 1000)) }
