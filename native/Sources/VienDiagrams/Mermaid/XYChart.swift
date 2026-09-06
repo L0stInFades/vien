@@ -108,13 +108,17 @@ struct XYChartRenderer {
     canvas.line(CGPoint(x: left, y: bottom), CGPoint(x: left + plotWidth, y: bottom), stroke: Stroke(color: theme.edge, width: 1))
     let n = max(1, count)
     let slot = plotWidth / Double(n)
-    // Category labels (or numeric range labels).
-    for i in 0..<n {
-      let label: String
-      if i < diagram.categories.count { label = diagram.categories[i] }
-      else if let r = diagram.xRange { label = ChartSupport.format(r.0 + (r.1 - r.0) * Double(i) / Double(max(1, n - 1))) }
-      else { label = String(i + 1) }
-      canvas.text(label, at: CGPoint(x: left + Double(i) * slot, y: bottom + 5), width: slot, align: .center, style: tickStyle)
+    // Category labels (or numeric range labels), thinned so neighbours never touch.
+    func label(_ i: Int) -> String {
+      if i < diagram.categories.count { return diagram.categories[i] }
+      if let r = diagram.xRange { return ChartSupport.format(r.0 + (r.1 - r.0) * Double(i) / Double(max(1, n - 1))) }
+      return String(i + 1)
+    }
+    let widest = ((0..<n).prefix(12).map { TextMetrics.measure(label($0), style: tickStyle).width }.max() ?? 20) + 8
+    let every = max(1, Int((widest / max(1, slot)).rounded(.up)))
+    for i in stride(from: 0, to: n, by: every) {
+      let w = max(slot, widest)
+      canvas.text(label(i), at: CGPoint(x: left + Double(i) * slot + slot / 2 - w / 2, y: bottom + 5), width: w, align: .center, style: tickStyle)
     }
     if let xt = diagram.xTitle { canvas.text(xt, at: CGPoint(x: left, y: bottom + 22), width: plotWidth, align: .center, style: theme.style(theme.fontSize - 2, color: theme.secondaryText)) }
     if let yt = diagram.yTitle { canvas.text(yt, at: CGPoint(x: margin - 4, y: top - 16), width: yLabelWidth + 30, align: .left, style: theme.style(theme.fontSize - 2, color: theme.secondaryText)) }
