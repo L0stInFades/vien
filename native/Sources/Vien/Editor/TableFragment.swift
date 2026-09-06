@@ -21,8 +21,8 @@ nonisolated struct TableGrid: @unchecked Sendable {
 
   let palette: Palette
 
-  static let padX: CGFloat = 10
-  static let padY: CGFloat = 6
+  static let padX: CGFloat = 12
+  static let padY: CGFloat = 8
   static let minColumn: CGFloat = 64
 
   init?(table: Block, width: CGFloat, palette: Palette, attributed: (Block, Bool) -> NSAttributedString) {

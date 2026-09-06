@@ -220,7 +220,8 @@ enum Automation {
         }
       case "recycle": wc.editor.recycleElements()
       case "fullscreen": wc.window?.toggleFullScreen(nil)
-      case "sidebar": wc.showSidebar(arg == "files" ? .files : arg == "search" ? .search : .outline, animated: false)
+      case "sidebar":
+        if arg == "hide" { wc.hideSidebar() } else { wc.showSidebar(arg == "files" ? .files : arg == "search" ? .search : .outline, animated: false) }
       case "theme": Preferences.shared.theme = arg
       case "update":
         if arg == "install" { await Updater.shared.checkAndInstall() } else { await Updater.shared.check(userInitiated: true) }

@@ -113,6 +113,10 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
     sidebar.show(pane)
   }
 
+  func hideSidebar() {
+    split.splitViewItems.first?.isCollapsed = true
+  }
+
   @IBAction func toggleOutline(_ sender: Any?) {
     if let side = split.splitViewItems.first, !side.isCollapsed, sidebar.pane == .outline {
       side.animator().isCollapsed = true

@@ -5,6 +5,9 @@ import VienMarkdown
 extension NSAttributedString.Key {
   /// Marks an inline code span; its fragment draws a rounded box beneath it.
   nonisolated static let inlineCode = NSAttributedString.Key("vien.inlineCode")
+  /// Marks the line ending of a hard break (two trailing spaces or a backslash), which the
+  /// fragment shows as a small arrow: the spaces themselves are invisible.
+  nonisolated static let hardBreak = NSAttributedString.Key("vien.hardBreak")
 }
 
 /// What a paragraph's fragment draws besides its text, decided by the styler line by line.
@@ -131,6 +134,12 @@ nonisolated class MarkdownFragment: NSTextLayoutFragment {
     drawInlineCode(at: point, in: ctx)
     super.draw(at: point, in: ctx)
     if let bullet = decor.bullet { drawBullet(bullet, at: point, in: ctx) }
+    if let text, text.length > 0, text.attribute(.hardBreak, at: text.length - 1, effectiveRange: nil) != nil, let line = textLineFragments.last,
+      let font = text.attribute(.font, at: max(0, text.length - 2), effectiveRange: nil) as? NSFont
+    {
+      let arrow = CTLineCreateWithAttributedString(NSAttributedString(string: "↓", attributes: [.font: NSFont.systemFont(ofSize: font.pointSize * 0.8), .foregroundColor: palette.marker]))
+      Self.drawLine(arrow, at: CGPoint(x: point.x + line.typographicBounds.maxX + 6, y: point.y + line.typographicBounds.minY + line.glyphOrigin.y), in: ctx)
+    }
   }
 
   /// Rounded boxes under inline code spans, sized from the span's own font.

@@ -449,6 +449,8 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
       }
     case .superscript, .subscript:
       if r.length > 0 { s.addAttribute(.foregroundColor, value: Theme.secondary, range: r) }
+    case .hardBreak:
+      if r.length > 0, !sourceMode { s.addAttribute(.hardBreak, value: true, range: r) }
     default: break
     }
     if !sourceMode {
