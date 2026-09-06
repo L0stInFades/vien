@@ -58,6 +58,12 @@ round it out. The Electron sources in the repository root are untouched referenc
   verifies the download's SHA-256 and code signature (same Team ID as the running app, failing
   closed), swaps the bundle and relaunches. On a read-only volume it leaves the new version in
   Downloads instead.
+* **About Vien is written by hand.** The panel is a blank page on which a pointed pen writes the
+  wordmark: the pen's route and the width at every point were traced from the medial axis of the
+  icon's letters (Snell Roundhand Black), so what appears is the icon, stroke by stroke, with wet
+  ink that dries to the label colour. Drag on the page to write with the same pen, click the word to
+  have it written again (never quite the same hand twice), hold ⌥ for the build, ⌘C copies it,
+  Escape clears your ink. Dry ink is baked into a bitmap, so a frame costs well under a millisecond.
 * **macOS does the rest.** `NSDocument` provides autosave, versions, crash recovery, rename/move from
   the title bar and external-change detection; `NSWindow` tabbing, the system find bar, spell checking,
   Quick Look-style Open Recent, Dark Mode and the Help menu's command search come for free. The
@@ -95,7 +101,7 @@ VIEN_SCRIPT="type:- a§enter§type:b§dump§quit" Vien file.md   # drives the ed
 # steps: type: enter tab backtab backspace key:c select:a,b goto:phrase top:phrase end bold heading:n
 #        bullets quote undo wait:ms pagedown:n action:selector: clicktable:r,c inserttable:r,c
 #        theme:name update:check|install recycle snap:path snapkey:path window:w,h stats undoinfo
-#        sidebar:files|outline|search|hide fullscreen
+#        sidebar:files|outline|search|hide fullscreen doodle (a pen stroke across the About window)
 #        dump selection time quit
 # type: inserts text outside an event, so it does not close the undo group or mark the document
 # edited; use key: for a real key event. quit clears change counts, so scripted edits are discarded.

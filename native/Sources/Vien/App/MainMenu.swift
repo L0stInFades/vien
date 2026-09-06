@@ -61,7 +61,7 @@ enum MainMenu {
   private static func app() -> NSMenuItem {
     let name = "Vien"
     return submenu(name, [
-      item("About \(name)", #selector(NSApplication.orderFrontStandardAboutPanel(_:))),
+      item("About \(name)", #selector(AppDelegate.showAbout(_:))),
       item("Check for Updates…", #selector(AppDelegate.checkForUpdates(_:))),
       .separator(),
       item("Settings…", #selector(AppDelegate.showSettings(_:)), ","),

@@ -5,6 +5,7 @@ import VienMarkdown
 final class AppDelegate: NSObject, NSApplicationDelegate {
   weak var activeWindow: DocumentWindowController?
   private var settingsWindow: NSWindowController?
+  private var aboutWindow: AboutWindowController?
   private var quickOpen: QuickOpenPanel?
 
   func applicationWillFinishLaunching(_ notification: Notification) {
@@ -139,6 +140,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     settingsWindow?.window?.makeKeyAndOrderFront(nil)
   }
 
+  @IBAction func showAbout(_ sender: Any?) {
+    if aboutWindow == nil { aboutWindow = AboutWindowController() }
+    aboutWindow?.showWindow(nil)
+    aboutWindow?.window?.makeKeyAndOrderFront(nil)
+  }
+
   var settingsPanel: NSWindow? { settingsWindow?.window }
 
   // MARK: - Help
@@ -237,8 +244,19 @@ enum Automation {
         if n.count == 2 { wc.editor.insertTable(rows: n[0], columns: n[1]) }
       case "action":
         let selector = NSSelectorFromString(arg)
-        if let target = ([wc.editor, tv, wc] as [NSObject]).first(where: { $0.responds(to: selector) }) { _ = target.perform(selector, with: nil) } else { print("unknown action \(arg)") }
+        if let target = ([wc.editor, tv, wc, NSApp.delegate as? NSObject].compactMap { $0 }).first(where: { $0.responds(to: selector) }) { _ = target.perform(selector, with: nil) } else { print("unknown action \(arg)") }
       case "snap": Snapshot.write(window: wc.window!, to: arg)
+      case "doodle":
+        // Drags the reader's pen across the About window in a short wave.
+        if let about = NSApp.windows.first(where: { $0.title == "About Vien" }), let view = about.contentView {
+          func event(_ type: NSEvent.EventType, _ p: CGPoint) -> NSEvent {
+            NSEvent.mouseEvent(with: type, location: p, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: about.windowNumber, context: nil, eventNumber: 0, clickCount: 1, pressure: 1)!
+          }
+          let points = (0...30).map { i -> CGPoint in let t = CGFloat(i) / 30; return CGPoint(x: 70 + t * 300, y: 120 + sin(t * .pi * 2) * 30 - t * 30) }
+          view.mouseDown(with: event(.leftMouseDown, points[0]))
+          for p in points.dropFirst() { view.mouseDragged(with: event(.leftMouseDragged, p)); try? await Task.sleep(for: .milliseconds(12)) }
+          view.mouseUp(with: event(.leftMouseUp, points[points.count - 1]))
+        }
       case "top":
         // Scroll so the phrase sits 60pt below the top edge (diagrams render beneath their fence).
         // The caret stays put, so the block keeps its folded look.
