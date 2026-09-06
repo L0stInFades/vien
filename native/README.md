@@ -109,7 +109,7 @@ VIEN_SCRIPT="type:- a§enter§type:b§dump§quit" Vien file.md   # drives the ed
 | HTML render | ~150 ms / MB |
 | App bundle | 3.6 MB (with icon) |
 | Launch to editable window | 0.35 s (1 KB file) · 0.42 s (0.6 MB) · 0.57 s (5.3 MB) · 0.96 s (15 MB) |
-| 100 fresh launches in a row | 1 KB: first ten 475 ms → last ten 368 ms · 0.6 MB: 511 → 454 ms · 15 MB: 1049 → 1049 ms; trend −1.1 / −0.3 / +0.4 ms per launch, resident memory flat (47.5 / 62.6 / 259 MB) |
+| 100 fresh launches in a row, no decay | 1 KB: first ten 353 ms → last ten 347 ms · 0.6 MB: 494 → 480 ms · 15 MB: 1072 → 1064 ms; least-squares trend +0.01 / −0.09 / −0.07 ms per launch, resident memory flat (48 / 71 / 267 MB) |
 | Resident memory after opening | 50 MB (1 KB) · 62 MB (0.6 MB) · 125 MB (5.3 MB) · 259 MB (15 MB) |
 | Mermaid render | 5–20 ms per diagram · TeX formula < 2 ms |
 
