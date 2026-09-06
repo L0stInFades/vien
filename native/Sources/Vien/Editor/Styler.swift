@@ -8,7 +8,7 @@ nonisolated final class MarkdownParagraph: NSTextParagraph {
   var overlay: Overlay?
   var decoration: Decoration = .none
 
-  enum Decoration { case none, rule, codeBlock(first: Bool, last: Bool), quote, table(Block), hiddenLine }
+  enum Decoration { case none, rule, codeBlock(first: Bool, last: Bool), quote, table(Block, indent: CGFloat, quoted: Bool), hiddenLine }
 }
 
 /// Produces styled paragraphs on demand for the text view (TextKit 2 asks for them lazily as it lays
@@ -81,9 +81,9 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
   func textLayoutManager(_ textLayoutManager: NSTextLayoutManager, textLayoutFragmentFor location: any NSTextLocation, in textElement: NSTextElement) -> NSTextLayoutFragment {
     if let p = textElement as? MarkdownParagraph {
       switch p.decoration {
-      case .table(let block):
+      case .table(let block, let indent, let quoted):
         // The fragment asks for the grid at the container's current width (cached per width).
-        return TableFragment(textElement: p, range: p.elementRange, table: block, width: contentWidth, bottomPadding: theme.paragraphSpacing) { [weak self] table, width in
+        return TableFragment(textElement: p, range: p.elementRange, table: block, width: contentWidth - indent, indent: indent, quoted: quoted, palette: theme.palette, bottomPadding: theme.paragraphSpacing) { [weak self] table, width in
           self?.grid(for: table, width: width)
         }
       case .hiddenLine: return HiddenLineFragment(textElement: p, range: p.elementRange)
@@ -205,10 +205,17 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
       }
     }
     if hide != nil, let table = path.first(where: { if case .table = $0.kind { return true }; return false }) {
-      // A folded table: every row's text is hidden; the first row's fragment draws the grid.
+      // A folded table: every row's text is hidden; the first row's fragment draws the grid under
+      // the same indent as the surrounding text (list marker, quote prefix).
       hideText(byteStart..<byteEnd)
       let first = table.range.lowerBound >= byteStart && table.range.lowerBound < byteEnd
-      paragraph.decoration = first ? .table(table) : .hiddenLine
+      var tableIndent: CGFloat = 0
+      if first, table.range.lowerBound > byteStart {
+        let prefix = String(decoding: doc.bytes[byteStart..<table.range.lowerBound], as: UTF8.self)
+        tableIndent = prefixWidth(NSAttributedString(string: prefix, attributes: [.font: theme.body()]))
+      }
+      let quoted = path.contains { if case .blockQuote = $0.kind { return true }; return false }
+      paragraph.decoration = first ? .table(table, indent: tableIndent, quoted: quoted) : .hiddenLine
       s.addAttribute(.paragraphStyle, value: theme.paragraphStyle(lineHeight: 1, indent: 0), range: full)
       return
     }
@@ -230,6 +237,12 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
     var style = theme.paragraphStyle(indent: indent, firstLineIndent: 0)
     if let leaf { style = leafStyle(leaf, s: s, full: full, byteStart: byteStart, byteEnd: byteEnd, indent: indent, paragraph: paragraph, nsRange: nsRange, mark: mark, hide: hide) }
     s.addAttribute(.paragraphStyle, value: style, range: full)
+    if !sourceMode, let row = path.first(where: { if case .tableRow = $0.kind { return true }; return false }) {
+      // A table row being edited: links, code and markers get their colours; the font stays
+      // monospaced so the pipes line up.
+      for cell in row.children { styleInlines(inlines(of: cell), s: s, nsRange: nsRange, mark: mark, hide: nil, base: theme.code()) }
+      s.addAttribute(.font, value: theme.code(), range: full)
+    }
 
     if focusMode, !inFocus {
       s.addAttribute(.foregroundColor, value: Theme.marker, range: full)

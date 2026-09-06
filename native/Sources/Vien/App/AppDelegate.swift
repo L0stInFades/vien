@@ -248,7 +248,7 @@ enum Automation {
       case "window":
         let n = arg.split(separator: ",").compactMap { Double($0) }
         if n.count == 2, let w = wc.window { w.setFrame(NSRect(x: w.frame.minX, y: max(0, w.frame.maxY - n[1]), width: n[0], height: n[1]), display: true) }
-      case "stats": print("elements: \(wc.editor.elementsCreated) · scroll y: \(Int(tv.visibleRect.minY)) · selection: \(tv.selectedRange())")
+      case "stats": print("elements: \(wc.editor.elementsCreated) · scroll y: \(Int(tv.visibleRect.minY)) · selection: \(tv.selectedRange()) · window: \(Int(wc.window?.frame.width ?? 0))x\(Int(wc.window?.frame.height ?? 0))")
       case "time": print(String(format: "time: %.2f ms", Date().timeIntervalSince(t0) * 1000))
       case "dump": print("--- text ---\n" + tv.string + "--- end ---")
       case "selection": print("selection: \(tv.selectedRange())")

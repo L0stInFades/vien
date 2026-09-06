@@ -209,6 +209,8 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
     textView.insertionPointColor = palette.accent
     scrollView.backgroundColor = palette.background
     view.window?.appearance = palette.appearance
+    // A fixed palette themes every window (Settings, Quick Open) so nothing stays light beside a dark editor.
+    if palette.appearance != nil || ProcessInfo.processInfo.environment["VIEN_SNAPSHOT_DARK"] == nil { NSApp.appearance = palette.appearance }
     textView.contentWidth = CGFloat(Preferences.shared.contentWidth) * zoom
     textView.typingAttributes = [.font: styler.theme.body(), .foregroundColor: palette.text]
     OverlayStore.shared.clear()
@@ -314,6 +316,7 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
       switch leaf.kind {
       case .fencedCode, .indentedCode, .htmlBlock, .mathBlock, .frontMatter, .linkReferenceDefinition, .table: return false
       case .paragraph, .heading, .tableCell:
+        if case .paragraph = leaf.kind, Styler.isImagesOnly(doc.inlines(of: leaf)) { return false }  // hidden when folded
         // Inline code and math spans.
         func inSpan(_ nodes: [Inline]) -> Bool {
           for n in nodes where n.range.contains(b) {

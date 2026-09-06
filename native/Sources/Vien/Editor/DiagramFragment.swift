@@ -90,7 +90,7 @@ final class OverlayStore {
         _ = first
         entry = Entry(image: composite, size: composite.size, error: nil)
       } else {
-        entry.error = "image not found"
+        entry.error = "image not found: " + urls.map { $0.lastPathComponent }.joined(separator: ", ")
       }
     }
     entries[key] = entry

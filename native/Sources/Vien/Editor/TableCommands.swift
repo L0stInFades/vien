@@ -120,7 +120,7 @@ struct TableModel: Equatable {
   // MARK: Source
 
   /// The formatted table and, for each row, the UTF-16 offset of each cell's content within it.
-  func render() -> (text: String, cellOffsets: [[Int]]) {
+  func render(lineBreak: String = "\n") -> (text: String, cellOffsets: [[Int]]) {
     var widths = [Int](repeating: 3, count: columns)
     for r in rows { for (i, c) in r.prefix(columns).enumerated() { widths[i] = max(widths[i], Self.displayWidth(c)) } }
     var lines: [String] = []
@@ -145,7 +145,7 @@ struct TableModel: Equatable {
       }
       lines.append(line)
       offsets.append(starts)
-      position += line.utf16.count + 1
+      position += line.utf16.count + lineBreak.utf16.count
       if r == 0 {
         let delimiter = continuationPrefix + "|" + (0..<columns).map { i -> String in
           let w = widths[i]
@@ -157,10 +157,10 @@ struct TableModel: Equatable {
           }
         }.joined()
         lines.append(delimiter)
-        position += delimiter.utf16.count + 1
+        position += delimiter.utf16.count + lineBreak.utf16.count
       }
     }
-    return (lines.joined(separator: "\n"), offsets)
+    return (lines.joined(separator: lineBreak), offsets)
   }
 
   /// Columns a cell takes in a monospaced grid: East Asian wide characters and emoji count two,
@@ -236,7 +236,7 @@ extension EditorViewController {
     let start = first.range.location
     var end = NSMaxRange(last.range)
     if end > start, ns.character(at: end - 1) == 0x0A { end -= 1 }
-    let (text, offsets) = context.model.render()
+    let (text, offsets) = context.model.render(lineBreak: document.lineEnding.rawValue)
     if text == ns.substring(with: NSRange(location: start, length: end - start)) { return }
     textView.breakUndoCoalescing()
     textView.insertText(text, replacementRange: NSRange(location: start, length: end - start))
@@ -322,7 +322,7 @@ extension EditorViewController {
 
   func insertTable(rows: Int, columns: Int) {
     let model = TableModel(rows: rows, columns: columns)
-    let (text, offsets) = model.render()
+    let (text, offsets) = model.render(lineBreak: document.lineEnding.rawValue)
     insertBlockText(text)
     let start = textView.selectedRange().location - text.utf16.count
     textView.setSelectedRange(NSRange(location: start + (offsets.first?.first ?? 0), length: 0))

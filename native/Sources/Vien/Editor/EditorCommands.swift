@@ -231,7 +231,8 @@ extension EditorViewController {
     var body = ns.substring(with: lines)
     if body.hasSuffix("\n") { body.removeLast() }
     let needsLeadingNewline = lines.location > 0 && !body.isEmpty && false
-    let text = (needsLeadingNewline ? "\n" : "") + open + "\n" + body + (body.isEmpty ? "" : "\n") + close + "\n"
+    let nl = document.lineEnding.rawValue
+    let text = (needsLeadingNewline ? nl : "") + open + nl + body + (body.isEmpty ? "" : nl) + close + "\n"
     textView.insertText(text, replacementRange: lines)
     // Put the caret on the first content line.
     textView.setSelectedRange(NSRange(location: lines.location + open.utf16.count + 1, length: body.utf16.count))
@@ -258,12 +259,13 @@ extension EditorViewController {
     }
     let line = ns.lineRange(for: NSRange(location: sel.location, length: 0))
     let current = textView.lineText(line)
-    var insertion = text + "\n"
+    let nl = document.lineEnding.rawValue
+    var insertion = text + nl
     var at = line.location
     if !current.isEmpty {
       // Insert after the current line.
       at = NSMaxRange(line)
-      if at == ns.length, !ns.hasSuffix("\n") { insertion = "\n\n" + text + "\n" } else { insertion = "\n" + text + "\n" }
+      if at == ns.length, !ns.hasSuffix("\n") { insertion = nl + nl + text + nl } else { insertion = nl + text + nl }
     }
     textView.insertText(insertion, replacementRange: NSRange(location: at, length: 0))
     textView.setSelectedRange(NSRange(location: at + insertion.utf16.count - 1, length: 0))
@@ -273,7 +275,7 @@ extension EditorViewController {
 
   @IBAction func duplicateParagraph(_ sender: Any?) {
     guard let (range, text) = currentBlockText() else { return }
-    let insertion = "\n\n" + text
+    let insertion = document.lineEnding.rawValue + document.lineEnding.rawValue + text
     textView.insertText(insertion, replacementRange: NSRange(location: NSMaxRange(range), length: 0))
     textView.setSelectedRange(NSRange(location: NSMaxRange(range) + 2, length: text.utf16.count))
   }
@@ -289,10 +291,10 @@ extension EditorViewController {
 
   @IBAction func createParagraph(_ sender: Any?) {
     guard let (range, _) = currentBlockText() else {
-      textView.insertText("\n\n", replacementRange: textView.selectedRange())
+      textView.insertText(document.lineEnding.rawValue + document.lineEnding.rawValue, replacementRange: textView.selectedRange())
       return
     }
-    textView.insertText("\n\n", replacementRange: NSRange(location: NSMaxRange(range), length: 0))
+    textView.insertText(document.lineEnding.rawValue + document.lineEnding.rawValue, replacementRange: NSRange(location: NSMaxRange(range), length: 0))
     textView.setSelectedRange(NSRange(location: NSMaxRange(range) + 2, length: 0))
   }
 

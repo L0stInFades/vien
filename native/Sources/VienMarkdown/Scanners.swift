@@ -383,6 +383,7 @@ enum TableScanner {
   }
 
   private static func trim(_ b: [Byte], _ segments: [Range<Int>]) -> [Range<Int>] {
+    let original = segments
     var segs = segments
     while let first = segs.first {
       var s = first.lowerBound
@@ -397,6 +398,14 @@ enum TableScanner {
       if e == last.lowerBound { segs.removeLast(); continue }
       segs[segs.count - 1] = last.lowerBound..<e
       break
+    }
+    // An empty cell keeps a zero-length range where its content would start, so the caret can be
+    // put into it (between the pipes) rather than at the row start.
+    if segs.isEmpty, let first = original.first {
+      // After the single padding space, so typing there gives `| x |`.
+      var p = first.lowerBound
+      if p < first.upperBound, b[p].isSpaceOrTab { p += 1 }
+      return [p..<p]
     }
     return segs
   }

@@ -155,9 +155,12 @@ final class EditorTextView: NSTextView {
 
   // MARK: - Keyboard behaviour
 
+  /// The document's line ending, so a CRLF file stays CRLF as it is edited.
+  var lineBreak: String { document?.lineEnding.rawValue ?? "\n" }
+
   override func insertNewline(_ sender: Any?) {
     let sel = selectedRange()
-    guard sel.length == 0 else { super.insertNewline(sender); return }
+    guard sel.length == 0 else { insertText(lineBreak, replacementRange: sel); return }
     let line = lineRange(at: sel.location)
     let text = lineText(line)
     let caretInLine = sel.location - line.location
@@ -170,7 +173,7 @@ final class EditorTextView: NSTextView {
         insertText("", replacementRange: line.length > 0 ? NSRange(location: line.location, length: min(line.length, m.length)) : line)
         return
       }
-      insertText("\n" + m.next(), replacementRange: sel)
+      insertText(lineBreak + m.next(), replacementRange: sel)
       return
     }
     if let q = QuotePrefix.parse(before) {
@@ -178,7 +181,7 @@ final class EditorTextView: NSTextView {
         insertText("", replacementRange: NSRange(location: line.location, length: min(line.length, q.count)))
         return
       }
-      insertText("\n" + q, replacementRange: sel)
+      insertText(lineBreak + q, replacementRange: sel)
       return
     }
     // Inside a code block or after an opening bracket, keep the indentation.
@@ -188,15 +191,15 @@ final class EditorTextView: NSTextView {
     let pairClose = after.hasPrefix("}") || after.hasPrefix("]") || after.hasPrefix(")")
     if pairOpen && pairClose {
       let unit = String(repeating: " ", count: preferences.tabSize)
-      insertText("\n" + indent + unit + "\n" + indent, replacementRange: sel)
-      setSelectedRange(NSRange(location: sel.location + 1 + indent.utf16.count + unit.count, length: 0))
+      insertText(lineBreak + indent + unit + lineBreak + indent, replacementRange: sel)
+      setSelectedRange(NSRange(location: sel.location + lineBreak.utf16.count + indent.utf16.count + unit.count, length: 0))
       return
     }
     if !indent.isEmpty {
-      insertText("\n" + indent, replacementRange: sel)
+      insertText(lineBreak + indent, replacementRange: sel)
       return
     }
-    super.insertNewline(sender)
+    insertText(lineBreak, replacementRange: sel)
   }
 
   override func insertTab(_ sender: Any?) {

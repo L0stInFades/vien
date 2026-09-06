@@ -60,6 +60,8 @@ nonisolated struct TableGrid: @unchecked Sendable {
     }
     // Shrink proportionally to fit; columns that would fall below the minimum keep it and the
     // rest share what remains.
+    // Very wide tables shrink below the usual minimum rather than run off the page.
+    let minColumn = min(Self.minColumn, max(24, floor(width / Double(columns))))
     var widths = natural
     if natural.reduce(0, +) > width {
       var flexible = Set(natural.indices)
@@ -70,9 +72,9 @@ nonisolated struct TableGrid: @unchecked Sendable {
         let flexTotal = flexible.reduce(0) { $0 + natural[$1] }
         for i in flexible.sorted() {
           let w = floor(natural[i] * max(0, width - fixed) / max(1, flexTotal))
-          if w < Self.minColumn {
-            widths[i] = Self.minColumn
-            fixed += Self.minColumn
+          if w < minColumn {
+            widths[i] = minColumn
+            fixed += minColumn
             flexible.remove(i)
             changed = true
             break
@@ -162,12 +164,19 @@ nonisolated final class TableFragment: NSTextLayoutFragment {
   private let table: Block
   private let provider: (Block, CGFloat) -> TableGrid?
   private let initialWidth: CGFloat
+  /// Container indent (list marker, quote prefix) the grid sits under, and whether to draw a quote bar.
+  let indent: CGFloat
+  let quoted: Bool
+  let palette: Palette
   let bottomPadding: CGFloat
 
-  init(textElement: NSTextElement, range: NSTextRange?, table: Block, width: CGFloat, bottomPadding: CGFloat, provider: @escaping (Block, CGFloat) -> TableGrid?) {
+  init(textElement: NSTextElement, range: NSTextRange?, table: Block, width: CGFloat, indent: CGFloat, quoted: Bool, palette: Palette, bottomPadding: CGFloat, provider: @escaping (Block, CGFloat) -> TableGrid?) {
     self.table = table
     self.provider = provider
     self.initialWidth = width
+    self.indent = indent
+    self.quoted = quoted
+    self.palette = palette
     self.bottomPadding = bottomPadding
     super.init(textElement: textElement, range: range)
   }
@@ -175,13 +184,13 @@ nonisolated final class TableFragment: NSTextLayoutFragment {
   required init?(coder: NSCoder) { fatalError() }
 
   var grid: TableGrid? {
-    let width = (textLayoutManager?.textContainer?.size.width ?? initialWidth) - 4
+    let width = (textLayoutManager?.textContainer?.size.width ?? initialWidth) - indent - 4
     nonisolated(unsafe) let me = self
     return MainActor.assumeIsolated { me.provider(me.table, width) }
   }
 
   /// Where the grid sits, relative to the fragment's origin.
-  var gridOrigin: CGPoint { CGPoint(x: 0, y: super.layoutFragmentFrame.height) }
+  var gridOrigin: CGPoint { CGPoint(x: indent, y: super.layoutFragmentFrame.height) }
 
   override var layoutFragmentFrame: CGRect {
     var f = super.layoutFragmentFrame
@@ -198,7 +207,12 @@ nonisolated final class TableFragment: NSTextLayoutFragment {
 
   override func draw(at point: CGPoint, in ctx: CGContext) {
     super.draw(at: point, in: ctx)
-    grid?.draw(at: CGPoint(x: point.x + gridOrigin.x, y: point.y + gridOrigin.y), in: ctx)
+    guard let grid else { return }
+    if quoted {
+      ctx.setFillColor(palette.rule.cgColor)
+      ctx.fill(CGRect(x: point.x + indent - 10, y: point.y + gridOrigin.y, width: 3, height: grid.size.height))
+    }
+    grid.draw(at: CGPoint(x: point.x + gridOrigin.x, y: point.y + gridOrigin.y), in: ctx)
   }
 }
 

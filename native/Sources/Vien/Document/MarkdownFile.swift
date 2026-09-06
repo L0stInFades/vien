@@ -37,7 +37,11 @@ final class MarkdownFile: NSDocument {
   nonisolated override class var writableTypes: [String] { [markdownType, "public.plain-text"] }
   nonisolated override class func isNativeType(_ type: String) -> Bool { true }
   nonisolated override func writableTypes(for saveOperation: NSDocument.SaveOperationType) -> [String] { [Self.markdownType] }
-  nonisolated override func fileNameExtension(forType typeName: String, saveOperation: NSDocument.SaveOperationType) -> String? { "md" }
+  nonisolated override func fileNameExtension(forType typeName: String, saveOperation: NSDocument.SaveOperationType) -> String? {
+    // A .txt or .markdown file keeps its extension through Save As, Duplicate and Rename.
+    if let ext = fileURL?.pathExtension, !ext.isEmpty { return ext }
+    return "md"
+  }
 
   nonisolated override class var autosavesInPlace: Bool { true }
   nonisolated override class var usesUbiquitousStorage: Bool { false }
@@ -66,7 +70,7 @@ final class MarkdownFile: NSDocument {
     let p = Preferences.shared
     if p.trimTrailingWhitespaceOnSave { text = Self.trimTrailingWhitespace(text) }
     if p.ensureFinalNewline, !text.isEmpty, !text.hasSuffix("\n"), !text.hasSuffix("\r") { text += lineEnding.rawValue }
-    if text != storage.string { setText(text, keepingSelection: true) }
+    // The text view keeps what the user typed: the newline and trimming exist only in the file.
     guard let data = codec.encode(text) else {
       throw NSError(domain: NSCocoaErrorDomain, code: NSFileWriteInapplicableStringEncodingError, userInfo: [
         NSLocalizedDescriptionKey: "The document contains characters that cannot be saved in \(codecName)."

@@ -50,7 +50,12 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
     split.addSplitViewItem(side)
     split.addSplitViewItem(main)
     split.splitView.autosaveName = "VienSplit"
+    // Attaching the content resizes the window to the split view's fitting size; put the saved
+    // (or default 1040×760) frame back.
+    let initial = window?.frame
+    split.view.frame = NSRect(origin: .zero, size: initial?.size ?? NSSize(width: 1040, height: 760))
     contentViewController = split
+    if window?.setFrameUsingName(windowFrameAutosaveName) != true, let initial { window?.setFrame(initial, display: false) }
 
     let toolbar = NSToolbar(identifier: "app.vien.document.toolbar")
     toolbar.delegate = self
