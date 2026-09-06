@@ -245,6 +245,7 @@ enum Automation {
       case "action":
         let selector = NSSelectorFromString(arg)
         if let target = ([wc.editor, tv, wc, NSApp.delegate as? NSObject].compactMap { $0 }).first(where: { $0.responds(to: selector) }) { _ = target.perform(selector, with: nil) } else { print("unknown action \(arg)") }
+      case "activate": NSApp.activate()  // for screenshots that should show an active window
       case "snap": Snapshot.write(window: wc.window!, to: arg)
       case "doodle":
         // Drags the reader's pen across the About window in a short wave.

@@ -102,6 +102,7 @@ VIEN_SCRIPT="type:- a§enter§type:b§dump§quit" Vien file.md   # drives the ed
 #        bullets quote undo wait:ms pagedown:n action:selector: clicktable:r,c inserttable:r,c
 #        theme:name update:check|install recycle snap:path snapkey:path window:w,h stats undoinfo
 #        sidebar:files|outline|search|hide fullscreen doodle (a pen stroke across the About window)
+#        activate (bring the app to the front, for screenshots of an active window)
 #        dump selection time quit
 # type: inserts text outside an event, so it does not close the undo group or mark the document
 # edited; use key: for a real key event. quit clears change counts, so scripted edits are discarded.
