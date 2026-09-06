@@ -108,7 +108,11 @@ public enum Mermaid {
 
   /// Parses the diagram; the first meaningful line selects the kind.
   public static func parse(_ source: String) throws -> Diagram {
-    let ls = lines(source)
+    var ls = lines(source)
+    // A leading `--- … ---` YAML front-matter block (config, title) precedes the diagram keyword.
+    if ls.first?.1 == "---", let close = ls.dropFirst().firstIndex(where: { $0.1 == "---" }) {
+      ls.removeSubrange(0...close)
+    }
     guard let first = ls.first(where: { !$0.1.hasPrefix("%%{") }) else { throw DiagramSyntaxError(line: 1, message: "empty diagram") }
     let head = first.1.trimmingCharacters(in: .whitespaces)
     let keyword = head.split(whereSeparator: { $0 == " " || $0 == "\t" }).first.map(String.init)?.lowercased() ?? ""

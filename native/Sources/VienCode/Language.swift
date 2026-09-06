@@ -36,6 +36,10 @@ public struct Language: Sendable {
   public var preprocessor = false
   /// `#name` anywhere is a keyword (Swift `#if`, `#available`).
   public var hashKeywords = false
+  /// A `'` right after a value (identifier, `)`, `]`, `}`, digit or `'`) is an operator (MATLAB transpose).
+  public var postfixQuote = false
+  /// A `\command` (letters, or a single non-letter) is a keyword (TeX, some macro languages).
+  public var backslashCommands = false
   /// Token kind for `@name` (attributes, decorators, Ruby instance variables).
   public var atPrefix: TokenKind? = nil
   /// Token kind for `$name` / `${name}`.
@@ -397,6 +401,7 @@ extension Language {
     add(docker)
 
     var makefile = Language(name: "makefile")
+    // $@ $< $^ $? $* and $(VAR) are all variables.
     makefile.flavor = .makefile
     makefile.keywords = words("ifeq ifneq ifdef ifndef else endif include define endef export unexport override vpath")
     makefile.lineComments = ["#"]
@@ -499,9 +504,9 @@ extension Language {
 
     var latex = Language(name: "latex")
     latex.lineComments = ["%"]
-    latex.strings = []
+    latex.strings = [StringRule("$$", multiline: true, escapes: false), StringRule("$", escapes: false)]
     latex.functionCalls = false
-    latex.keywords = words("begin end documentclass usepackage section subsection subsubsection chapter part paragraph item label ref cite textbf textit emph frac sqrt sum int left right newcommand renewcommand include input title author date maketitle tableofcontents caption includegraphics")
+    latex.backslashCommands = true
     add(latex)
 
     var graphql = Language(name: "graphql")
@@ -588,6 +593,7 @@ extension Language {
     matlab.lineComments = ["%"]
     matlab.blockComments = [("%{", "%}")]
     matlab.strings = [StringRule("\""), StringRule("'", escapes: false)]
+    matlab.postfixQuote = true  // A' is transpose, not a string opener
     add(matlab)
 
     var fortran = Language(name: "fortran")

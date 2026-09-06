@@ -67,6 +67,33 @@ struct DiagramTests {
     #expect(q.points.count == 1 && q.quadrants[0] == "Q1" && q.xRight == "High")
   }
 
+  @Test func audit2Fixes() throws {
+    // Front matter before the diagram keyword.
+    guard case .graph = try Mermaid.parse("---\ntitle: X\n---\nerDiagram\n  A ||--o{ B : r\n") else { Issue.record("front matter"); return }
+    // ER: direction, word form, key normalisation.
+    guard case .graph(let er) = try Mermaid.parse("erDiagram\n  direction LR\n  MANUFACTURER only one to zero or more CAR : makes\n  CAR {\n    string reg PK, FK\n  }\n") else { Issue.record("er"); return }
+    #expect(er.direction == .LR)
+    #expect(er.edges.first?.tail == .erOne && er.edges.first?.head == .erZeroOrMore)
+    #expect(er.node(withID: "CAR")?.compartments[1].first == "string  reg  PK, FK")
+    // Mindmap: :::class stripped, multi-line label joined.
+    guard case .mindmap(let mm) = try Mermaid.parse("mindmap\n  root((r))\n    A:::urgent\n    id[\"line one\nline two\"]\n") else { Issue.record("mindmap"); return }
+    #expect(mm.nodes.contains { $0.text == "A" })
+    #expect(mm.nodes.contains { $0.text.contains("line one") && $0.text.contains("line two") })
+    // Gantt: vert tag, forward until.
+    guard case .gantt(let g) = try Mermaid.parse("gantt\n  dateFormat YYYY-MM-DD\n  A :a1, 2024-01-02, until a2\n  B :a2, 2024-01-08, 2d\n") else { Issue.record("gantt"); return }
+    #expect(g.tasks.count == 2 && g.tasks[0].end == g.tasks[1].start)
+    // Quadrant: styled point.
+    guard case .quadrant(let q) = try Mermaid.parse("quadrantChart\n  A: [0.9, 0.1] radius: 12\n  B:::c: [0.2, 0.3]\n") else { Issue.record("quadrant"); return }
+    #expect(q.points.count == 2 && q.points[1].0 == "B")
+    // gitGraph: order.
+    guard case .gitGraph(let git) = try Mermaid.parse("gitGraph\n  commit\n  branch hotfix order: 3\n  branch develop order: 1\n  checkout develop\n  commit\n") else { Issue.record("git"); return }
+    #expect(git.branches == ["main", "develop", "hotfix"])
+    // xychart horizontal parses and renders.
+    let r = try DiagramRenderer.render("xychart-beta horizontal\n  x-axis [a, b]\n  bar [3, 5]\n", dark: false, maxWidth: 600)
+    #expect(r.size.width > 20)
+  }
+
+
   @Test func unsupportedKindsFailClearly() {
     #expect(throws: DiagramSyntaxError.self) { try DiagramRenderer.render("sankey-beta\n  a,b,1\n", dark: false, maxWidth: 400) }
     #expect(DiagramRenderer.validate("graph TD\n  A --> B\n") == nil)

@@ -110,6 +110,13 @@ private struct Scanner {
       }
       if atLineStart, lineStartRule(c) { continue }
       if comment(c) { continue }
+      if lang.backslashCommands, c == 0x5C, i + 1 < n {
+        var k = i + 1
+        if isLetter(b[k]) { while k < n, isLetter(b[k]) { k += 1 } } else { k += 1 }  // \word or \, \\ etc
+        emit(.keyword, i, k)
+        i = k
+        continue
+      }
       switch lang.flavor {
       case .markup: if markup(c) { continue }
       case .css: if cssPrefix(c) { continue }
@@ -264,6 +271,10 @@ private struct Scanner {
       while at(i + hashes) == 0x23 { hashes += 1 }
       if at(i + hashes) == 0x22 { scanRaw(from: i, quoteAt: i + hashes, hashes: hashes); return true }
     }
+    if lang.postfixQuote, c == 0x27 {
+      let prev = at(i - 1)
+      if isIdent(prev) || prev == 0x29 || prev == 0x5D || prev == 0x7D || prev == 0x27 { return false }
+    }
     for (open, close, rule) in strings where open[0] == c && match(open, at: i) {
       scanString(from: i, openAt: i, open: open, close: close, rule: rule)
       return true
@@ -346,6 +357,12 @@ private struct Scanner {
 
   mutating func identifier(_ c: UInt8) -> Bool {
     let start = i
+    // Makefile automatic variables: $@ $< $^ $? $* $+ $| $%
+    if lang.dollarPrefix != nil, c == 0x24, "@<^?*+|%".utf8.contains(at(i + 1)) {
+      emit(lang.dollarPrefix!, i, i + 2)
+      i += 2
+      return true
+    }
     var prefixKind: TokenKind? = nil
     if c == 0x40, let kind = lang.atPrefix, isIdentStart(at(i + 1)) {
       prefixKind = kind

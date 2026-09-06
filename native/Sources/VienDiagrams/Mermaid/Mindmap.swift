@@ -17,10 +17,20 @@ enum MindmapParser {
   static func parse(_ lines: [(Int, String)]) throws -> MindmapDiagram {
     var d = MindmapDiagram()
     var stack: [(indent: Int, index: Int)] = []
+    // Join a node whose quoted/bracketed label runs across lines into one logical line.
+    var joined: [(Int, String)] = []
     for (n, raw) in lines.dropFirst() {
+      if let last = joined.last, unbalanced(last.1) {
+        joined[joined.count - 1] = (last.0, last.1 + "\n" + raw.trimmingCharacters(in: .whitespaces))
+        continue
+      }
+      joined.append((n, raw))
+    }
+    for (n, raw) in joined {
       let indent = raw.prefix(while: { $0 == " " || $0 == "\t" }).count
-      let line = raw.trimmingCharacters(in: .whitespaces)
+      var line = raw.trimmingCharacters(in: .whitespaces)
       if line.hasPrefix("::icon") || line.hasPrefix(":::") || line.isEmpty { continue }
+      if let styleMark = line.range(of: ":::") { line = String(line[..<styleMark.lowerBound]).trimmingCharacters(in: .whitespaces) }
       let (text, shape) = parseNode(line)
       while let last = stack.last, last.indent >= indent { stack.removeLast() }
       var node = MindmapDiagram.Node(text: text, shape: shape)
@@ -36,6 +46,23 @@ enum MindmapParser {
     }
     guard !d.nodes.isEmpty else { throw DiagramSyntaxError(line: 1, message: "empty mindmap") }
     return d
+  }
+
+  /// True when a line opens a `[`/`(`/`{` or a quote/backtick it does not close (a multi-line label).
+  static func unbalanced(_ s: String) -> Bool {
+    var depth = 0, quote = false, backtick = false
+    for ch in s {
+      if quote { if ch == "\"" { quote = false }; continue }
+      if backtick { if ch == "`" { backtick = false }; continue }
+      switch ch {
+      case "\"": quote = true
+      case "`": backtick = true
+      case "[", "(", "{": depth += 1
+      case "]", ")", "}": depth = max(0, depth - 1)
+      default: break
+      }
+    }
+    return depth > 0 || quote || backtick
   }
 
   /// `id((text))`, `id(text)`, `id[text]`, `id{{text}}`, `id))text((`, `id)text(` or plain text.

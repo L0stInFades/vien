@@ -25,6 +25,7 @@ enum GanttParser {
     var formatter = dateFormatter("YYYY-MM-DD")
     var unixSeconds = false, unixMillis = false
     var byID: [String: GanttDiagram.Task] = [:]
+    var pendingUntil: [(Int, [String])] = []
     for (n, raw) in lines.dropFirst() {
       let line = raw.trimmingCharacters(in: .whitespaces)
       let lower = line.lowercased()
@@ -43,12 +44,12 @@ enum GanttParser {
       let name = String(line[..<colon]).trimmingCharacters(in: .whitespaces)
       var items = line[line.index(after: colon)...].split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
       var task = GanttDiagram.Task(name: name, section: max(0, d.sections.count - 1), start: Date(), end: Date())
-      while let first = items.first, ["done", "active", "crit", "milestone"].contains(first.lowercased()) {
+      while let first = items.first, ["done", "active", "crit", "milestone", "vert"].contains(first.lowercased()) {
         switch first.lowercased() {
         case "done": task.done = true
         case "active": task.active = true
         case "crit": task.crit = true
-        default: task.milestone = true
+        default: task.milestone = true  // milestone or vert: a point marker
         }
         items.removeFirst()
       }
@@ -94,6 +95,7 @@ enum GanttParser {
       if endItem.lowercased().hasPrefix("until ") {
         let ids = endItem.dropFirst(6).split(separator: " ").map(String.init)
         task.end = ids.compactMap { byID[$0]?.start }.min() ?? start
+        pendingUntil.append((d.tasks.count, ids))  // resolve forward references below
       } else if let dt = date(endItem) {
         task.end = dt
       } else if let dur = duration(endItem) {
@@ -105,6 +107,11 @@ enum GanttParser {
       if task.end < task.start { task.end = task.start }
       if let id = task.id { byID[id] = task }
       d.tasks.append(task)
+    }
+    for (i, ids) in pendingUntil {
+      if let end = ids.compactMap({ id in d.tasks.first(where: { $0.id == id })?.start }).min(), end >= d.tasks[i].start {
+        d.tasks[i].end = end
+      }
     }
     if d.sections.isEmpty { d.sections = [""] }
     return d
@@ -208,7 +215,7 @@ struct GanttRenderer {
     let total = span.1.timeIntervalSince(span.0)
     let days = total / 86400
     let unit: (component: Calendar.Component, step: Int, format: String) =
-      days <= 3 ? (.hour, 6, "HH:mm") : days <= 21 ? (.day, 1, "MM-dd") : days <= 120 ? (.day, 7, "MM-dd") : days <= 800 ? (.month, 1, "MMM yy") : (.year, 1, "yyyy")
+      days <= 0.5 ? (.hour, 1, "HH:mm") : days <= 3 ? (.hour, 6, "HH:mm") : days <= 21 ? (.day, 1, "MM-dd") : days <= 120 ? (.day, 7, "MM-dd") : days <= 800 ? (.month, 1, "MMM yy") : (.year, 1, "yyyy")
     var cal = Calendar(identifier: .gregorian)
     cal.timeZone = TimeZone(identifier: "UTC")!
     let formatter = diagram.axisFormat.map(GanttParser.axisFormatter) ?? GanttParser.axisFormatter("")

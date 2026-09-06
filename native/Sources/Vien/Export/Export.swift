@@ -80,8 +80,12 @@ enum HTMLExport {
 
     body = replaceAll(in: body, open: "<pre class=\"mermaid\">", close: "</pre>") { src in
       let source = unescape(src)
-      if let r = try? DiagramRenderer.render(source, dark: false, maxWidth: 1200) { return "<figure class=\"diagram\">\(r.svg)</figure>" }
-      return "<pre class=\"mermaid-error\">\(src)</pre>"
+      do {
+        let r = try DiagramRenderer.render(source, dark: false, maxWidth: 1200)
+        return "<figure class=\"diagram\">\(r.svg)</figure>"
+      } catch {
+        return "<figure class=\"diagram-error\"><pre>\(src)</pre><figcaption>\(escape("\(error)"))</figcaption></figure>"
+      }
     }
     body = replaceAll(in: body, open: "<div class=\"math display\">", close: "</div>") { src in
       if let mathml = try? MathRenderer.mathML(unescape(src), display: true) { return "<div class=\"math display\">\(mathml)</div>" }

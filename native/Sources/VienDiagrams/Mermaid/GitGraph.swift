@@ -24,6 +24,7 @@ enum GitGraphParser {
     d.vertical = header.contains("tb:") || header.contains("bt:")
     var current = 0
     var heads: [Int: Int] = [:]  // branch → last commit index
+    var branchOrder: [String: Int] = [:]
     var counter = 0
     func option(_ line: String, _ key: String) -> String? {
       guard let r = line.range(of: "\\b\(key)\\s*:\\s*", options: .regularExpression) else { return nil }
@@ -50,7 +51,9 @@ enum GitGraphParser {
         continue
       }
       if lower.hasPrefix("branch ") {
-        let name = String(line.dropFirst(7).split(separator: " ").first ?? "")
+        let rest = String(line.dropFirst(7))
+        let name = String(rest.split(separator: " ").first ?? "")
+        if let orderStr = option(rest, "order"), let order = Int(orderStr) { branchOrder[name] = order }
         if !d.branches.contains(name) { d.branches.append(name) }
         let index = d.branches.firstIndex(of: name)!
         if let h = heads[current] { heads[index] = h }  // branches from the current head
@@ -85,7 +88,18 @@ enum GitGraphParser {
       }
       throw DiagramSyntaxError(line: n, message: "expected commit, branch, checkout, merge or cherry-pick")
     }
-    // Branches that were declared but never committed to still get a lane.
+    // Order the lanes: explicit `order:` first (ascending), then declaration order.
+    if !branchOrder.isEmpty {
+      // Effective order: the explicit `order:` value, else the branch's declaration index.
+      func effective(_ name: String, _ offset: Int) -> Int { branchOrder[name] ?? offset }
+      let ordered = d.branches.enumerated().sorted { a, b in
+        let oa = effective(a.element, a.offset), ob = effective(b.element, b.offset)
+        return oa != ob ? oa < ob : a.offset < b.offset
+      }
+      let remap = Dictionary(uniqueKeysWithValues: ordered.enumerated().map { ($0.element.offset, $0.offset) })
+      d.branches = ordered.map { $0.element }
+      for i in d.commits.indices { d.commits[i].branch = remap[d.commits[i].branch] ?? d.commits[i].branch }
+    }
     return d
   }
 }

@@ -97,6 +97,7 @@ struct XYChartRenderer {
   }
 
   func draw<C: Canvas>(on canvas: inout C) {
+    if diagram.horizontal { drawHorizontal(on: &canvas); return }
     if let t = diagram.title { canvas.text(t, at: CGPoint(x: 0, y: margin), width: size.width, align: .center, style: theme.style(theme.fontSize + 2, weight: .semibold)) }
     let grid = Stroke(color: theme.nodeStroke.withAlpha(0.25), width: 1)
     for v in yTicks {
@@ -149,4 +150,55 @@ struct XYChartRenderer {
       }
     }
   }
+
+  /// Categories on the y-axis, values along the x-axis (bars grow rightward).
+  private func drawHorizontal<C: Canvas>(on canvas: inout C) {
+    if let t = diagram.title { canvas.text(t, at: CGPoint(x: 0, y: margin), width: size.width, align: .center, style: theme.style(theme.fontSize + 2, weight: .semibold)) }
+    let n = max(1, count)
+    func categoryLabel(_ i: Int) -> String { i < diagram.categories.count ? diagram.categories[i] : String(i + 1) }
+    let labelWidth: Double = (0..<n).prefix(12).map { TextMetrics.measure(categoryLabel($0), style: tickStyle).width }.max() ?? 40
+    let titleGap: Double = diagram.yTitle == nil ? 0 : 18
+    let plotLeft: Double = margin + titleGap + labelWidth + 10
+    let top = margin + (diagram.title == nil ? 0 : 30)
+    let plotW = size.width - plotLeft - margin
+    let plotH = plotHeight
+    let bottom = top + plotH
+    func vx(_ v: Double) -> Double { plotLeft + (max(range.0, min(range.1, v)) - range.0) / max(0.0001, range.1 - range.0) * plotW }
+    let grid = Stroke(color: theme.nodeStroke.withAlpha(0.25), width: 1)
+    for v in yTicks {
+      let tx = vx(v)
+      canvas.line(CGPoint(x: tx, y: top), CGPoint(x: tx, y: bottom), stroke: grid)
+      canvas.text(ChartSupport.format(v), at: CGPoint(x: tx - 40, y: bottom + 5), width: 80, align: .center, style: tickStyle)
+    }
+    canvas.line(CGPoint(x: plotLeft, y: top), CGPoint(x: plotLeft, y: bottom), stroke: Stroke(color: theme.edge, width: 1))
+    canvas.line(CGPoint(x: plotLeft, y: bottom), CGPoint(x: plotLeft + plotW, y: bottom), stroke: Stroke(color: theme.edge, width: 1))
+    let slot = plotH / Double(n)
+    for i in 0..<n {
+      canvas.text(categoryLabel(i), at: CGPoint(x: margin, y: top + Double(i) * slot + slot / 2 - 7), width: plotLeft - margin - 4, align: .right, style: tickStyle)
+    }
+    let bars = diagram.series.filter { $0.0 == .bar }
+    let barHeight = slot * 0.6 / Double(max(1, bars.count))
+    var barIndex = 0
+    for (k, ser) in diagram.series.enumerated() {
+      let color = theme.palette[k % theme.palette.count]
+      switch ser.0 {
+      case .bar:
+        for (i, v) in ser.1.enumerated() {
+          let y = top + Double(i) * slot + slot * 0.2 + Double(barIndex) * barHeight
+          let x0 = vx(range.0), x1 = vx(v)
+          canvas.rect(CGRect(x: min(x0, x1), y: y, width: abs(x1 - x0), height: barHeight - 2), radius: 2, fill: color.withAlpha(0.85), stroke: nil)
+        }
+        barIndex += 1
+      case .line:
+        var previous: CGPoint? = nil
+        for (i, v) in ser.1.enumerated() {
+          let p = CGPoint(x: vx(v), y: top + Double(i) * slot + slot / 2)
+          if let previous { canvas.line(previous, p, stroke: Stroke(color: color, width: 2)) }
+          previous = p
+          canvas.ellipse(in: CGRect(x: p.x - 3.5, y: p.y - 3.5, width: 7, height: 7), fill: color, stroke: nil)
+        }
+      }
+    }
+  }
+
 }

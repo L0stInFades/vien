@@ -50,8 +50,10 @@ round it out. The Electron sources in the repository root are untouched referenc
 * **Themes.** System (follows macOS), Paper, Graphite, Solarized Light and Dark, Nord, One Dark.
   A fixed palette also sets the window appearance so chrome and text agree; printing always uses
   the system palette.
-* **Updates.** The app checks GitHub Releases once a day (Settings › General), verifies the
-  download's SHA-256 and code signature (same Team ID), swaps the bundle and relaunches.
+* **Updates.** The app finds the newest `native-v*` GitHub release once a day (Settings › General),
+  verifies the download's SHA-256 and code signature (same Team ID as the running app, failing
+  closed), swaps the bundle and relaunches. On a read-only volume it leaves the new version in
+  Downloads instead.
 * **macOS does the rest.** `NSDocument` provides autosave, versions, crash recovery, rename/move from
   the title bar and external-change detection; `NSWindow` tabbing, the system find bar, spell checking,
   Quick Look-style Open Recent, Dark Mode and the Help menu's command search come for free.
@@ -84,9 +86,12 @@ dist/Vien.app/Contents/MacOS/Vien --export pdf  in.md out.pdf
 VIEN_QUIT_WHEN_READY=1 Vien file.md           # prints time-to-window and resident memory
 VIEN_SNAPSHOT=/tmp/shot.png Vien file.md      # renders the window to a PNG and quits
 VIEN_SCRIPT="type:- a§enter§type:b§dump§quit" Vien file.md   # drives the editor like keystrokes
-# steps: type: enter tab backtab backspace key:c select:a,b goto:phrase end bold heading:n bullets
-#        quote undo wait:ms pagedown:n action:selector: clicktable:r,c inserttable:r,c theme:name
-#        update:check|install recycle snap:path stats undoinfo dump selection time quit
+# steps: type: enter tab backtab backspace key:c select:a,b goto:phrase top:phrase end bold heading:n
+#        bullets quote undo wait:ms pagedown:n action:selector: clicktable:r,c inserttable:r,c
+#        theme:name update:check|install recycle snap:path snapkey:path window:w,h stats undoinfo
+#        dump selection time quit
+# type: inserts text outside an event, so it does not close the undo group or mark the document
+# edited; use key: for a real key event. quit clears change counts, so scripted edits are discarded.
 ```
 
 ## Conformance and performance (release build, 2020 Intel MacBook, Swift 6.3.3)

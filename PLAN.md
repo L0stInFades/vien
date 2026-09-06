@@ -1162,7 +1162,7 @@ M3 “功能完整 RC”在此结束。
 链接显示文字，图片原位显示，表格折叠为原生网格，点击单元格定位光标）、七套配色（System / Paper / Graphite / Solarized ×2 / Nord / One Dark）、
 Mermaid 新增 ER / gantt / timeline / journey / quadrant / xychart / gitGraph / mindmap、代码绘制的应用图标、
 签名 + 公证 + 打包脚本与 `native-v*` tag 发布工作流、纯 Apple 框架的应用内更新（校验 SHA-256 与签名 Team ID 后原位替换并重启）。
-放弃：图片上传 / Unsplash / 截图工具与非 Mermaid 图表库。两轮子代理审计（表格数据损坏、Tab 导航、高亮边界、打印回归）已修复。
+放弃：图片上传 / Unsplash / 截图工具与非 Mermaid 图表库。两轮子代理审计已修复：第一轮（表格数据损坏、Tab 导航、高亮边界、打印回归）；第二轮（空单元格光标定位、CRLF 保持、窗口尺寸、保存不改动文本存储、.txt 扩展名保留、折叠表格缩进与引用条、更新器 native-v* 源 / 语义版本比较 / 只读卷 / 签名 fail-closed、Mermaid 语法：front matter / ER direction 与词形关系 / mindmap 多行与 :::class / gantt vert 与 until 前向引用 / quadrant 样式点 / xychart 水平 / gitGraph order、MATLAB 转置、LaTeX 命令高亮）。每项均以截图逐一验证，并做 100 次冷启动确认启动时间与常驻内存无衰减（README 表）。
 
 发现并规避的平台陷阱：TextKit 2 会缓存创建过的每个段落元素，且每次按键都改写光标之后所有元素的区间——
 通读长文档后按键会线性变慢（纯 `NSTextView` 翻完 15 MB 后每键 440 ms）。原生实现从不在视口之外枚举元素，

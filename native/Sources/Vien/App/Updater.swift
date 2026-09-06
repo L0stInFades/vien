@@ -23,13 +23,15 @@ final class Updater {
     var errorDescription: String? { message }
   }
 
-  /// `releases/latest/download/<asset>` always points at the newest release's appcast.
-  static let defaultFeed = URL(string: "https://github.com/L0stInFades/vien/releases/latest/download/appcast.json")!
+  /// The GitHub API, filtered to native releases: `releases/latest` would return the Electron app.
+  static let repo = "L0stInFades/vien"
+  static let releasesAPI = URL(string: "https://api.github.com/repos/\(repo)/releases?per_page=30")!
 
-  var feed: URL {
+  /// An explicit feed (a direct appcast.json), or nil to discover the newest `native-v*` release.
+  var explicitFeed: URL? {
     if let s = ProcessInfo.processInfo.environment["VIEN_UPDATE_FEED"], let u = URL(string: s) { return u }
     if let s = UserDefaults.standard.string(forKey: "UpdateFeedURL"), let u = URL(string: s) { return u }
-    return Self.defaultFeed
+    return nil
   }
 
   var currentVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0" }
@@ -70,8 +72,24 @@ final class Updater {
   }
 
   private func fetch() async throws -> Appcast {
-    let (data, _) = try await URLSession.shared.data(from: feed)
-    return try JSONDecoder().decode(Appcast.self, from: data)
+    if let explicit = explicitFeed { return try JSONDecoder().decode(Appcast.self, from: try await get(explicit)) }
+    // Discover the newest release whose tag starts with `native-v`, then read its appcast.json asset.
+    struct Release: Decodable { let tag_name: String; let assets: [Asset]; let prerelease: Bool
+      struct Asset: Decodable { let name: String; let browser_download_url: URL } }
+    let releases = try JSONDecoder().decode([Release].self, from: try await get(Self.releasesAPI))
+    guard let release = releases.first(where: { $0.tag_name.hasPrefix("native-v") }),
+      let asset = release.assets.first(where: { $0.name == "appcast.json" })
+    else { throw UpdateError("No native release is available yet.") }
+    return try JSONDecoder().decode(Appcast.self, from: try await get(asset.browser_download_url))
+  }
+
+  /// GETs `url` and fails on any non-2xx status instead of decoding an error page.
+  private func get(_ url: URL) async throws -> Data {
+    let (data, response) = try await URLSession.shared.data(from: url)
+    if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+      throw UpdateError("The update server returned \(http.statusCode).")
+    }
+    return data
   }
 
   private func offer(_ appcast: Appcast) {
@@ -102,7 +120,8 @@ final class Updater {
       let current = Bundle.main.bundleURL
       guard Bundle.main.bundleIdentifier != nil else { throw UpdateError("Updates apply to the installed app, not to a development build.") }
       let work = try FileManager.default.url(for: .itemReplacementDirectory, in: .userDomainMask, appropriateFor: current, create: true)
-      defer { try? FileManager.default.removeItem(at: work) }
+      var keepWork = false
+      defer { if !keepWork { try? FileManager.default.removeItem(at: work) } }
       let (downloaded, _) = try await URLSession.shared.download(from: appcast.url)
       let archive = work.appendingPathComponent("Vien.zip")
       try FileManager.default.moveItem(at: downloaded, to: archive)
@@ -116,8 +135,13 @@ final class Updater {
       try Self.verifySignature(of: app, matching: current)
       let folder = current.deletingLastPathComponent()
       guard FileManager.default.isWritableFile(atPath: folder.path) else {
-        NSWorkspace.shared.activateFileViewerSelecting([app])
-        throw UpdateError("Vien cannot replace itself in \(folder.path). The new version is selected in the Finder; drag it to Applications.")
+        // Move it somewhere durable (the work dir is deleted on return) before revealing it.
+        let downloads = (try? FileManager.default.url(for: .downloadsDirectory, in: .userDomainMask, appropriateFor: nil, create: true)) ?? folder
+        var dest = downloads.appendingPathComponent("Vien \(appcast.version).app")
+        var n = 1
+        while FileManager.default.fileExists(atPath: dest.path) { dest = downloads.appendingPathComponent("Vien \(appcast.version) (\(n)).app"); n += 1 }
+        if (try? FileManager.default.moveItem(at: app, to: dest)) != nil { NSWorkspace.shared.activateFileViewerSelecting([dest]) }
+        throw UpdateError("Vien cannot replace itself in \(folder.path). The new version is in your Downloads folder; drag it to Applications.")
       }
       // Move the running bundle aside (the process keeps working), put the new one in its place.
       if (try? FileManager.default.trashItem(at: current, resultingItemURL: nil)) == nil {
@@ -142,14 +166,35 @@ final class Updater {
 
   // MARK: - Checks
 
-  static func isNewer(_ a: String, than b: String) -> Bool {
-    func parts(_ s: String) -> [Int] { s.split(separator: "-").first?.split(separator: ".").map { Int($0) ?? 0 } ?? [] }
-    let x = parts(a), y = parts(b)
-    for i in 0..<max(x.count, y.count) {
-      let p = i < x.count ? x[i] : 0, q = i < y.count ? y[i] : 0
-      if p != q { return p > q }
+  /// Semantic-version order with prerelease handling: 1.0.0-beta.1 < 1.0.0, a leading `v` ignored.
+  static func isNewer(_ a: String, than b: String) -> Bool { compare(a, b) > 0 }
+
+  static func compare(_ a: String, _ b: String) -> Int {
+    func split(_ s: String) -> (core: [Int], pre: [String]) {
+      var v = s.trimmingCharacters(in: .whitespaces)
+      if v.hasPrefix("v") || v.hasPrefix("V") { v.removeFirst() }
+      let parts = v.split(separator: "-", maxSplits: 1, omittingEmptySubsequences: false)
+      let core = parts[0].split(separator: ".").map { Int($0) ?? 0 }
+      let pre = parts.count > 1 ? parts[1].split(separator: ".").map(String.init) : []
+      return (core, pre)
     }
-    return false
+    let x = split(a), y = split(b)
+    for i in 0..<max(x.core.count, y.core.count) {
+      let p = i < x.core.count ? x.core[i] : 0, q = i < y.core.count ? y.core[i] : 0
+      if p != q { return p < q ? -1 : 1 }
+    }
+    // A version with a prerelease suffix is older than the same core version without one.
+    if x.pre.isEmpty != y.pre.isEmpty { return x.pre.isEmpty ? 1 : -1 }
+    for i in 0..<max(x.pre.count, y.pre.count) {
+      guard i < x.pre.count else { return -1 }
+      guard i < y.pre.count else { return 1 }
+      let p = x.pre[i], q = y.pre[i]
+      if p != q {
+        if let pi = Int(p), let qi = Int(q) { return pi < qi ? -1 : 1 }
+        return p < q ? -1 : 1
+      }
+    }
+    return 0
   }
 
   static func systemSatisfies(_ minimum: String) -> Bool {
@@ -182,10 +227,13 @@ final class Updater {
     return dict[kSecCodeInfoTeamIdentifier as String] as? String
   }
 
-  /// A signed app only accepts updates signed by the same team.
+  /// A signed app only accepts updates signed by the same team. Fails closed: if the running app is
+  /// signed we require a matching Team ID on the download (and reading either signature must succeed).
+  /// An unsigned (ad-hoc) running app — a local dev build — skips the check so testing still works.
   static func verifySignature(of app: URL, matching running: URL) throws {
-    let new = try teamID(of: app)
-    if let mine = try? teamID(of: running), new != mine { throw UpdateError("The downloaded app was signed by a different developer.") }
+    let mine = try teamID(of: running)  // throws if the running signature cannot be validated
+    guard let mine else { return }      // ad-hoc dev build: nothing to match against
+    guard try teamID(of: app) == mine else { throw UpdateError("The downloaded app was signed by a different developer.") }
   }
 
   private func alert(_ title: String, _ info: String) {

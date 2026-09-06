@@ -27,12 +27,15 @@ enum QuadrantParser {
         continue
       }
       if lower.hasPrefix("classdef") || lower.hasPrefix("%%") { continue }
-      guard let colon = line.lastIndex(of: ":"), let open = line[colon...].firstIndex(of: "["), let close = line[colon...].firstIndex(of: "]") else {
+      // Name[:::class]: [x, y] [radius: N color: … …] — brackets hold the point; styles are ignored.
+      guard let open = line.firstIndex(of: "["), let close = line[open...].firstIndex(of: "]"), let colon = line[..<open].lastIndex(of: ":") else {
         throw DiagramSyntaxError(line: n, message: "expected “Name: [x, y]”")
       }
       let nums = line[line.index(after: open)..<close].split(separator: ",").compactMap { Double($0.trimmingCharacters(in: .whitespaces)) }
       guard nums.count == 2 else { throw DiagramSyntaxError(line: n, message: "a point needs two numbers between 0 and 1") }
-      d.points.append((Mermaid.cleanLabel(String(line[..<colon])), max(0, min(1, nums[0])), max(0, min(1, nums[1]))))
+      var name = String(line[..<colon])
+      if let styleMark = name.range(of: ":::") { name = String(name[..<styleMark.lowerBound]) }
+      d.points.append((Mermaid.cleanLabel(name), max(0, min(1, nums[0])), max(0, min(1, nums[1]))))
     }
     return d
   }
