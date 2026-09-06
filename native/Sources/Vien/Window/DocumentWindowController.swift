@@ -97,7 +97,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
   func updatePaneSwitcher(_ pane: SidebarViewController.Pane) { paneSwitcher.selectedSegment = pane.rawValue }
 
   func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-    [.toggleSidebar, Self.paneItem, .sidebarTrackingSeparator, .flexibleSpace, Self.sourceItem]
+    [.toggleSidebar, .sidebarTrackingSeparator, Self.paneItem, .flexibleSpace, Self.sourceItem]
   }
 
   func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
@@ -153,5 +153,13 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
 
   func windowDidBecomeMain(_ notification: Notification) {
     (NSApp.delegate as? AppDelegate)?.activeWindow = self
+  }
+
+  /// In full screen keep the toolbar visible (the menu bar still auto-hides), so the sidebar toggle,
+  /// pane switcher and source button stay reachable without hunting for them at the screen edge.
+  func window(_ window: NSWindow, willUseFullScreenPresentationOptions proposedOptions: NSApplication.PresentationOptions) -> NSApplication.PresentationOptions {
+    var options = proposedOptions
+    options.remove(.autoHideToolbar)
+    return options
   }
 }
