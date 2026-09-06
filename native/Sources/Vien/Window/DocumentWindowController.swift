@@ -75,29 +75,9 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
   // MARK: - Toolbar
 
   private static let sourceItem = NSToolbarItem.Identifier("app.vien.source")
-  private static let paneItem = NSToolbarItem.Identifier("app.vien.pane")
-
-  /// The files / outline / search switcher, in the toolbar's sidebar region so it lines up with the
-  /// title bar (as in Finder), rather than floating at the top of the sidebar body.
-  private lazy var paneSwitcher: NSSegmentedControl = {
-    let control = NSSegmentedControl(images: [
-      NSImage(systemSymbolName: "folder", accessibilityDescription: "Files")!,
-      NSImage(systemSymbolName: "list.bullet.indent", accessibilityDescription: "Outline")!,
-      NSImage(systemSymbolName: "magnifyingglass", accessibilityDescription: "Search")!,
-    ], trackingMode: .selectOne, target: self, action: #selector(paneSwitched))
-    control.selectedSegment = SidebarViewController.Pane.outline.rawValue
-    return control
-  }()
-
-  @objc private func paneSwitched() {
-    showSidebar(SidebarViewController.Pane(rawValue: paneSwitcher.selectedSegment) ?? .outline)
-  }
-
-  /// Keeps the toolbar switcher in step when the pane changes from a menu or programmatically.
-  func updatePaneSwitcher(_ pane: SidebarViewController.Pane) { paneSwitcher.selectedSegment = pane.rawValue }
 
   func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-    [.toggleSidebar, .sidebarTrackingSeparator, Self.paneItem, .flexibleSpace, Self.sourceItem]
+    [.toggleSidebar, .sidebarTrackingSeparator, .flexibleSpace, Self.sourceItem]
   }
 
   func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
@@ -106,13 +86,6 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
 
   func toolbar(_ toolbar: NSToolbar, itemForItemIdentifier id: NSToolbarItem.Identifier, willBeInsertedIntoToolbar flag: Bool) -> NSToolbarItem? {
     switch id {
-    case Self.paneItem:
-      let item = NSToolbarItem(itemIdentifier: id)
-      item.label = "View"
-      item.toolTip = "Files, outline or search"
-      item.view = paneSwitcher
-      item.visibilityPriority = .high
-      return item
     case Self.sourceItem:
       let item = NSToolbarItem(itemIdentifier: id)
       item.label = "Source"

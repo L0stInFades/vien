@@ -8,6 +8,11 @@ final class SidebarViewController: NSViewController {
 
   unowned let windowController: DocumentWindowController
   private(set) var pane: Pane = .outline
+  private let segments = NSSegmentedControl(images: [
+    NSImage(systemSymbolName: "folder", accessibilityDescription: "Files")!,
+    NSImage(systemSymbolName: "list.bullet.indent", accessibilityDescription: "Outline")!,
+    NSImage(systemSymbolName: "magnifyingglass", accessibilityDescription: "Search")!,
+  ], trackingMode: .selectOne, target: nil, action: nil)
   private let container = NSView()
   let files: FileTreeViewController
   let outline: OutlineViewController
@@ -25,11 +30,22 @@ final class SidebarViewController: NSViewController {
 
   override func loadView() {
     view = NSView()
+    // A full-width scope bar just below the toolbar (safe-area top), then the pane content below it.
+    segments.segmentStyle = .separated
+    segments.controlSize = .regular
+    segments.selectedSegment = Pane.outline.rawValue
+    segments.target = self
+    segments.action = #selector(switchPane)
+    for i in 0..<segments.segmentCount { segments.setWidth(0, forSegment: i) }
+    segments.translatesAutoresizingMaskIntoConstraints = false
     container.translatesAutoresizingMaskIntoConstraints = false
+    view.addSubview(segments)
     view.addSubview(container)
-    // The container fills the sidebar; its top tracks the safe area so content clears the toolbar.
     NSLayoutConstraint.activate([
-      container.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+      segments.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 6),
+      segments.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
+      segments.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
+      container.topAnchor.constraint(equalTo: segments.bottomAnchor, constant: 8),
       container.leadingAnchor.constraint(equalTo: view.leadingAnchor),
       container.trailingAnchor.constraint(equalTo: view.trailingAnchor),
       container.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -48,9 +64,11 @@ final class SidebarViewController: NSViewController {
     show(.outline)
   }
 
+  @objc private func switchPane() { show(Pane(rawValue: segments.selectedSegment) ?? .outline) }
+
   func show(_ p: Pane) {
     pane = p
-    windowController.updatePaneSwitcher(p)
+    segments.selectedSegment = p.rawValue
     files.view.isHidden = p != .files
     outline.view.isHidden = p != .outline
     search.view.isHidden = p != .search

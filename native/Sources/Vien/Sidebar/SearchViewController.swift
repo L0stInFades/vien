@@ -10,6 +10,9 @@ final class SearchViewController: NSViewController, NSTableViewDataSource, NSTab
   private let wordButton = NSButton(checkboxWithTitle: "Whole Word", target: nil, action: nil)
   private let table = NSTableView()
   private let status = NSTextField(labelWithString: "")
+  private let stack = NSStackView()
+  private let placeholder = NSTextField(wrappingLabelWithString: "Open a folder to search across its Markdown files.")
+  private let openButton = NSButton(title: "Open Folder…", target: nil, action: #selector(AppDelegate.openFolder(_:)))
   private var rows: [FolderSearch.Row] = []
   private var task: Task<Void, Never>?
 
@@ -49,13 +52,25 @@ final class SearchViewController: NSViewController, NSTableViewDataSource, NSTab
     scroll.drawsBackground = false
     status.textColor = .tertiaryLabelColor
     status.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
-    let stack = NSStackView(views: [field, options, status, scroll])
+    for v in [field, options, status, scroll] { stack.addArrangedSubview(v) }
     stack.orientation = .vertical
     stack.alignment = .leading
     stack.spacing = 6
     stack.edgeInsets = NSEdgeInsets(top: 0, left: 8, bottom: 0, right: 8)
     stack.translatesAutoresizingMaskIntoConstraints = false
     view.addSubview(stack)
+    // Shown instead when no folder is open (a search across files needs one).
+    placeholder.alignment = .center
+    placeholder.textColor = .secondaryLabelColor
+    placeholder.font = .systemFont(ofSize: NSFont.systemFontSize)
+    openButton.bezelStyle = .rounded
+    openButton.controlSize = .regular
+    let empty = NSStackView(views: [placeholder, openButton])
+    empty.orientation = .vertical
+    empty.alignment = .centerX
+    empty.spacing = 12
+    empty.translatesAutoresizingMaskIntoConstraints = false
+    view.addSubview(empty)
     NSLayoutConstraint.activate([
       stack.topAnchor.constraint(equalTo: view.topAnchor),
       stack.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -63,10 +78,28 @@ final class SearchViewController: NSViewController, NSTableViewDataSource, NSTab
       stack.trailingAnchor.constraint(equalTo: view.trailingAnchor),
       field.widthAnchor.constraint(equalTo: stack.widthAnchor, constant: -16),
       scroll.widthAnchor.constraint(equalTo: stack.widthAnchor, constant: -16),
+      empty.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+      empty.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -20),
+      empty.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 20),
+      empty.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -20),
+      placeholder.widthAnchor.constraint(lessThanOrEqualToConstant: 200),
     ])
+    self.emptyView = empty
   }
 
-  func focusSearchField() { view.window?.makeFirstResponder(field) }
+  private weak var emptyView: NSView?
+
+  /// A folder-wide search needs a workspace folder; without one, show the placeholder instead.
+  func refreshFolderState() {
+    let hasFolder = Workspace.shared.currentFolder != nil
+    stack.isHidden = !hasFolder
+    emptyView?.isHidden = hasFolder
+  }
+
+  func focusSearchField() {
+    refreshFolderState()
+    if Workspace.shared.currentFolder != nil { view.window?.makeFirstResponder(field) }
+  }
 
   /// Programmatic search (automation / snapshots).
   func run(query: String) {
