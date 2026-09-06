@@ -9,10 +9,10 @@ Markdown source, and the source is never rewritten behind your back.
 | Module | Responsibility | Lines |
 | --- | --- | ---: |
 | `VienMarkdown` | CommonMark 0.31.2 + GFM parser with source spans on every node, incremental reparse, HTML renderer. Zero dependencies (no Foundation). | ~3.5k (+4k generated entity/emoji tables) |
-| `VienDiagrams` | Native Mermaid: flowchart, sequence, class, state, ER, gantt, timeline, journey, quadrant, xychart, gitGraph, mindmap, pie; layered graph layout, Core Graphics + SVG canvases. | ~4.2k |
+| `VienDiagrams` | Native Mermaid: flowchart, sequence, class, state, ER, gantt, timeline, journey, quadrant, xychart, gitGraph, mindmap, pie; layered graph layout, Core Graphics + SVG canvases. | ~3.4k |
 | `VienMath` | Native TeX math: parser, box layout driven by STIX Two Math's OpenType MATH table, Core Graphics + MathML. | ~1.4k |
 | `VienCode` | Syntax highlighting for fenced code: one-pass tokenizer over small language tables, 45 languages. No Foundation. | ~1.1k |
-| `Vien` | The document app: TextKit 2 editor, folding, table tools, themes, sidebar (files / outline / search), settings, export, print, updater. | ~6.5k |
+| `Vien` | The document app: TextKit 2 editor, folding, table tools, themes, sidebar (files / outline / search), settings, export, print, updater. | ~5.7k |
 
 `vien-tool` (perf timings, PNG renders, parse dumps) and the swift-testing suites under `Tests/`
 round it out. The Electron sources in the repository root are untouched reference material.
