@@ -1,5 +1,6 @@
 import AppKit
 import CoreText
+import VienCode
 import VienMarkdown
 
 /// A paragraph element that knows whether something is drawn beneath it (diagram, math, images).
@@ -28,6 +29,7 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
   private var inlineCache: [Range<Int>: [Inline]] = [:]
   private var inlineCacheRevision = -1
   private var prefixWidths: [String: CGFloat] = [:]
+  private let highlight = CodeHighlight()
 
   init(document: MarkdownFile) {
     self.document = document
@@ -227,6 +229,9 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
       if isFirstLine { mark(fence.open, Theme.marker); if let info = fence.info { mark(info, Theme.secondary) } }
       if let close = fence.close, close.lowerBound >= byteStart, close.lowerBound < byteEnd { mark(close, Theme.marker) }
       paragraph.decoration = .codeBlock(first: isFirstLine, last: isLastLine)
+      if !sourceMode {
+        for token in highlight.tokens(for: leaf, in: document, intersecting: byteStart..<byteEnd) { mark(token.range, Theme.syntax(token.kind)) }
+      }
       if isLastLine, !sourceMode, let lang = leaf.language(in: doc.bytes)?.lowercased() {
         if lang == "mermaid" { paragraph.overlay = .mermaid(doc.text(of: leaf)) }
         else if lang == "math" || lang == "latex" || lang == "tex" { paragraph.overlay = .math(doc.text(of: leaf)) }

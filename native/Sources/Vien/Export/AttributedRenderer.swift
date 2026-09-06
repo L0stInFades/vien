@@ -1,4 +1,5 @@
 import AppKit
+import VienCode
 import VienMarkdown
 
 /// Renders a document to a styled NSAttributedString with no Markdown syntax visible. Used for
@@ -56,8 +57,15 @@ struct AttributedRenderer {
     case .listItem:
       for child in block.children { append(child, to: out, indent: indent, tight: tight) }
     case .fencedCode, .indentedCode, .htmlBlock, .mathBlock, .frontMatter:
-      let text = document.text(of: block)
-      out.append(NSAttributedString(string: text, attributes: [.font: theme.code(), .foregroundColor: Theme.text, .backgroundColor: Theme.codeBackground]))
+      // Same tokens and colours as the editor; segments are decoded straight from the block's bytes.
+      let base: [NSAttributedString.Key: Any] = [.font: theme.code(), .foregroundColor: Theme.text, .backgroundColor: Theme.codeBackground]
+      var pos = block.range.lowerBound
+      for token in CodeHighlight.compute(block, in: document) {
+        out.append(NSAttributedString(string: String(decoding: document.bytes[pos..<token.range.lowerBound], as: UTF8.self), attributes: base))
+        out.append(NSAttributedString(string: String(decoding: document.bytes[token.range], as: UTF8.self), attributes: base.merging([.foregroundColor: Theme.syntax(token.kind)]) { $1 }))
+        pos = token.range.upperBound
+      }
+      out.append(NSAttributedString(string: String(decoding: document.bytes[pos..<block.range.upperBound], as: UTF8.self), attributes: base))
       out.append(paragraphEnd(spacing: theme.paragraphSpacing, indent: indent, lineHeight: 1.3))
     case .table(let info):
       let cols = info.alignments.count

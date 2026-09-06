@@ -1,6 +1,7 @@
 import AppKit
 import UniformTypeIdentifiers
 import VienDiagrams
+import VienCode
 import VienMarkdown
 import VienMath
 
@@ -89,6 +90,7 @@ enum HTMLExport {
       if let mathml = try? MathRenderer.mathML(unescape(src), display: false) { return mathml }
       return "<code>\(src)</code>"
     }
+    body = highlightCodeBlocks(in: body)
     return """
     <!doctype html>
     <html lang="en">
@@ -117,6 +119,39 @@ enum HTMLExport {
       let inner = String(afterOpen[..<c.lowerBound])
       out += transform(inner)
       rest = afterOpen[c.upperBound...]
+    }
+    out += rest
+    return out
+  }
+
+  /// `<pre><code class="language-x">…</code></pre>` → token spans from the editor's tokenizer.
+  static func highlightCodeBlocks(in html: String) -> String {
+    let open = "<pre><code class=\"language-"
+    var out = ""
+    var rest = Substring(html)
+    while let r = rest.range(of: open) {
+      out += rest[..<r.lowerBound]
+      let after = rest[r.upperBound...]
+      guard let quote = after.firstIndex(of: "\""), let gt = after[quote...].firstIndex(of: ">"),
+        let close = after[gt...].range(of: "</code></pre>")
+      else { out += rest[r.lowerBound...]; return out }
+      let name = String(after[..<quote])
+      let escaped = String(after[after.index(after: gt)..<close.lowerBound])
+      out += open + name + "\">"
+      if let language = Language.named(name) {
+        let code = Array(unescape(escaped).utf8)
+        var pos = 0
+        for token in Highlighter.tokens(code, language: language) {
+          out += escape(String(decoding: code[pos..<token.range.lowerBound], as: UTF8.self))
+          out += "<span class=\"\(token.kind.cssClass)\">" + escape(String(decoding: code[token.range], as: UTF8.self)) + "</span>"
+          pos = token.range.upperBound
+        }
+        out += escape(String(decoding: code[pos...], as: UTF8.self))
+      } else {
+        out += escaped
+      }
+      out += "</code></pre>"
+      rest = after[close.upperBound...]
     }
     out += rest
     return out
@@ -154,6 +189,12 @@ enum HTMLExport {
     .footnote-ref a { text-decoration: none; }
     pre.front-matter { font-size: 0.8em; opacity: 0.7; }
     .math.display { text-align: center; overflow-x: auto; margin: 1em 0; } math { font-size: 1.05em; }
+    .tk-keyword, .tk-heading { color: #9B2393; } .tk-type, .tk-tag { color: #0B4F79; } .tk-string, .tk-deleted { color: #C41A16; }
+    .tk-number, .tk-constant { color: #1C00CF; } .tk-comment { color: #5D6C79; } .tk-function, .tk-property { color: #326D74; }
+    .tk-variable { color: #6C36A5; } .tk-attribute, .tk-meta { color: #643820; } .tk-inserted { color: #008A00; } .tk-heading { font-weight: 600; }
+    @media (prefers-color-scheme: dark) { .tk-keyword, .tk-heading { color: #FC5FA3; } .tk-type, .tk-tag { color: #5DD8FF; }
+      .tk-string, .tk-deleted { color: #FC6A5D; } .tk-number, .tk-constant { color: #D0BF69; } .tk-comment { color: #6C7986; }
+      .tk-function, .tk-property { color: #67B7A4; } .tk-variable { color: #A167E6; } .tk-attribute, .tk-meta { color: #BF8555; } .tk-inserted { color: #6AD26A; } }
     @media print { article.markdown { max-width: none; padding: 0; } pre { white-space: pre-wrap; } a { color: inherit; } }
     @page { margin: 20mm 15mm; }
     """

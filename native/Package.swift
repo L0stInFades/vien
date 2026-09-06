@@ -7,6 +7,7 @@ import PackageDescription
 //   VienMarkdown  — pure Swift CommonMark/GFM(+extensions) parser, source-span AST, incremental reparse, HTML.
 //   VienDiagrams  — native Mermaid: parser, layered graph layout, Core Graphics + SVG rendering.
 //   VienMath      — native TeX math: parser, box layout with the system math font, Core Text + MathML.
+//   VienCode      — syntax highlighting for fenced code: one-pass tokenizer over small language tables.
 //   Vien          — AppKit document app (TextKit 2 editor, sidebar, settings, export).
 //   vien-tool     — perf timings, diagram PNG rendering and parse-tree dumps for manual inspection.
 //   Tests/        — swift-testing suites (spec conformance, corpus, incremental parsing, diagrams, math).
@@ -28,9 +29,10 @@ let package = Package(
     .target(name: "VienMarkdown", swiftSettings: strict),
     .target(name: "VienDiagrams", swiftSettings: strict),
     .target(name: "VienMath", swiftSettings: strict),
+    .target(name: "VienCode", swiftSettings: strict),
     .executableTarget(
       name: "Vien",
-      dependencies: ["VienMarkdown", "VienDiagrams", "VienMath"],
+      dependencies: ["VienMarkdown", "VienDiagrams", "VienMath", "VienCode"],
       swiftSettings: strict + [.defaultIsolation(MainActor.self)]
     ),
     .executableTarget(
@@ -42,5 +44,6 @@ let package = Package(
     .testTarget(name: "VienMarkdownTests", dependencies: ["VienMarkdown"], swiftSettings: strict),
     .testTarget(name: "VienDiagramsTests", dependencies: ["VienDiagrams"], swiftSettings: strict),
     .testTarget(name: "VienMathTests", dependencies: ["VienMath"], swiftSettings: strict),
+    .testTarget(name: "VienCodeTests", dependencies: ["VienCode"], swiftSettings: strict),
   ]
 )

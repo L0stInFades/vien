@@ -256,7 +256,7 @@ enum Snapshot {
       if pane == "search", let q = ProcessInfo.processInfo.environment["VIEN_SNAPSHOT_QUERY"] { wc.sidebar.search.run(query: q) }
       try? await Task.sleep(for: .milliseconds(600))
     }
-    guard let window = frontWindow, let view = window.contentView?.superview else {
+    guard let window = frontWindow, window.contentView?.superview != nil else {
       NSLog("snapshot: no window")
       NSApp.terminate(nil)
       return
