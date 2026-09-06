@@ -129,6 +129,17 @@ final class EditorTextView: NSTextView {
     scroll(NSPoint(x: 0, y: max(0, fragment.layoutFragmentFrame.minY - offset + textContainerInset.height)))
   }
 
+  /// UTF-16 offset of the cell under `point` in a folded table's grid, if any.
+  private func foldedTableCell(at point: CGPoint) -> Int? {
+    guard let lm = textLayoutManager, let doc = document?.markdown else { return nil }
+    let p = CGPoint(x: point.x - textContainerInset.width, y: point.y - textContainerInset.height)
+    guard let fragment = lm.textLayoutFragment(for: p) as? TableFragment else { return nil }
+    let frame = fragment.layoutFragmentFrame
+    let local = CGPoint(x: p.x - frame.minX - fragment.gridOrigin.x, y: p.y - frame.minY - fragment.gridOrigin.y)
+    guard let (row, column) = fragment.grid.cell(at: local) else { return nil }
+    return doc.utf16Offset(forByte: fragment.grid.sources[row][column].lowerBound)
+  }
+
   /// The standard menu, plus Table commands when the (moved) caret is inside a table.
   override func menu(for event: NSEvent) -> NSMenu? {
     let menu = super.menu(for: event)
@@ -373,6 +384,11 @@ final class EditorTextView: NSTextView {
 
   override func mouseDown(with event: NSEvent) {
     let point = convert(event.locationInWindow, from: nil)
+    if event.clickCount == 1, let cell = foldedTableCell(at: point) {
+      window?.makeFirstResponder(self)
+      setSelectedRange(NSRange(location: cell, length: 0))
+      return
+    }
     let index = characterIndexForInsertion(at: point)
     if event.clickCount == 1, !event.modifierFlags.contains(.shift), toggleTask(at: index) { return }
     if event.modifierFlags.contains(.command) {

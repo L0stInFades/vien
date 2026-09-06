@@ -63,6 +63,10 @@ struct SettingsView: View {
         Toggle("Auto-pair Markdown syntax (* _ ` $ ~)", isOn: $prefs.autoPairMarkdown)
         Stepper("Tab size: \(prefs.tabSize)", value: $prefs.tabSize, in: 2...8)
       }
+      Section("Markup") {
+        Toggle("Hide markup outside the current paragraph", isOn: $prefs.foldMarkup)
+        Text("Links show their text, images and tables their rendering; the paragraph you are editing always shows its source.").foregroundStyle(.secondary).font(.caption)
+      }
     }
     .formStyle(.grouped)
     .padding()

@@ -27,6 +27,7 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
     styler = Styler(document: document)
     styler.sourceMode = Preferences.shared.sourceMode
     styler.focusMode = Preferences.shared.focus
+    styler.foldMarkup = Preferences.shared.foldMarkup
     // TextKit 2 asks the delegate for a paragraph only when it lays one out, so attaching it before
     // the text is attached costs nothing for the paragraphs that are not on screen.
     contentStorage = NSTextContentStorage()
@@ -62,6 +63,22 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
     NotificationCenter.default.addObserver(self, selector: #selector(appearanceChanged), name: NSApplication.didChangeScreenParametersNotification, object: nil)
     NotificationCenter.default.addObserver(self, selector: #selector(scrolled), name: NSView.boundsDidChangeNotification, object: scrollView.contentView)
     scheduleStats()
+    observePreferences()
+  }
+
+  /// Settings changes reach open editors through Observation; each change re-registers.
+  private func observePreferences() {
+    withObservationTracking {
+      let p = Preferences.shared
+      _ = (p.fontSize, p.lineHeight, p.contentWidth, p.fontFamily, p.codeFontFamily, p.foldMarkup)
+    } onChange: {
+      Task { @MainActor [weak self] in
+        guard let self else { return }
+        styler.foldMarkup = Preferences.shared.foldMarkup
+        applyTheme()
+        observePreferences()
+      }
+    }
   }
 
   override func viewDidAppear() {
@@ -130,8 +147,38 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
   @objc private func selectionChanged(_ note: Notification) {
     let sel = textView.selectedRange()
     onSelectionChange?(sel.location)
+    updateActiveBlock()
     if Preferences.shared.focus { updateFocus() }
     if Preferences.shared.typewriter { centerCaret() }
+  }
+
+  /// The block(s) holding the selection show their markup; every other paragraph folds it.
+  private func updateActiveBlock() {
+    let doc = document.markdown
+    func unit(atUTF16 u: Int) -> Range<Int>? {
+      let b = doc.byteOffset(forUTF16: u)
+      var path = doc.path(at: b)
+      // A caret at the very end of a block belongs to that block, not to whatever follows.
+      if path.last.map({ !$0.range.contains(b) }) ?? true, b > 0, doc.bytes[b - 1] != 0x0A {
+        let before = doc.path(at: b - 1)
+        if let leaf = before.last, leaf.range.upperBound >= b { path = before }
+      }
+      if let table = path.first(where: { if case .table = $0.kind { return true }; return false }) { return table.range }
+      return path.last?.range
+    }
+    let sel = textView.selectedRange()
+    var active = unit(atUTF16: sel.location)
+    if sel.length > 0, let end = unit(atUTF16: NSMaxRange(sel)) {
+      active = active.map { min($0.lowerBound, end.lowerBound)..<max($0.upperBound, end.upperBound) } ?? end
+    }
+    guard active != styler.activeRange else { return }
+    let old = styler.activeRange
+    styler.activeRange = active
+    guard styler.foldMarkup, !styler.sourceMode else { return }
+    for r in [old, active].compactMap({ $0 }) {
+      let lo = doc.utf16Offset(forByte: r.lowerBound), hi = doc.utf16Offset(forByte: r.upperBound)
+      textView.invalidateParagraphs(in: NSRange(location: lo, length: max(0, hi - lo)))
+    }
   }
 
   @objc private func appearanceChanged() {

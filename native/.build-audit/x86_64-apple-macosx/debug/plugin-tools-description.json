@@ -1,0 +1,3256 @@
+{
+  "builtTestProducts" : [
+    {
+      "binaryPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienPackageTests.xctest/Contents/MacOS/VienPackageTests",
+      "packagePath" : "/Users/Apple/vien/native",
+      "productName" : "VienPackageTests"
+    }
+  ],
+  "copyCommands" : {
+
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.Vien-x86_64-apple-macosx-debug.module" : {
+      "executable" : "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/sources",
+      "importPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/App/AppDelegate.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/App/MainMenu.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/App/Preferences.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/App/QuickOpenPanel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/App/Theme.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/App/VienDocumentController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/App/main.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Document/MarkdownFile.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Document/TextCodec.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Editor/CodeHighlight.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Editor/DiagramFragment.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Editor/EditorCommands.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Editor/EditorExtras.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Editor/EditorTextView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Editor/EditorViewController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Editor/Styler.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Editor/TableCommands.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Export/AttributedRenderer.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Export/Export.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Export/PrintView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Settings/SettingsWindowController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Sidebar/FileTreeViewController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Sidebar/OutlineViewController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Sidebar/SearchViewController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Sidebar/SidebarViewController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Window/DocumentWindowController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/swift-version-7184210C4D3EF5FF.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienMarkdown.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienDiagrams.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienMath.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienCode.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/sources"
+        }
+      ],
+      "isLibrary" : false,
+      "moduleName" : "Vien",
+      "moduleOutputPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/Vien.swiftmodule",
+      "objects" : [
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/AppDelegate.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/MainMenu.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/Preferences.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/QuickOpenPanel.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/Theme.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/VienDocumentController.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/main.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/MarkdownFile.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/TextCodec.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/CodeHighlight.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/DiagramFragment.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/EditorCommands.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/EditorExtras.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/EditorTextView.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/EditorViewController.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/Styler.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/TableCommands.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/AttributedRenderer.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/Export.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/PrintView.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/SettingsWindowController.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/FileTreeViewController.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/OutlineViewController.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/SearchViewController.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/SidebarViewController.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/DocumentWindowController.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "x86_64-apple-macosx15.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-Xfrontend",
+        "-entry-point-function-name",
+        "-Xfrontend",
+        "Vien_main",
+        "-swift-version",
+        "6",
+        "-enable-upcoming-feature",
+        "NonisolatedNonsendingByDefault",
+        "-enable-upcoming-feature",
+        "InferIsolatedConformances",
+        "-enable-upcoming-feature",
+        "MemberImportVisibility",
+        "-default-isolation",
+        "MainActor",
+        "-I",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-L",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-plugin-path",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "native"
+      ],
+      "outputFileMapPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/AppDelegate.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/MainMenu.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/Preferences.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/QuickOpenPanel.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/Theme.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/VienDocumentController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/main.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/MarkdownFile.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/TextCodec.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/CodeHighlight.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/DiagramFragment.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/EditorCommands.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/EditorExtras.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/EditorTextView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/EditorViewController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/Styler.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/TableCommands.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/AttributedRenderer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/Export.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/PrintView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/SettingsWindowController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/FileTreeViewController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/OutlineViewController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/SearchViewController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/SidebarViewController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/DocumentWindowController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/Vien.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/Apple/vien/native/Sources/Vien/App/AppDelegate.swift",
+        "/Users/Apple/vien/native/Sources/Vien/App/MainMenu.swift",
+        "/Users/Apple/vien/native/Sources/Vien/App/Preferences.swift",
+        "/Users/Apple/vien/native/Sources/Vien/App/QuickOpenPanel.swift",
+        "/Users/Apple/vien/native/Sources/Vien/App/Theme.swift",
+        "/Users/Apple/vien/native/Sources/Vien/App/VienDocumentController.swift",
+        "/Users/Apple/vien/native/Sources/Vien/App/main.swift",
+        "/Users/Apple/vien/native/Sources/Vien/Document/MarkdownFile.swift",
+        "/Users/Apple/vien/native/Sources/Vien/Document/TextCodec.swift",
+        "/Users/Apple/vien/native/Sources/Vien/Editor/CodeHighlight.swift",
+        "/Users/Apple/vien/native/Sources/Vien/Editor/DiagramFragment.swift",
+        "/Users/Apple/vien/native/Sources/Vien/Editor/EditorCommands.swift",
+        "/Users/Apple/vien/native/Sources/Vien/Editor/EditorExtras.swift",
+        "/Users/Apple/vien/native/Sources/Vien/Editor/EditorTextView.swift",
+        "/Users/Apple/vien/native/Sources/Vien/Editor/EditorViewController.swift",
+        "/Users/Apple/vien/native/Sources/Vien/Editor/Styler.swift",
+        "/Users/Apple/vien/native/Sources/Vien/Editor/TableCommands.swift",
+        "/Users/Apple/vien/native/Sources/Vien/Export/AttributedRenderer.swift",
+        "/Users/Apple/vien/native/Sources/Vien/Export/Export.swift",
+        "/Users/Apple/vien/native/Sources/Vien/Export/PrintView.swift",
+        "/Users/Apple/vien/native/Sources/Vien/Settings/SettingsWindowController.swift",
+        "/Users/Apple/vien/native/Sources/Vien/Sidebar/FileTreeViewController.swift",
+        "/Users/Apple/vien/native/Sources/Vien/Sidebar/OutlineViewController.swift",
+        "/Users/Apple/vien/native/Sources/Vien/Sidebar/SearchViewController.swift",
+        "/Users/Apple/vien/native/Sources/Vien/Sidebar/SidebarViewController.swift",
+        "/Users/Apple/vien/native/Sources/Vien/Window/DocumentWindowController.swift"
+      ],
+      "tempsPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.VienCode-x86_64-apple-macosx-debug.module" : {
+      "executable" : "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCode.build/sources",
+      "importPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienCode/Highlighter.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienCode/Language.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienCode/Token.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/swift-version-7184210C4D3EF5FF.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCode.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "VienCode",
+      "moduleOutputPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienCode.swiftmodule",
+      "objects" : [
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCode.build/Highlighter.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCode.build/Language.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCode.build/Token.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "x86_64-apple-macosx15.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCode.build/include/VienCode-Swift.h",
+        "-swift-version",
+        "6",
+        "-enable-upcoming-feature",
+        "NonisolatedNonsendingByDefault",
+        "-enable-upcoming-feature",
+        "InferIsolatedConformances",
+        "-enable-upcoming-feature",
+        "MemberImportVisibility",
+        "-I",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-L",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-plugin-path",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "native"
+      ],
+      "outputFileMapPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCode.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCode.build/Highlighter.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCode.build/Language.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCode.build/Token.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienCode.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/Apple/vien/native/Sources/VienCode/Highlighter.swift",
+        "/Users/Apple/vien/native/Sources/VienCode/Language.swift",
+        "/Users/Apple/vien/native/Sources/VienCode/Token.swift"
+      ],
+      "tempsPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCode.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.VienCodeTests-x86_64-apple-macosx-debug.module" : {
+      "executable" : "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCodeTests.build/sources",
+      "importPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Tests/VienCodeTests/HighlightTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/swift-version-7184210C4D3EF5FF.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienCode.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCodeTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "VienCodeTests",
+      "moduleOutputPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienCodeTests.swiftmodule",
+      "objects" : [
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCodeTests.build/HighlightTests.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "x86_64-apple-macosx15.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-swift-version",
+        "6",
+        "-enable-upcoming-feature",
+        "NonisolatedNonsendingByDefault",
+        "-enable-upcoming-feature",
+        "InferIsolatedConformances",
+        "-enable-upcoming-feature",
+        "MemberImportVisibility",
+        "-I",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-L",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-plugin-path",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "native"
+      ],
+      "outputFileMapPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCodeTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCodeTests.build/HighlightTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienCodeTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/Apple/vien/native/Tests/VienCodeTests/HighlightTests.swift"
+      ],
+      "tempsPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCodeTests.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.VienDiagrams-x86_64-apple-macosx-debug.module" : {
+      "executable" : "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/sources",
+      "importPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienDiagrams/Canvas.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienDiagrams/DiagramRenderer.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/ClassState.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Diagram.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Flowchart.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Graph.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/GraphRenderer.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Layout.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Pie.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Sequence.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/swift-version-7184210C4D3EF5FF.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "VienDiagrams",
+      "moduleOutputPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienDiagrams.swiftmodule",
+      "objects" : [
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Canvas.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/DiagramRenderer.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/ClassState.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Diagram.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Flowchart.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Graph.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/GraphRenderer.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Layout.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Pie.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Sequence.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "x86_64-apple-macosx15.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/include/VienDiagrams-Swift.h",
+        "-swift-version",
+        "6",
+        "-enable-upcoming-feature",
+        "NonisolatedNonsendingByDefault",
+        "-enable-upcoming-feature",
+        "InferIsolatedConformances",
+        "-enable-upcoming-feature",
+        "MemberImportVisibility",
+        "-I",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-L",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-plugin-path",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "native"
+      ],
+      "outputFileMapPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Canvas.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/DiagramRenderer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/ClassState.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Diagram.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Flowchart.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Graph.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/GraphRenderer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Layout.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Pie.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Sequence.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienDiagrams.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/Apple/vien/native/Sources/VienDiagrams/Canvas.swift",
+        "/Users/Apple/vien/native/Sources/VienDiagrams/DiagramRenderer.swift",
+        "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/ClassState.swift",
+        "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Diagram.swift",
+        "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Flowchart.swift",
+        "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Graph.swift",
+        "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/GraphRenderer.swift",
+        "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Layout.swift",
+        "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Pie.swift",
+        "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Sequence.swift"
+      ],
+      "tempsPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.VienDiagramsTests-x86_64-apple-macosx-debug.module" : {
+      "executable" : "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagramsTests.build/sources",
+      "importPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Tests/VienDiagramsTests/DiagramTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/swift-version-7184210C4D3EF5FF.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienDiagrams.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagramsTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "VienDiagramsTests",
+      "moduleOutputPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienDiagramsTests.swiftmodule",
+      "objects" : [
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagramsTests.build/DiagramTests.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "x86_64-apple-macosx15.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-swift-version",
+        "6",
+        "-enable-upcoming-feature",
+        "NonisolatedNonsendingByDefault",
+        "-enable-upcoming-feature",
+        "InferIsolatedConformances",
+        "-enable-upcoming-feature",
+        "MemberImportVisibility",
+        "-I",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-L",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-plugin-path",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "native"
+      ],
+      "outputFileMapPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagramsTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagramsTests.build/DiagramTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienDiagramsTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/Apple/vien/native/Tests/VienDiagramsTests/DiagramTests.swift"
+      ],
+      "tempsPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagramsTests.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.VienMarkdown-x86_64-apple-macosx-debug.module" : {
+      "executable" : "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/sources",
+      "importPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/Block.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/BlockParser.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/Document.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/Generated/Emoji.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/Generated/Entities.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/HTMLRenderer.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/Inline.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/InlineParser.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/Scanners.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/Source.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/Text.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/swift-version-7184210C4D3EF5FF.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "VienMarkdown",
+      "moduleOutputPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienMarkdown.swiftmodule",
+      "objects" : [
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Block.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/BlockParser.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Document.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Emoji.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Entities.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/HTMLRenderer.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Inline.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/InlineParser.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Scanners.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Source.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Text.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "x86_64-apple-macosx15.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/include/VienMarkdown-Swift.h",
+        "-swift-version",
+        "6",
+        "-enable-upcoming-feature",
+        "NonisolatedNonsendingByDefault",
+        "-enable-upcoming-feature",
+        "InferIsolatedConformances",
+        "-enable-upcoming-feature",
+        "MemberImportVisibility",
+        "-I",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-L",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-plugin-path",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "native"
+      ],
+      "outputFileMapPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Block.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/BlockParser.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Document.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Emoji.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Entities.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/HTMLRenderer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Inline.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/InlineParser.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Scanners.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Source.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Text.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienMarkdown.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/Apple/vien/native/Sources/VienMarkdown/Block.swift",
+        "/Users/Apple/vien/native/Sources/VienMarkdown/BlockParser.swift",
+        "/Users/Apple/vien/native/Sources/VienMarkdown/Document.swift",
+        "/Users/Apple/vien/native/Sources/VienMarkdown/Generated/Emoji.swift",
+        "/Users/Apple/vien/native/Sources/VienMarkdown/Generated/Entities.swift",
+        "/Users/Apple/vien/native/Sources/VienMarkdown/HTMLRenderer.swift",
+        "/Users/Apple/vien/native/Sources/VienMarkdown/Inline.swift",
+        "/Users/Apple/vien/native/Sources/VienMarkdown/InlineParser.swift",
+        "/Users/Apple/vien/native/Sources/VienMarkdown/Scanners.swift",
+        "/Users/Apple/vien/native/Sources/VienMarkdown/Source.swift",
+        "/Users/Apple/vien/native/Sources/VienMarkdown/Text.swift"
+      ],
+      "tempsPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.VienMarkdownTests-x86_64-apple-macosx-debug.module" : {
+      "executable" : "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdownTests.build/sources",
+      "importPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Tests/VienMarkdownTests/DocumentTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Tests/VienMarkdownTests/Fixtures.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Tests/VienMarkdownTests/SpecTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/swift-version-7184210C4D3EF5FF.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienMarkdown.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdownTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "VienMarkdownTests",
+      "moduleOutputPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienMarkdownTests.swiftmodule",
+      "objects" : [
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdownTests.build/DocumentTests.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdownTests.build/Fixtures.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdownTests.build/SpecTests.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "x86_64-apple-macosx15.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-swift-version",
+        "6",
+        "-enable-upcoming-feature",
+        "NonisolatedNonsendingByDefault",
+        "-enable-upcoming-feature",
+        "InferIsolatedConformances",
+        "-enable-upcoming-feature",
+        "MemberImportVisibility",
+        "-I",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-L",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-plugin-path",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "native"
+      ],
+      "outputFileMapPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdownTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdownTests.build/DocumentTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdownTests.build/Fixtures.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdownTests.build/SpecTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienMarkdownTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/Apple/vien/native/Tests/VienMarkdownTests/DocumentTests.swift",
+        "/Users/Apple/vien/native/Tests/VienMarkdownTests/Fixtures.swift",
+        "/Users/Apple/vien/native/Tests/VienMarkdownTests/SpecTests.swift"
+      ],
+      "tempsPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdownTests.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.VienMath-x86_64-apple-macosx-debug.module" : {
+      "executable" : "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/sources",
+      "importPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMath/Math.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMath/MathFont.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMath/MathLayout.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMath/MathParser.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/swift-version-7184210C4D3EF5FF.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "VienMath",
+      "moduleOutputPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienMath.swiftmodule",
+      "objects" : [
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/Math.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/MathFont.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/MathLayout.swift.o",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/MathParser.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "x86_64-apple-macosx15.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/include/VienMath-Swift.h",
+        "-swift-version",
+        "6",
+        "-enable-upcoming-feature",
+        "NonisolatedNonsendingByDefault",
+        "-enable-upcoming-feature",
+        "InferIsolatedConformances",
+        "-enable-upcoming-feature",
+        "MemberImportVisibility",
+        "-I",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-L",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-plugin-path",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "native"
+      ],
+      "outputFileMapPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/Math.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/MathFont.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/MathLayout.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/MathParser.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienMath.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/Apple/vien/native/Sources/VienMath/Math.swift",
+        "/Users/Apple/vien/native/Sources/VienMath/MathFont.swift",
+        "/Users/Apple/vien/native/Sources/VienMath/MathLayout.swift",
+        "/Users/Apple/vien/native/Sources/VienMath/MathParser.swift"
+      ],
+      "tempsPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.VienMathTests-x86_64-apple-macosx-debug.module" : {
+      "executable" : "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMathTests.build/sources",
+      "importPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Tests/VienMathTests/MathTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/swift-version-7184210C4D3EF5FF.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienMath.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMathTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "VienMathTests",
+      "moduleOutputPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienMathTests.swiftmodule",
+      "objects" : [
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMathTests.build/MathTests.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "x86_64-apple-macosx15.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-swift-version",
+        "6",
+        "-enable-upcoming-feature",
+        "NonisolatedNonsendingByDefault",
+        "-enable-upcoming-feature",
+        "InferIsolatedConformances",
+        "-enable-upcoming-feature",
+        "MemberImportVisibility",
+        "-I",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-L",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-plugin-path",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "native"
+      ],
+      "outputFileMapPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMathTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMathTests.build/MathTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienMathTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/Apple/vien/native/Tests/VienMathTests/MathTests.swift"
+      ],
+      "tempsPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMathTests.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.VienPackageTests-x86_64-apple-macosx-debug.module" : {
+      "executable" : "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienPackageTests.build/sources",
+      "importPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienPackageTests.derived/runner.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/swift-version-7184210C4D3EF5FF.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienMathTests.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienMarkdownTests.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienDiagramsTests.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienCodeTests.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienPackageTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "VienPackageTests",
+      "moduleOutputPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienPackageTests.swiftmodule",
+      "objects" : [
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienPackageTests.build/runner.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "x86_64-apple-macosx15.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienPackageTests.build/include/VienPackageTests-Swift.h",
+        "-I",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-L",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-plugin-path",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "native"
+      ],
+      "outputFileMapPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienPackageTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienPackageTests.build/runner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienPackageTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienPackageTests.derived/runner.swift"
+      ],
+      "tempsPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienPackageTests.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.vien-tool-x86_64-apple-macosx-debug.module" : {
+      "executable" : "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/vien_tool.build/sources",
+      "importPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Tests/vien-tool/main.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/swift-version-7184210C4D3EF5FF.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienMarkdown.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienDiagrams.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/VienMath.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/vien_tool.build/sources"
+        }
+      ],
+      "isLibrary" : false,
+      "moduleName" : "vien_tool",
+      "moduleOutputPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/vien_tool.swiftmodule",
+      "objects" : [
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/vien_tool.build/main.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "x86_64-apple-macosx15.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-Xfrontend",
+        "-entry-point-function-name",
+        "-Xfrontend",
+        "vien_tool_main",
+        "-swift-version",
+        "6",
+        "-enable-upcoming-feature",
+        "NonisolatedNonsendingByDefault",
+        "-enable-upcoming-feature",
+        "InferIsolatedConformances",
+        "-enable-upcoming-feature",
+        "MemberImportVisibility",
+        "-I",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-L",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+        "-plugin-path",
+        "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "native"
+      ],
+      "outputFileMapPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/vien_tool.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/vien_tool.build/main.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules/vien_tool.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/Apple/vien/native/Tests/vien-tool/main.swift"
+      ],
+      "tempsPath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/vien_tool.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "Vien" : [
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "Vien",
+      "-package-name",
+      "native",
+      "-c",
+      "/Users/Apple/vien/native/Sources/Vien/App/AppDelegate.swift",
+      "/Users/Apple/vien/native/Sources/Vien/App/MainMenu.swift",
+      "/Users/Apple/vien/native/Sources/Vien/App/Preferences.swift",
+      "/Users/Apple/vien/native/Sources/Vien/App/QuickOpenPanel.swift",
+      "/Users/Apple/vien/native/Sources/Vien/App/Theme.swift",
+      "/Users/Apple/vien/native/Sources/Vien/App/VienDocumentController.swift",
+      "/Users/Apple/vien/native/Sources/Vien/App/main.swift",
+      "/Users/Apple/vien/native/Sources/Vien/Document/MarkdownFile.swift",
+      "/Users/Apple/vien/native/Sources/Vien/Document/TextCodec.swift",
+      "/Users/Apple/vien/native/Sources/Vien/Editor/CodeHighlight.swift",
+      "/Users/Apple/vien/native/Sources/Vien/Editor/DiagramFragment.swift",
+      "/Users/Apple/vien/native/Sources/Vien/Editor/EditorCommands.swift",
+      "/Users/Apple/vien/native/Sources/Vien/Editor/EditorExtras.swift",
+      "/Users/Apple/vien/native/Sources/Vien/Editor/EditorTextView.swift",
+      "/Users/Apple/vien/native/Sources/Vien/Editor/EditorViewController.swift",
+      "/Users/Apple/vien/native/Sources/Vien/Editor/Styler.swift",
+      "/Users/Apple/vien/native/Sources/Vien/Editor/TableCommands.swift",
+      "/Users/Apple/vien/native/Sources/Vien/Export/AttributedRenderer.swift",
+      "/Users/Apple/vien/native/Sources/Vien/Export/Export.swift",
+      "/Users/Apple/vien/native/Sources/Vien/Export/PrintView.swift",
+      "/Users/Apple/vien/native/Sources/Vien/Settings/SettingsWindowController.swift",
+      "/Users/Apple/vien/native/Sources/Vien/Sidebar/FileTreeViewController.swift",
+      "/Users/Apple/vien/native/Sources/Vien/Sidebar/OutlineViewController.swift",
+      "/Users/Apple/vien/native/Sources/Vien/Sidebar/SearchViewController.swift",
+      "/Users/Apple/vien/native/Sources/Vien/Sidebar/SidebarViewController.swift",
+      "/Users/Apple/vien/native/Sources/Vien/Window/DocumentWindowController.swift",
+      "-I",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "-target",
+      "x86_64-apple-macosx15.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-Xfrontend",
+      "-entry-point-function-name",
+      "-Xfrontend",
+      "Vien_main",
+      "-swift-version",
+      "6",
+      "-enable-upcoming-feature",
+      "NonisolatedNonsendingByDefault",
+      "-enable-upcoming-feature",
+      "InferIsolatedConformances",
+      "-enable-upcoming-feature",
+      "MemberImportVisibility",
+      "-default-isolation",
+      "MainActor",
+      "-I",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-L",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-plugin-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "native",
+      "-driver-use-frontend-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc"
+    ],
+    "VienCode" : [
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "VienCode",
+      "-package-name",
+      "native",
+      "-c",
+      "/Users/Apple/vien/native/Sources/VienCode/Highlighter.swift",
+      "/Users/Apple/vien/native/Sources/VienCode/Language.swift",
+      "/Users/Apple/vien/native/Sources/VienCode/Token.swift",
+      "-I",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "-target",
+      "x86_64-apple-macosx15.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCode.build/include/VienCode-Swift.h",
+      "-swift-version",
+      "6",
+      "-enable-upcoming-feature",
+      "NonisolatedNonsendingByDefault",
+      "-enable-upcoming-feature",
+      "InferIsolatedConformances",
+      "-enable-upcoming-feature",
+      "MemberImportVisibility",
+      "-I",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-L",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-plugin-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "native",
+      "-driver-use-frontend-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc"
+    ],
+    "VienCodeTests" : [
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "VienCodeTests",
+      "-package-name",
+      "native",
+      "-c",
+      "/Users/Apple/vien/native/Tests/VienCodeTests/HighlightTests.swift",
+      "-I",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "-target",
+      "x86_64-apple-macosx15.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-swift-version",
+      "6",
+      "-enable-upcoming-feature",
+      "NonisolatedNonsendingByDefault",
+      "-enable-upcoming-feature",
+      "InferIsolatedConformances",
+      "-enable-upcoming-feature",
+      "MemberImportVisibility",
+      "-I",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-L",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-plugin-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "native",
+      "-driver-use-frontend-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc"
+    ],
+    "VienDiagrams" : [
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "VienDiagrams",
+      "-package-name",
+      "native",
+      "-c",
+      "/Users/Apple/vien/native/Sources/VienDiagrams/Canvas.swift",
+      "/Users/Apple/vien/native/Sources/VienDiagrams/DiagramRenderer.swift",
+      "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/ClassState.swift",
+      "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Diagram.swift",
+      "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Flowchart.swift",
+      "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Graph.swift",
+      "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/GraphRenderer.swift",
+      "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Layout.swift",
+      "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Pie.swift",
+      "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Sequence.swift",
+      "-I",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "-target",
+      "x86_64-apple-macosx15.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/include/VienDiagrams-Swift.h",
+      "-swift-version",
+      "6",
+      "-enable-upcoming-feature",
+      "NonisolatedNonsendingByDefault",
+      "-enable-upcoming-feature",
+      "InferIsolatedConformances",
+      "-enable-upcoming-feature",
+      "MemberImportVisibility",
+      "-I",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-L",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-plugin-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "native",
+      "-driver-use-frontend-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc"
+    ],
+    "VienDiagramsTests" : [
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "VienDiagramsTests",
+      "-package-name",
+      "native",
+      "-c",
+      "/Users/Apple/vien/native/Tests/VienDiagramsTests/DiagramTests.swift",
+      "-I",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "-target",
+      "x86_64-apple-macosx15.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-swift-version",
+      "6",
+      "-enable-upcoming-feature",
+      "NonisolatedNonsendingByDefault",
+      "-enable-upcoming-feature",
+      "InferIsolatedConformances",
+      "-enable-upcoming-feature",
+      "MemberImportVisibility",
+      "-I",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-L",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-plugin-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "native",
+      "-driver-use-frontend-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc"
+    ],
+    "VienMarkdown" : [
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "VienMarkdown",
+      "-package-name",
+      "native",
+      "-c",
+      "/Users/Apple/vien/native/Sources/VienMarkdown/Block.swift",
+      "/Users/Apple/vien/native/Sources/VienMarkdown/BlockParser.swift",
+      "/Users/Apple/vien/native/Sources/VienMarkdown/Document.swift",
+      "/Users/Apple/vien/native/Sources/VienMarkdown/Generated/Emoji.swift",
+      "/Users/Apple/vien/native/Sources/VienMarkdown/Generated/Entities.swift",
+      "/Users/Apple/vien/native/Sources/VienMarkdown/HTMLRenderer.swift",
+      "/Users/Apple/vien/native/Sources/VienMarkdown/Inline.swift",
+      "/Users/Apple/vien/native/Sources/VienMarkdown/InlineParser.swift",
+      "/Users/Apple/vien/native/Sources/VienMarkdown/Scanners.swift",
+      "/Users/Apple/vien/native/Sources/VienMarkdown/Source.swift",
+      "/Users/Apple/vien/native/Sources/VienMarkdown/Text.swift",
+      "-I",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "-target",
+      "x86_64-apple-macosx15.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/include/VienMarkdown-Swift.h",
+      "-swift-version",
+      "6",
+      "-enable-upcoming-feature",
+      "NonisolatedNonsendingByDefault",
+      "-enable-upcoming-feature",
+      "InferIsolatedConformances",
+      "-enable-upcoming-feature",
+      "MemberImportVisibility",
+      "-I",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-L",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-plugin-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "native",
+      "-driver-use-frontend-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc"
+    ],
+    "VienMarkdownTests" : [
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "VienMarkdownTests",
+      "-package-name",
+      "native",
+      "-c",
+      "/Users/Apple/vien/native/Tests/VienMarkdownTests/DocumentTests.swift",
+      "/Users/Apple/vien/native/Tests/VienMarkdownTests/Fixtures.swift",
+      "/Users/Apple/vien/native/Tests/VienMarkdownTests/SpecTests.swift",
+      "-I",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "-target",
+      "x86_64-apple-macosx15.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-swift-version",
+      "6",
+      "-enable-upcoming-feature",
+      "NonisolatedNonsendingByDefault",
+      "-enable-upcoming-feature",
+      "InferIsolatedConformances",
+      "-enable-upcoming-feature",
+      "MemberImportVisibility",
+      "-I",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-L",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-plugin-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "native",
+      "-driver-use-frontend-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc"
+    ],
+    "VienMath" : [
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "VienMath",
+      "-package-name",
+      "native",
+      "-c",
+      "/Users/Apple/vien/native/Sources/VienMath/Math.swift",
+      "/Users/Apple/vien/native/Sources/VienMath/MathFont.swift",
+      "/Users/Apple/vien/native/Sources/VienMath/MathLayout.swift",
+      "/Users/Apple/vien/native/Sources/VienMath/MathParser.swift",
+      "-I",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "-target",
+      "x86_64-apple-macosx15.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/include/VienMath-Swift.h",
+      "-swift-version",
+      "6",
+      "-enable-upcoming-feature",
+      "NonisolatedNonsendingByDefault",
+      "-enable-upcoming-feature",
+      "InferIsolatedConformances",
+      "-enable-upcoming-feature",
+      "MemberImportVisibility",
+      "-I",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-L",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-plugin-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "native",
+      "-driver-use-frontend-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc"
+    ],
+    "VienMathTests" : [
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "VienMathTests",
+      "-package-name",
+      "native",
+      "-c",
+      "/Users/Apple/vien/native/Tests/VienMathTests/MathTests.swift",
+      "-I",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "-target",
+      "x86_64-apple-macosx15.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-swift-version",
+      "6",
+      "-enable-upcoming-feature",
+      "NonisolatedNonsendingByDefault",
+      "-enable-upcoming-feature",
+      "InferIsolatedConformances",
+      "-enable-upcoming-feature",
+      "MemberImportVisibility",
+      "-I",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-L",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-plugin-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "native",
+      "-driver-use-frontend-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc"
+    ],
+    "VienPackageTests" : [
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "VienPackageTests",
+      "-package-name",
+      "native",
+      "-c",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienPackageTests.derived/runner.swift",
+      "-I",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "-target",
+      "x86_64-apple-macosx15.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienPackageTests.build/include/VienPackageTests-Swift.h",
+      "-I",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-L",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-plugin-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "native",
+      "-driver-use-frontend-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc"
+    ],
+    "vien_tool" : [
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "vien_tool",
+      "-package-name",
+      "native",
+      "-c",
+      "/Users/Apple/vien/native/Tests/vien-tool/main.swift",
+      "-I",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Modules",
+      "-target",
+      "x86_64-apple-macosx15.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-Xfrontend",
+      "-entry-point-function-name",
+      "-Xfrontend",
+      "vien_tool_main",
+      "-swift-version",
+      "6",
+      "-enable-upcoming-feature",
+      "NonisolatedNonsendingByDefault",
+      "-enable-upcoming-feature",
+      "InferIsolatedConformances",
+      "-enable-upcoming-feature",
+      "MemberImportVisibility",
+      "-I",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-L",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/macosx/testing",
+      "-plugin-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "native",
+      "-driver-use-frontend-path",
+      "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "Vien" : [
+      "VienCode",
+      "VienMath",
+      "VienDiagrams",
+      "VienMarkdown"
+    ],
+    "VienCode" : [
+
+    ],
+    "VienCodeTests" : [
+      "VienCode"
+    ],
+    "VienDiagrams" : [
+
+    ],
+    "VienDiagramsTests" : [
+      "VienDiagrams"
+    ],
+    "VienMarkdown" : [
+
+    ],
+    "VienMarkdownTests" : [
+      "VienMarkdown"
+    ],
+    "VienMath" : [
+
+    ],
+    "VienMathTests" : [
+      "VienMath"
+    ],
+    "VienPackageTests" : [
+      "VienCodeTests",
+      "VienCode",
+      "VienDiagramsTests",
+      "VienDiagrams",
+      "VienMarkdownTests",
+      "VienMarkdown",
+      "VienMathTests",
+      "VienMath"
+    ],
+    "vien_tool" : [
+      "VienMath",
+      "VienDiagrams",
+      "VienMarkdown"
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+    "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienPackageTests.derived/runner.swift" : {
+      "inputs" : [
+
+      ],
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienPackageTests.derived/runner.swift"
+        }
+      ]
+    }
+  },
+  "traitConfiguration" : {
+    "default" : {
+
+    }
+  },
+  "writeCommands" : {
+    "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien-entitlement.plist" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<entitlement-plist>"
+        },
+        {
+          "kind" : "virtual",
+          "name" : "<com.apple.security.get-task-allow>"
+        }
+      ],
+      "outputFilePath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien-entitlement.plist"
+    },
+    "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/App/AppDelegate.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/App/MainMenu.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/App/Preferences.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/App/QuickOpenPanel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/App/Theme.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/App/VienDocumentController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/App/main.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Document/MarkdownFile.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Document/TextCodec.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Editor/CodeHighlight.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Editor/DiagramFragment.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Editor/EditorCommands.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Editor/EditorExtras.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Editor/EditorTextView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Editor/EditorViewController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Editor/Styler.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Editor/TableCommands.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Export/AttributedRenderer.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Export/Export.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Export/PrintView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Settings/SettingsWindowController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Sidebar/FileTreeViewController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Sidebar/OutlineViewController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Sidebar/SearchViewController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Sidebar/SidebarViewController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/Vien/Window/DocumentWindowController.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/sources"
+    },
+    "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/AppDelegate.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/AttributedRenderer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/CodeHighlight.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/DiagramFragment.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/DocumentWindowController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/EditorCommands.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/EditorExtras.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/EditorTextView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/EditorViewController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/Export.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/FileTreeViewController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/MainMenu.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/MarkdownFile.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/OutlineViewController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/Preferences.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/PrintView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/QuickOpenPanel.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/SearchViewController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/SettingsWindowController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/SidebarViewController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/Styler.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/TableCommands.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/TextCodec.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/Theme.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/VienDocumentController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.build/main.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCode.build/Highlighter.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCode.build/Language.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCode.build/Token.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Canvas.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/ClassState.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Diagram.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/DiagramRenderer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Flowchart.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Graph.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/GraphRenderer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Layout.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Pie.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Sequence.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Block.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/BlockParser.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Document.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Emoji.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Entities.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/HTMLRenderer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Inline.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/InlineParser.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Scanners.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Source.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Text.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/Math.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/MathFont.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/MathLayout.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/MathParser.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/Vien.product/Objects.LinkFileList"
+    },
+    "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCode.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienCode/Highlighter.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienCode/Language.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienCode/Token.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCode.build/sources"
+    },
+    "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCodeTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Tests/VienCodeTests/HighlightTests.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCodeTests.build/sources"
+    },
+    "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienDiagrams/Canvas.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienDiagrams/DiagramRenderer.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/ClassState.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Diagram.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Flowchart.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Graph.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/GraphRenderer.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Layout.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Pie.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Sequence.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/sources"
+    },
+    "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagramsTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Tests/VienDiagramsTests/DiagramTests.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagramsTests.build/sources"
+    },
+    "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/Block.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/BlockParser.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/Document.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/Generated/Emoji.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/Generated/Entities.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/HTMLRenderer.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/Inline.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/InlineParser.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/Scanners.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/Source.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMarkdown/Text.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/sources"
+    },
+    "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdownTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Tests/VienMarkdownTests/DocumentTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Tests/VienMarkdownTests/Fixtures.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Tests/VienMarkdownTests/SpecTests.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdownTests.build/sources"
+    },
+    "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMath/Math.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMath/MathFont.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMath/MathLayout.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Sources/VienMath/MathParser.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/sources"
+    },
+    "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMathTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Tests/VienMathTests/MathTests.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMathTests.build/sources"
+    },
+    "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienPackageTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienPackageTests.derived/runner.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienPackageTests.build/sources"
+    },
+    "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienPackageTests.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCode.build/Highlighter.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCode.build/Language.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCode.build/Token.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienCodeTests.build/HighlightTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Canvas.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/ClassState.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Diagram.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/DiagramRenderer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Flowchart.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Graph.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/GraphRenderer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Layout.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Pie.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Sequence.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagramsTests.build/DiagramTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Block.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/BlockParser.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Document.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Emoji.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Entities.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/HTMLRenderer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Inline.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/InlineParser.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Scanners.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Source.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Text.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdownTests.build/DocumentTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdownTests.build/Fixtures.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdownTests.build/SpecTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/Math.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/MathFont.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/MathLayout.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/MathParser.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMathTests.build/MathTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienPackageTests.build/runner.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienPackageTests.product/Objects.LinkFileList"
+    },
+    "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/swift-version-7184210C4D3EF5FF.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/Library/Developer/Toolchains/swift-6.3.3-RELEASE.xctoolchain/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/swift-version-7184210C4D3EF5FF.txt"
+    },
+    "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/vien-tool-entitlement.plist" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<entitlement-plist>"
+        },
+        {
+          "kind" : "virtual",
+          "name" : "<com.apple.security.get-task-allow>"
+        }
+      ],
+      "outputFilePath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/vien-tool-entitlement.plist"
+    },
+    "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/vien-tool.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Canvas.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/ClassState.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Diagram.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/DiagramRenderer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Flowchart.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Graph.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/GraphRenderer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Layout.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Pie.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Sequence.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Block.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/BlockParser.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Document.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Emoji.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Entities.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/HTMLRenderer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Inline.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/InlineParser.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Scanners.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Source.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMarkdown.build/Text.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/Math.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/MathFont.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/MathLayout.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienMath.build/MathParser.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/vien_tool.build/main.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/vien-tool.product/Objects.LinkFileList"
+    },
+    "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/vien_tool.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/Apple/vien/native/Tests/vien-tool/main.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/vien_tool.build/sources"
+    }
+  }
+}

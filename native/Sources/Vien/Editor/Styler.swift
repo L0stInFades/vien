@@ -8,7 +8,7 @@ nonisolated final class MarkdownParagraph: NSTextParagraph {
   var overlay: Overlay?
   var decoration: Decoration = .none
 
-  enum Decoration { case none, rule, codeBlock(first: Bool, last: Bool), quote }
+  enum Decoration { case none, rule, codeBlock(first: Bool, last: Bool), quote, table(Block), hiddenLine }
 }
 
 /// Produces styled paragraphs on demand for the text view (TextKit 2 asks for them lazily as it lays
@@ -19,9 +19,15 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
   /// Paragraph elements handed to TextKit since the last recycling (see `EditorViewController`).
   var elementsCreated = 0
   unowned let document: MarkdownFile
-  var theme = Theme()
+  var theme = Theme() { didSet { gridCache.removeAll() } }
   var sourceMode = false
   var focusMode = false
+  /// Hide markup outside `activeRange` (the block holding the selection); see Preferences.foldMarkup.
+  var foldMarkup = true
+  var activeRange: Range<Int>?
+  private var gridCache: [Range<Int>: TableGrid] = [:]
+  private var gridCacheRevision = -1
+  private var gridCacheWidth: CGFloat = 0
   /// Byte range of the block that holds the selection (focus mode dims the rest).
   var focusRange: Range<Int>?
   weak var textView: EditorTextView?
@@ -74,6 +80,13 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
 
   func textLayoutManager(_ textLayoutManager: NSTextLayoutManager, textLayoutFragmentFor location: any NSTextLocation, in textElement: NSTextElement) -> NSTextLayoutFragment {
     if let p = textElement as? MarkdownParagraph {
+      switch p.decoration {
+      case .table(let block):
+        // Laid out here, at fragment time, so the grid always fits the current container width.
+        if let grid = grid(for: block) { return TableFragment(textElement: p, range: p.elementRange, grid: grid, bottomPadding: theme.paragraphSpacing) }
+      case .hiddenLine: return HiddenLineFragment(textElement: p, range: p.elementRange)
+      default: break
+      }
       if let overlay = p.overlay {
         return OverlayFragment(textElement: p, range: p.elementRange, overlay: overlay, contentWidth: contentWidth, dark: isDark)
       }
@@ -128,6 +141,15 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
       let n = nsRange(r)
       if n.length > 0 { s.addAttribute(.foregroundColor, value: color, range: n) }
     }
+    func hideText(_ r: Range<Int>) {
+      let n = nsRange(r)
+      if n.length > 0 { s.addAttributes(Theme.hiddenAttributes, range: n) }
+    }
+    // Markup is folded on every line outside the block that holds the selection.
+    var active = false
+    if let r = activeRange { active = r.lowerBound == byteStart || (byteEnd > r.lowerBound && byteStart < r.upperBound) }
+    var hide: ((Range<Int>) -> Void)? = nil
+    if foldMarkup, !sourceMode, !active { hide = hideText }
 
     // Locate the innermost block on this line: start at the first non-blank byte, then step past
     // container prefixes (`>`, list markers) until the path ends in a leaf.
@@ -178,6 +200,14 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
         leaf = block
       }
     }
+    if hide != nil, let table = path.first(where: { if case .table = $0.kind { return true }; return false }) {
+      // A folded table: every row's text is hidden; the first row's fragment draws the grid.
+      hideText(byteStart..<byteEnd)
+      let first = table.range.lowerBound >= byteStart && table.range.lowerBound < byteEnd
+      paragraph.decoration = first ? .table(table) : .hiddenLine
+      s.addAttribute(.paragraphStyle, value: theme.paragraphStyle(lineHeight: 1, indent: 0), range: full)
+      return
+    }
     if !sourceMode {
       // Wrapped lines align under the text that follows the line's prefix (markers, spaces).
       var prefixEnd = probe
@@ -194,7 +224,7 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
     if textColor != Theme.text { s.addAttribute(.foregroundColor, value: textColor, range: full) }
 
     var style = theme.paragraphStyle(indent: indent, firstLineIndent: 0)
-    if let leaf { style = leafStyle(leaf, s: s, full: full, byteStart: byteStart, byteEnd: byteEnd, indent: indent, paragraph: paragraph, nsRange: nsRange, mark: mark) }
+    if let leaf { style = leafStyle(leaf, s: s, full: full, byteStart: byteStart, byteEnd: byteEnd, indent: indent, paragraph: paragraph, nsRange: nsRange, mark: mark, hide: hide) }
     s.addAttribute(.paragraphStyle, value: style, range: full)
 
     if focusMode, !inFocus {
@@ -202,8 +232,26 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
     }
   }
 
+  private func grid(for table: Block) -> TableGrid? {
+    let width = contentWidth - 4
+    if gridCacheRevision != document.revision || gridCacheWidth != width {
+      gridCache.removeAll(keepingCapacity: true)
+      gridCacheRevision = document.revision
+      gridCacheWidth = width
+    }
+    if let hit = gridCache[table.range] { return hit }
+    let doc = document.markdown
+    let renderer = AttributedRenderer(document: doc, theme: theme)
+    let size = theme.baseSize * 0.95
+    let grid = TableGrid(table: table, width: width) { cell, header in
+      renderer.inlines(doc.inlines(of: cell), font: header ? theme.body(weight: .semibold, size: size) : theme.body(size: size), color: Theme.text)
+    }
+    if let grid { gridCache[table.range] = grid }
+    return grid
+  }
+
   private func leafStyle(_ leaf: Block, s: NSMutableAttributedString, full: NSRange, byteStart: Int, byteEnd: Int, indent: CGFloat,
-    paragraph: MarkdownParagraph, nsRange: (Range<Int>) -> NSRange, mark: (Range<Int>, NSColor) -> Void) -> NSParagraphStyle
+    paragraph: MarkdownParagraph, nsRange: (Range<Int>) -> NSRange, mark: (Range<Int>, NSColor) -> Void, hide: ((Range<Int>) -> Void)?) -> NSParagraphStyle
   {
     let doc = document.markdown
     let isLastLine = leaf.range.upperBound >= byteStart && leaf.range.upperBound <= byteEnd
@@ -214,14 +262,18 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
       if let marker { mark(marker, Theme.marker) }
       if let trailing { mark(trailing, Theme.marker) }
       if let underline, underline.lowerBound >= byteStart { mark(underline, Theme.marker) }
-      styleInlines(inlines(of: leaf), s: s, nsRange: nsRange, mark: mark, base: theme.heading(level: level))
+      styleInlines(inlines(of: leaf), s: s, nsRange: nsRange, mark: mark, hide: hide, base: theme.heading(level: level))
       return theme.paragraphStyle(lineHeight: 1.25, indent: indent, firstLineIndent: 0, spacingBefore: sourceMode ? 0 : theme.headingSpacingBefore, spacingAfter: theme.paragraphSpacing * 0.5)
     case .paragraph:
       let inlines = inlines(of: leaf)
-      styleInlines(inlines, s: s, nsRange: nsRange, mark: mark, base: nil)
-      if isLastLine, !sourceMode {
+      styleInlines(inlines, s: s, nsRange: nsRange, mark: mark, hide: hide, base: nil)
+      if !sourceMode {
         let images = Styler.imageSources(inlines)
-        if !images.isEmpty { paragraph.overlay = .images(images.map { document.resolveImageURL($0) }) }
+        if !images.isEmpty {
+          if isLastLine { paragraph.overlay = .images(images.map { document.resolveImageURL($0) }) }
+          // A paragraph that is only images shows the images in its place.
+          if let hide, Styler.isImagesOnly(inlines) { hide(byteStart..<byteEnd) }
+        }
       }
       return theme.paragraphStyle(indent: indent, firstLineIndent: 0, spacingAfter: isLastLine ? theme.paragraphSpacing : 0)
     case .fencedCode(let fence):
@@ -270,11 +322,11 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
     }
   }
 
-  private func styleInlines(_ inlines: [Inline], s: NSMutableAttributedString, nsRange: (Range<Int>) -> NSRange, mark: (Range<Int>, NSColor) -> Void, base: NSFont?) {
-    for node in inlines { styleInline(node, s: s, nsRange: nsRange, mark: mark, bold: false, italic: false, base: base) }
+  private func styleInlines(_ inlines: [Inline], s: NSMutableAttributedString, nsRange: (Range<Int>) -> NSRange, mark: (Range<Int>, NSColor) -> Void, hide: ((Range<Int>) -> Void)?, base: NSFont?) {
+    for node in inlines { styleInline(node, s: s, nsRange: nsRange, mark: mark, hide: hide, bold: false, italic: false, base: base) }
   }
 
-  private func styleInline(_ node: Inline, s: NSMutableAttributedString, nsRange: (Range<Int>) -> NSRange, mark: (Range<Int>, NSColor) -> Void, bold: Bool, italic: Bool, base: NSFont?) {
+  private func styleInline(_ node: Inline, s: NSMutableAttributedString, nsRange: (Range<Int>) -> NSRange, mark: (Range<Int>, NSColor) -> Void, hide: ((Range<Int>) -> Void)?, bold: Bool, italic: Bool, base: NSFont?) {
     let r = nsRange(node.range)
     var bold = bold, italic = italic
     func applyFont() {
@@ -302,14 +354,46 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
       if r.length > 0 { s.addAttribute(.strikethroughStyle, value: NSUnderlineStyle.single.rawValue, range: r) }
     case .footnoteReference:
       if r.length > 0 { s.addAttribute(.foregroundColor, value: Theme.accent, range: r) }
+      if let hide, node.range.count > 3 {
+        // `[^label]` becomes a superscript label.
+        hide(node.range.lowerBound..<(node.range.lowerBound + 2))
+        hide((node.range.upperBound - 1)..<node.range.upperBound)
+        let label = nsRange((node.range.lowerBound + 2)..<(node.range.upperBound - 1))
+        let size = (base ?? theme.body()).pointSize
+        s.addAttributes([.font: theme.body(size: size * 0.7), .baselineOffset: size * 0.33], range: label)
+      }
     case .superscript, .subscript:
       if r.length > 0 { s.addAttribute(.foregroundColor, value: Theme.secondary, range: r) }
     default: break
     }
     if !sourceMode {
-      for m in node.markers { mark(m, Theme.marker) }
+      for m in node.markers {
+        if let hide, Styler.folds(node.kind) { hide(m) } else { mark(m, Theme.marker) }
+      }
     }
-    for child in node.children { styleInline(child, s: s, nsRange: nsRange, mark: mark, bold: bold, italic: italic, base: base) }
+    for child in node.children { styleInline(child, s: s, nsRange: nsRange, mark: mark, hide: hide, bold: bold, italic: italic, base: base) }
+  }
+
+  /// Markers that disappear when the paragraph is not being edited. Math and emoji stay: their
+  /// source is what the reader sees.
+  private static func folds(_ kind: InlineKind) -> Bool {
+    switch kind {
+    case .emphasis, .strong, .strikethrough, .code, .superscript, .subscript, .autolink, .link, .image: return true
+    default: return false
+    }
+  }
+
+  static func isImagesOnly(_ inlines: [Inline]) -> Bool {
+    var sawImage = false
+    for n in inlines {
+      switch n.kind {
+      case .image: sawImage = true
+      case .text(let t): if !t.allSatisfy({ $0 == " " || $0 == "\t" }) { return false }
+      case .softBreak, .hardBreak: break
+      default: return false
+      }
+    }
+    return sawImage
   }
 
   static func imageSources(_ inlines: [Inline]) -> [String] {

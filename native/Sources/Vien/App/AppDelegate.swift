@@ -164,7 +164,25 @@ enum Automation {
       case "select": if let a = Int(arg.split(separator: ",")[0]), let b = Int(arg.split(separator: ",")[1]) { tv.setSelectedRange(NSRange(location: a, length: b)) }
       case "goto":
         let r = (tv.string as NSString).range(of: arg)
-        if r.location != NSNotFound { tv.setSelectedRange(NSRange(location: NSMaxRange(r), length: 0)) }
+        if r.location != NSNotFound {
+          tv.setSelectedRange(NSRange(location: NSMaxRange(r), length: 0))
+          tv.scrollRangeToVisible(tv.selectedRange())
+        }
+      case "clicktable":
+        // clicktable:row,col — clicks the centre of that cell in the first folded table on screen.
+        let parts = arg.split(separator: ",").compactMap { Int($0) }
+        if parts.count == 2, let lm = tv.textLayoutManager, let window = tv.window {
+          lm.enumerateTextLayoutFragments(from: nil, options: [.ensuresLayout]) { fragment in
+            guard let table = fragment as? TableFragment, parts[0] < table.grid.cells.count, parts[1] < table.grid.cells[parts[0]].count else { return true }
+            let cell = table.grid.cells[parts[0]][parts[1]].frame
+            let frame = table.layoutFragmentFrame
+            let p = tv.convert(CGPoint(x: frame.minX + table.gridOrigin.x + cell.midX + tv.textContainerInset.width, y: frame.minY + table.gridOrigin.y + cell.midY + tv.textContainerInset.height), to: nil)
+            if let event = NSEvent.mouseEvent(with: .leftMouseDown, location: p, modifierFlags: [], timestamp: 0, windowNumber: window.windowNumber, context: nil, eventNumber: 0, clickCount: 1, pressure: 1) {
+              tv.mouseDown(with: event)
+            }
+            return false
+          }
+        }
       case "end": tv.setSelectedRange(NSRange(location: (tv.string as NSString).length, length: 0))
       case "bold": wc.editor.toggleBold(nil)
       case "heading": wc.editor.setHeading(Int(arg) ?? 1)

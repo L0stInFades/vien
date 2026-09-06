@@ -49,6 +49,9 @@ struct Theme {
   static let rule = NSColor.separatorColor
   static let accent = NSColor.controlAccentColor
   static let background = NSColor.textBackgroundColor
+  /// Makes markup take (almost) no space: a hairline font in a clear colour. The characters stay
+  /// in the text, so nothing is rewritten and the caret can still land on them.
+  static let hiddenAttributes: [NSAttributedString.Key: Any] = [.font: NSFont.systemFont(ofSize: 0.01), .foregroundColor: NSColor.clear]
 
   /// Colour for a code token; light and dark values follow Xcode's default presentation.
   static func syntax(_ kind: TokenKind) -> NSColor { syntaxColors[kind] ?? text }

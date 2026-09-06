@@ -280,7 +280,7 @@ nonisolated final class DecoratedFragment: NSTextLayoutFragment {
       ctx.addPath(path)
       ctx.fillPath()
       super.draw(at: point, in: ctx)
-    case .none:
+    case .none, .table, .hiddenLine:
       super.draw(at: point, in: ctx)
     }
     ctx.restoreGState()

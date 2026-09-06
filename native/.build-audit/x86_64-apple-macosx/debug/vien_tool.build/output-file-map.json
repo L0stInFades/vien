@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/vien_tool.build/primary.swiftdeps"
+  },
+  "/Users/Apple/vien/native/Tests/vien-tool/main.swift": {
+    "dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/vien_tool.build/main.d",
+    "object": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/vien_tool.build/main.swift.o",
+    "swiftmodule": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/vien_tool.build/main~partial.swiftmodule",
+    "swift-dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/vien_tool.build/main.swiftdeps",
+    "diagnostics": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/vien_tool.build/main.dia"
+  }
+}

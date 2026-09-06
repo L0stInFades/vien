@@ -18,6 +18,7 @@ final class Preferences {
     typewriter = defaults.bool(forKey: "typewriter")
     focus = defaults.bool(forKey: "focus")
     sourceMode = defaults.bool(forKey: "sourceMode")
+    foldMarkup = defaults.object(forKey: "foldMarkup") as? Bool ?? true
     autoPairBrackets = defaults.object(forKey: "autoPairBrackets") as? Bool ?? true
     autoPairMarkdown = defaults.object(forKey: "autoPairMarkdown") as? Bool ?? true
     autoPairQuotes = defaults.object(forKey: "autoPairQuotes") as? Bool ?? true
@@ -51,6 +52,8 @@ final class Preferences {
   var typewriter: Bool { didSet { defaults.set(typewriter, forKey: "typewriter") } }
   var focus: Bool { didSet { defaults.set(focus, forKey: "focus") } }
   var sourceMode: Bool { didSet { defaults.set(sourceMode, forKey: "sourceMode") } }
+  /// Markup outside the paragraph being edited is hidden: links show their text, tables their grid.
+  var foldMarkup: Bool { didSet { defaults.set(foldMarkup, forKey: "foldMarkup") } }
 
   // Editing
   var autoPairBrackets: Bool { didSet { defaults.set(autoPairBrackets, forKey: "autoPairBrackets") } }

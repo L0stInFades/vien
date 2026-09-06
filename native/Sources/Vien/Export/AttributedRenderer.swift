@@ -93,7 +93,7 @@ struct AttributedRenderer {
     return NSAttributedString(string: "\n", attributes: [.paragraphStyle: style, .font: theme.body()])
   }
 
-  private func inlines(_ nodes: [Inline], font: NSFont, color: NSColor) -> NSAttributedString {
+  func inlines(_ nodes: [Inline], font: NSFont, color: NSColor) -> NSAttributedString {
     let out = NSMutableAttributedString()
     for n in nodes { inline(n, into: out, font: font, color: color, bold: false, italic: false) }
     return out
