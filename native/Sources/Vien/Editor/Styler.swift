@@ -28,7 +28,7 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
   /// Paragraph elements handed to TextKit since the last recycling (see `EditorViewController`).
   var elementsCreated = 0
   unowned let document: MarkdownFile
-  var theme = Theme() { didSet { gridCache.removeAll() } }
+  var theme = Theme() { didSet { gridCache.removeAll(); boxIndents.removeAll() } }
   var sourceMode = false
   var focusMode = false
   /// Hide markup outside `activeRange` (the block holding the selection); see Preferences.foldMarkup.
@@ -43,6 +43,8 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
   /// Inline parses are reused for the lines of one block (and across relayouts) until the next edit.
   private var inlineCache: [Range<Int>: [Inline]] = [:]
   private var inlineCacheRevision = -1
+  /// Where each fenced block's box starts, measured once from its opening line.
+  private var boxIndents: [Range<Int>: CGFloat] = [:]
   private var prefixWidths: [String: CGFloat] = [:]
   private let highlight = CodeHighlight()
 
@@ -53,6 +55,7 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
   private func inlines(of block: Block) -> [Inline] {
     if inlineCacheRevision != document.revision {
       inlineCache.removeAll(keepingCapacity: true)
+      boxIndents.removeAll(keepingCapacity: true)
       inlineCacheRevision = document.revision
     }
     if let hit = inlineCache[block.range] { return hit }
@@ -71,6 +74,23 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
     if prefixWidths.count > 512 { prefixWidths.removeAll(keepingCapacity: true) }
     prefixWidths[key] = w
     return w
+  }
+
+  /// The box of a fenced block starts where its opening fence does: after the list markers,
+  /// continuation spaces and fence indent of that line. Folded quote prefixes measure nothing here;
+  /// their bars add their own indent on every line.
+  private func boxIndent(of block: Block, fence: FenceInfo) -> CGFloat {
+    if let hit = boxIndents[block.range] { return hit }
+    let bytes = document.markdown.bytes
+    var prefix: [UInt8] = []
+    var i = fence.open.lowerBound
+    while i < fence.open.upperBound, bytes[i] != fence.fence {
+      if bytes[i] == 0x3E { if i + 1 < fence.open.upperBound, bytes[i + 1] == 0x20 { i += 1 } } else { prefix.append(bytes[i]) }
+      i += 1
+    }
+    let width = prefixWidth(NSAttributedString(string: String(decoding: prefix, as: UTF8.self), attributes: [.font: theme.code()]))
+    boxIndents[block.range] = width
+    return width
   }
 
   // MARK: - NSTextContentStorageDelegate
@@ -124,8 +144,8 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
     var before: CGFloat = 0
     var after: CGFloat = 0
     var inset: CGFloat = 0
-    /// The block's box starts at the container edge even when its lines begin with spaces.
-    var flush = false
+    /// Where the block's box starts; nil means at the line's own text (after its prefix).
+    var boxIndent: CGFloat? = nil
   }
 
   private func style(_ s: NSMutableAttributedString, utf16Range: NSRange) -> Styled {
@@ -270,7 +290,7 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
       }
       if prefixEnd > byteStart { indent = width(upTo: prefixEnd) }
     }
-    out.decor.indent = (layout.flush ? 0 : indent) + quoteShift
+    out.decor.indent = (layout.boxIndent ?? indent) + quoteShift
     let isFirst = leaf.map { onLine($0.range) } ?? false
     let isLast = leaf.map { $0.range.upperBound >= byteStart && $0.range.upperBound <= byteEnd } ?? false
     let style = theme.paragraphStyle(lineHeight: layout.lineHeight, indent: indent + quoteShift + layout.inset, firstLineIndent: quoteShift + layout.inset,
@@ -371,12 +391,13 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
       }
       var layout = codeLayout
       layout.inset = theme.codeInset
+      layout.boxIndent = boxIndent(of: leaf, fence: fence)
       return layout
     case .indentedCode:
       codeFont()
       out.decor.kind = .codeBlock(first: isFirstLine, last: isLastLine, label: nil)
       var layout = codeLayout
-      layout.flush = true
+      layout.boxIndent = 0  // the four spaces are the block's syntax, not its indentation
       return layout
     case .htmlBlock, .linkReferenceDefinition:
       codeFont()

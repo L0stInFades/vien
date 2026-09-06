@@ -165,7 +165,10 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
         if let leaf = before.last, leaf.range.upperBound >= b { path = before }
       }
       if let table = path.first(where: { if case .table = $0.kind { return true }; return false }) { return table.range }
-      return path.last?.range
+      if let leaf = path.last { return leaf.range }
+      // Between blocks (a blank line): the line itself, so it keeps its full height under the caret.
+      let line = (textView.string as NSString).lineRange(for: NSRange(location: u, length: 0))
+      return doc.byteOffset(forUTF16: line.location)..<doc.byteOffset(forUTF16: NSMaxRange(line))
     }
     let sel = textView.selectedRange()
     var active = unit(atUTF16: sel.location)
