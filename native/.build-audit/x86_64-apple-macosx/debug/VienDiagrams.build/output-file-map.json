@@ -16,6 +16,13 @@
     "swift-dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/DiagramRenderer.swiftdeps",
     "diagnostics": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/DiagramRenderer.dia"
   },
+  "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/ChartSupport.swift": {
+    "dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/ChartSupport.d",
+    "object": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/ChartSupport.swift.o",
+    "swiftmodule": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/ChartSupport~partial.swiftmodule",
+    "swift-dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/ChartSupport.swiftdeps",
+    "diagnostics": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/ChartSupport.dia"
+  },
   "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/ClassState.swift": {
     "dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/ClassState.d",
     "object": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/ClassState.swift.o",
@@ -30,12 +37,33 @@
     "swift-dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Diagram.swiftdeps",
     "diagnostics": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Diagram.dia"
   },
+  "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/ER.swift": {
+    "dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/ER.d",
+    "object": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/ER.swift.o",
+    "swiftmodule": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/ER~partial.swiftmodule",
+    "swift-dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/ER.swiftdeps",
+    "diagnostics": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/ER.dia"
+  },
   "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Flowchart.swift": {
     "dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Flowchart.d",
     "object": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Flowchart.swift.o",
     "swiftmodule": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Flowchart~partial.swiftmodule",
     "swift-dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Flowchart.swiftdeps",
     "diagnostics": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Flowchart.dia"
+  },
+  "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Gantt.swift": {
+    "dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Gantt.d",
+    "object": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Gantt.swift.o",
+    "swiftmodule": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Gantt~partial.swiftmodule",
+    "swift-dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Gantt.swiftdeps",
+    "diagnostics": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Gantt.dia"
+  },
+  "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/GitGraph.swift": {
+    "dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/GitGraph.d",
+    "object": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/GitGraph.swift.o",
+    "swiftmodule": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/GitGraph~partial.swiftmodule",
+    "swift-dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/GitGraph.swiftdeps",
+    "diagnostics": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/GitGraph.dia"
   },
   "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Graph.swift": {
     "dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Graph.d",
@@ -51,12 +79,26 @@
     "swift-dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/GraphRenderer.swiftdeps",
     "diagnostics": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/GraphRenderer.dia"
   },
+  "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Journey.swift": {
+    "dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Journey.d",
+    "object": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Journey.swift.o",
+    "swiftmodule": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Journey~partial.swiftmodule",
+    "swift-dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Journey.swiftdeps",
+    "diagnostics": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Journey.dia"
+  },
   "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Layout.swift": {
     "dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Layout.d",
     "object": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Layout.swift.o",
     "swiftmodule": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Layout~partial.swiftmodule",
     "swift-dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Layout.swiftdeps",
     "diagnostics": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Layout.dia"
+  },
+  "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Mindmap.swift": {
+    "dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Mindmap.d",
+    "object": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Mindmap.swift.o",
+    "swiftmodule": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Mindmap~partial.swiftmodule",
+    "swift-dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Mindmap.swiftdeps",
+    "diagnostics": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Mindmap.dia"
   },
   "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Pie.swift": {
     "dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Pie.d",
@@ -65,11 +107,32 @@
     "swift-dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Pie.swiftdeps",
     "diagnostics": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Pie.dia"
   },
+  "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Quadrant.swift": {
+    "dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Quadrant.d",
+    "object": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Quadrant.swift.o",
+    "swiftmodule": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Quadrant~partial.swiftmodule",
+    "swift-dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Quadrant.swiftdeps",
+    "diagnostics": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Quadrant.dia"
+  },
   "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Sequence.swift": {
     "dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Sequence.d",
     "object": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Sequence.swift.o",
     "swiftmodule": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Sequence~partial.swiftmodule",
     "swift-dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Sequence.swiftdeps",
     "diagnostics": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Sequence.dia"
+  },
+  "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/Timeline.swift": {
+    "dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Timeline.d",
+    "object": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Timeline.swift.o",
+    "swiftmodule": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Timeline~partial.swiftmodule",
+    "swift-dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Timeline.swiftdeps",
+    "diagnostics": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/Timeline.dia"
+  },
+  "/Users/Apple/vien/native/Sources/VienDiagrams/Mermaid/XYChart.swift": {
+    "dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/XYChart.d",
+    "object": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/XYChart.swift.o",
+    "swiftmodule": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/XYChart~partial.swiftmodule",
+    "swift-dependencies": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/XYChart.swiftdeps",
+    "diagnostics": "/Users/Apple/vien/native/.build-audit/x86_64-apple-macosx/debug/VienDiagrams.build/XYChart.dia"
   }
 }

@@ -19,13 +19,15 @@ final class SettingsWindowController: NSWindowController {
 
 struct SettingsView: View {
   @State private var prefs = Preferences.shared
+  /// VIEN_SNAPSHOT_SETTINGS=editor|markdown|files opens that tab (scripts and screenshots).
+  @State private var tab = ["editor", "markdown", "files"].contains(ProcessInfo.processInfo.environment["VIEN_SNAPSHOT_SETTINGS"] ?? "") ? ProcessInfo.processInfo.environment["VIEN_SNAPSHOT_SETTINGS"]! : "general"
 
   var body: some View {
-    TabView {
-      general.tabItem { Label("General", systemImage: "gearshape") }
-      editor.tabItem { Label("Editor", systemImage: "textformat") }
-      markdown.tabItem { Label("Markdown", systemImage: "number") }
-      files.tabItem { Label("Files", systemImage: "doc") }
+    TabView(selection: $tab) {
+      general.tabItem { Label("General", systemImage: "gearshape") }.tag("general")
+      editor.tabItem { Label("Editor", systemImage: "textformat") }.tag("editor")
+      markdown.tabItem { Label("Markdown", systemImage: "number") }.tag("markdown")
+      files.tabItem { Label("Files", systemImage: "doc") }.tag("files")
     }
     .frame(width: 520, height: 420)
   }

@@ -183,8 +183,8 @@ enum Automation {
         let parts = arg.split(separator: ",").compactMap { Int($0) }
         if parts.count == 2, let lm = tv.textLayoutManager, let window = tv.window {
           lm.enumerateTextLayoutFragments(from: nil, options: [.ensuresLayout]) { fragment in
-            guard let table = fragment as? TableFragment, parts[0] < table.grid.cells.count, parts[1] < table.grid.cells[parts[0]].count else { return true }
-            let cell = table.grid.cells[parts[0]][parts[1]].frame
+            guard let table = fragment as? TableFragment, let grid = table.grid, parts[0] < grid.cells.count, parts[1] < grid.cells[parts[0]].count else { return true }
+            let cell = grid.cells[parts[0]][parts[1]].frame
             let frame = table.layoutFragmentFrame
             let p = tv.convert(CGPoint(x: frame.minX + table.gridOrigin.x + cell.midX + tv.textContainerInset.width, y: frame.minY + table.gridOrigin.y + cell.midY + tv.textContainerInset.height), to: nil)
             if let event = NSEvent.mouseEvent(with: .leftMouseDown, location: p, modifierFlags: [], timestamp: 0, windowNumber: window.windowNumber, context: nil, eventNumber: 0, clickCount: 1, pressure: 1) {
@@ -223,6 +223,27 @@ enum Automation {
         let selector = NSSelectorFromString(arg)
         if wc.editor.responds(to: selector) { _ = wc.editor.perform(selector, with: nil) } else if tv.responds(to: selector) { _ = tv.perform(selector, with: nil) } else { print("unknown action \(arg)") }
       case "snap": Snapshot.write(window: wc.window!, to: arg)
+      case "top":
+        // Scroll so the phrase sits 60pt below the top edge (diagrams render beneath their fence).
+        let ns = tv.string as NSString
+        let r = ns.range(of: arg)
+        if r.location != NSNotFound, let lm = tv.textLayoutManager, let cs = lm.textContentManager as? NSTextContentStorage, let loc = cs.location(cs.documentRange.location, offsetBy: r.location) {
+          tv.setSelectedRange(NSRange(location: r.location, length: 0))
+          lm.ensureLayout(for: NSTextRange(location: loc))
+          if let frag = lm.textLayoutFragment(for: loc) {
+            let y = frag.layoutFragmentFrame.minY + tv.textContainerInset.height - 60
+            wc.editor.scrollView.contentView.scroll(to: NSPoint(x: 0, y: max(0, y)))
+            wc.editor.scrollView.reflectScrolledClipView(wc.editor.scrollView.contentView)
+          }
+        }
+      case "snapkey":
+        // The most recently shown visible window other than the document (About panel, sheets…).
+        let others = NSApp.windows.filter { $0.isVisible && $0 != wc.window && $0.frame.width > 50 && $0.frame.height > 50 }
+        print("windows: " + others.map { "\(type(of: $0)) '\($0.title)' \(Int($0.frame.width))x\(Int($0.frame.height))" }.joined(separator: ", "))
+        Snapshot.write(window: others.last ?? wc.window!, to: arg)
+      case "window":
+        let n = arg.split(separator: ",").compactMap { Double($0) }
+        if n.count == 2, let w = wc.window { w.setFrame(NSRect(x: w.frame.minX, y: max(0, w.frame.maxY - n[1]), width: n[0], height: n[1]), display: true) }
       case "stats": print("elements: \(wc.editor.elementsCreated) · scroll y: \(Int(tv.visibleRect.minY)) · selection: \(tv.selectedRange())")
       case "time": print(String(format: "time: %.2f ms", Date().timeIntervalSince(t0) * 1000))
       case "dump": print("--- text ---\n" + tv.string + "--- end ---")
@@ -330,7 +351,7 @@ enum Snapshot {
     NSApp.terminate(nil)
   }
 
-  /// Lays out the viewport and writes the window's content view as a PNG.
+  /// Lays out the viewport and writes the window (with any attached sheet composited on top) as a PNG.
   static func write(window: NSWindow, to path: String) {
     guard let view = window.contentView?.superview else { return }
     if let wc = window.windowController as? DocumentWindowController {
@@ -338,13 +359,27 @@ enum Snapshot {
       wc.editor.textView.textLayoutManager?.textViewportLayoutController.layoutViewport()
       wc.editor.textView.needsDisplay = true
     }
-    view.layoutSubtreeIfNeeded()
-    view.displayIfNeeded()
-    if let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) {
-      view.cacheDisplay(in: view.bounds, to: rep)
-      if let png = rep.representation(using: .png, properties: [:]) {
-        try? png.write(to: URL(fileURLWithPath: path))
-      }
+    func image(of v: NSView) -> NSImage? {
+      v.layoutSubtreeIfNeeded()
+      v.displayIfNeeded()
+      guard let rep = v.bitmapImageRepForCachingDisplay(in: v.bounds) else { return nil }
+      v.cacheDisplay(in: v.bounds, to: rep)
+      let img = NSImage(size: v.bounds.size)
+      img.addRepresentation(rep)
+      return img
+    }
+    guard let base = image(of: view) else { return }
+    let composite = NSImage(size: base.size)
+    composite.lockFocus()
+    base.draw(in: NSRect(origin: .zero, size: base.size))
+    for sheet in window.sheets {
+      guard let sv = sheet.contentView?.superview, let img = image(of: sv) else { continue }
+      let origin = NSPoint(x: sheet.frame.minX - window.frame.minX, y: sheet.frame.minY - window.frame.minY)
+      img.draw(in: NSRect(origin: origin, size: img.size))
+    }
+    composite.unlockFocus()
+    if let tiff = composite.tiffRepresentation, let rep = NSBitmapImageRep(data: tiff), let png = rep.representation(using: .png, properties: [:]) {
+      try? png.write(to: URL(fileURLWithPath: path))
     }
   }
 }

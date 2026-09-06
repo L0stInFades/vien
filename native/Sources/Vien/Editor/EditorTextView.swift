@@ -136,8 +136,8 @@ final class EditorTextView: NSTextView {
     guard let fragment = lm.textLayoutFragment(for: p) as? TableFragment else { return nil }
     let frame = fragment.layoutFragmentFrame
     let local = CGPoint(x: p.x - frame.minX - fragment.gridOrigin.x, y: p.y - frame.minY - fragment.gridOrigin.y)
-    guard let (row, column) = fragment.grid.cell(at: local) else { return nil }
-    return doc.utf16Offset(forByte: fragment.grid.sources[row][column].lowerBound)
+    guard let grid = fragment.grid, let (row, column) = grid.cell(at: local) else { return nil }
+    return doc.utf16Offset(forByte: grid.sources[row][column].lowerBound)
   }
 
   /// The standard menu, plus Table commands when the (moved) caret is inside a table.

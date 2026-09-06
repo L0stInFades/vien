@@ -4,7 +4,8 @@ import VienMarkdown
 
 /// A table laid out as a grid of wrapped cells: what a table looks like while the caret is elsewhere.
 /// Column widths come from the cells' natural widths, shrunk proportionally to fit the content width.
-nonisolated struct TableGrid {
+/// Immutable once built; CTFramesetter and NSColor reads are thread-safe, hence @unchecked.
+nonisolated struct TableGrid: @unchecked Sendable {
   struct Cell {
     var frame: CGRect  // grid coordinates, y down
     let framesetter: CTFramesetter
@@ -156,37 +157,48 @@ nonisolated struct TableGrid {
 }
 
 /// The first row of a folded table: its (hidden) text line plus the whole grid beneath it.
+/// The grid is fetched for the container's current width, so it follows window resizes.
 nonisolated final class TableFragment: NSTextLayoutFragment {
-  let grid: TableGrid
+  private let table: Block
+  private let provider: (Block, CGFloat) -> TableGrid?
+  private let initialWidth: CGFloat
   let bottomPadding: CGFloat
 
-  init(textElement: NSTextElement, range: NSTextRange?, grid: TableGrid, bottomPadding: CGFloat) {
-    self.grid = grid
+  init(textElement: NSTextElement, range: NSTextRange?, table: Block, width: CGFloat, bottomPadding: CGFloat, provider: @escaping (Block, CGFloat) -> TableGrid?) {
+    self.table = table
+    self.provider = provider
+    self.initialWidth = width
     self.bottomPadding = bottomPadding
     super.init(textElement: textElement, range: range)
   }
 
   required init?(coder: NSCoder) { fatalError() }
 
+  var grid: TableGrid? {
+    let width = (textLayoutManager?.textContainer?.size.width ?? initialWidth) - 4
+    nonisolated(unsafe) let me = self
+    return MainActor.assumeIsolated { me.provider(me.table, width) }
+  }
+
   /// Where the grid sits, relative to the fragment's origin.
   var gridOrigin: CGPoint { CGPoint(x: 0, y: super.layoutFragmentFrame.height) }
 
   override var layoutFragmentFrame: CGRect {
     var f = super.layoutFragmentFrame
-    f.size.height += grid.size.height + bottomPadding
+    f.size.height += (grid?.size.height ?? 0) + bottomPadding
     return f
   }
 
   override var renderingSurfaceBounds: CGRect {
     var b = super.renderingSurfaceBounds
-    b.size.height += grid.size.height + bottomPadding
-    b.size.width = max(b.size.width, grid.size.width + 2)
+    b.size.height += (grid?.size.height ?? 0) + bottomPadding
+    b.size.width = max(b.size.width, (grid?.size.width ?? 0) + 2)
     return b
   }
 
   override func draw(at point: CGPoint, in ctx: CGContext) {
     super.draw(at: point, in: ctx)
-    grid.draw(at: CGPoint(x: point.x + gridOrigin.x, y: point.y + gridOrigin.y), in: ctx)
+    grid?.draw(at: CGPoint(x: point.x + gridOrigin.x, y: point.y + gridOrigin.y), in: ctx)
   }
 }
 

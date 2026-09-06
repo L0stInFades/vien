@@ -217,15 +217,24 @@ struct GanttRenderer {
     let grid = Stroke(color: theme.nodeStroke.withAlpha(0.25), width: 1)
     let axisY = contentHeight
     canvas.line(CGPoint(x: x0, y: axisY), CGPoint(x: x0 + chartWidth, y: axisY), stroke: Stroke(color: theme.edge, width: 1))
+    // Collect the ticks first, then label only as many as fit without touching.
+    var ticks: [Date] = []
     var guardCount = 0
-    while tick <= span.1, guardCount < 200 {
+    while tick <= span.1, guardCount < 400 {
       guardCount += 1
-      if tick >= span.0 {
-        let tx = x(tick)
-        canvas.line(CGPoint(x: tx, y: margin + (diagram.title == nil ? 0 : 30)), CGPoint(x: tx, y: axisY), stroke: grid)
-        canvas.text(formatter.string(from: tick), at: CGPoint(x: tx - 40, y: axisY + 6), width: 80, align: .center, style: theme.style(theme.fontSize - 3, color: theme.secondaryText))
-      }
+      if tick >= span.0 { ticks.append(tick) }
       tick = cal.date(byAdding: unit.component, value: unit.step, to: tick) ?? span.1.addingTimeInterval(1)
+    }
+    let tickStyle = theme.style(theme.fontSize - 3, color: theme.secondaryText)
+    let tickLabelWidth = (ticks.prefix(8).map { TextMetrics.measure(formatter.string(from: $0), style: tickStyle).width }.max() ?? 40) + 10
+    let spacing = ticks.count > 1 ? x(ticks[1]) - x(ticks[0]) : chartWidth
+    let every = max(1, Int((tickLabelWidth / max(1, spacing)).rounded(.up)))
+    for (i, t) in ticks.enumerated() {
+      let tx = x(t)
+      canvas.line(CGPoint(x: tx, y: margin + (diagram.title == nil ? 0 : 30)), CGPoint(x: tx, y: axisY), stroke: grid)
+      if i % every == 0 {
+        canvas.text(formatter.string(from: t), at: CGPoint(x: tx - 40, y: axisY + 6), width: 80, align: .center, style: tickStyle)
+      }
     }
     // Rows.
     let labelStyle = theme.style(theme.fontSize - 1)

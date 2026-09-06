@@ -123,7 +123,7 @@ final class ImageLoader {
 /// Draws a rendered diagram / formula / image below the paragraph's text and reserves the space.
 nonisolated final class OverlayFragment: NSTextLayoutFragment {
   let overlay: Overlay
-  let contentWidth: CGFloat
+  private let initialWidth: CGFloat
   let dark: Bool
   let palette: Palette
   private let padding: CGFloat = 10
@@ -131,11 +131,14 @@ nonisolated final class OverlayFragment: NSTextLayoutFragment {
 
   init(textElement: NSTextElement, range: NSTextRange?, overlay: Overlay, contentWidth: CGFloat, dark: Bool, palette: Palette) {
     self.overlay = overlay
-    self.contentWidth = max(120, contentWidth - 24)
+    self.initialWidth = contentWidth
     self.dark = dark
     self.palette = palette
     super.init(textElement: textElement, range: range)
   }
+
+  /// Follows the container, so a window resized after layout still scales the image to fit.
+  var contentWidth: CGFloat { max(120, (textLayoutManager?.textContainer?.size.width ?? initialWidth) - 24) }
 
   required init?(coder: NSCoder) { fatalError() }
 

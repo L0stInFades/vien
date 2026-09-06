@@ -82,8 +82,10 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
     if let p = textElement as? MarkdownParagraph {
       switch p.decoration {
       case .table(let block):
-        // Laid out here, at fragment time, so the grid always fits the current container width.
-        if let grid = grid(for: block) { return TableFragment(textElement: p, range: p.elementRange, grid: grid, bottomPadding: theme.paragraphSpacing) }
+        // The fragment asks for the grid at the container's current width (cached per width).
+        return TableFragment(textElement: p, range: p.elementRange, table: block, width: contentWidth, bottomPadding: theme.paragraphSpacing) { [weak self] table, width in
+          self?.grid(for: table, width: width)
+        }
       case .hiddenLine: return HiddenLineFragment(textElement: p, range: p.elementRange)
       default: break
       }
@@ -192,10 +194,12 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
           mark(info.marker, Theme.secondary)
           if let task = info.task { mark(task.range, Theme.accent) }
         }
-      case .list, .table, .tableRow, .footnoteDefinition:
+      case .list, .tableRow, .footnoteDefinition:
         if case .footnoteDefinition(_, let marker) = block.kind, marker.lowerBound >= byteStart, marker.lowerBound < byteEnd {
           mark(marker, Theme.secondary)
         }
+      case .table:
+        leaf = block  // the delimiter line has no row; rows and cells that follow replace this
       default:
         leaf = block
       }
@@ -232,8 +236,7 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
     }
   }
 
-  private func grid(for table: Block) -> TableGrid? {
-    let width = contentWidth - 4
+  private func grid(for table: Block, width: CGFloat) -> TableGrid? {
     if gridCacheRevision != document.revision || gridCacheWidth != width {
       gridCache.removeAll(keepingCapacity: true)
       gridCacheRevision = document.revision

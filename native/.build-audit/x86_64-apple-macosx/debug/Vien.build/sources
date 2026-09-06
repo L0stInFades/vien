@@ -1,8 +1,10 @@
 /Users/Apple/vien/native/Sources/Vien/App/AppDelegate.swift
 /Users/Apple/vien/native/Sources/Vien/App/MainMenu.swift
+/Users/Apple/vien/native/Sources/Vien/App/Palette.swift
 /Users/Apple/vien/native/Sources/Vien/App/Preferences.swift
 /Users/Apple/vien/native/Sources/Vien/App/QuickOpenPanel.swift
 /Users/Apple/vien/native/Sources/Vien/App/Theme.swift
+/Users/Apple/vien/native/Sources/Vien/App/Updater.swift
 /Users/Apple/vien/native/Sources/Vien/App/VienDocumentController.swift
 /Users/Apple/vien/native/Sources/Vien/App/main.swift
 /Users/Apple/vien/native/Sources/Vien/Document/MarkdownFile.swift
@@ -15,6 +17,7 @@
 /Users/Apple/vien/native/Sources/Vien/Editor/EditorViewController.swift
 /Users/Apple/vien/native/Sources/Vien/Editor/Styler.swift
 /Users/Apple/vien/native/Sources/Vien/Editor/TableCommands.swift
+/Users/Apple/vien/native/Sources/Vien/Editor/TableFragment.swift
 /Users/Apple/vien/native/Sources/Vien/Export/AttributedRenderer.swift
 /Users/Apple/vien/native/Sources/Vien/Export/Export.swift
 /Users/Apple/vien/native/Sources/Vien/Export/PrintView.swift
