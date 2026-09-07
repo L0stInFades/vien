@@ -50,6 +50,8 @@ jobs:
         run: |
           notes="Universal build (Apple silicon and Intel), macOS 15 or later."
           if [ -z "${{ secrets.SIGN_IDENTITY }}" ]; then
-            notes="$notes This build is not notarized: after unzipping, right-click Vien.app and choose Open the first time."
+            notes="$notes
+
+**First launch.** This build is not notarized by Apple, so macOS blocks it the first time. Move Vien to Applications, try to open it once (macOS will refuse), then go to **System Settings → Privacy & Security**, scroll to Security, and click **Open Anyway** next to Vien. Control-clicking the app no longer works on macOS Sequoia. Afterwards it opens normally, and Vien updates itself from here on."
           fi
           gh release create "$GITHUB_REF_NAME" dist/Vien-*.zip dist/Vien-*.dmg dist/appcast.json --title "Vien ${GITHUB_REF_NAME#native-v}" --notes "$notes" --generate-notes

@@ -106,6 +106,21 @@ round it out.
   at the top of the view. Window tabbing, the system find bar, spell checking, Open Recent, Dark
   Mode and the Help menu's command search come for free.
 
+## Install
+
+Download the newest `Vien-x.y.z.dmg` or `.zip` from
+[Releases](https://github.com/L0stInFades/vien/releases) and put Vien in Applications. Builds are
+universal: one binary for Apple silicon and Intel, macOS 15 or later.
+
+These builds are signed but not notarized (that needs a paid Apple Developer ID), so macOS blocks
+the first launch. Open Vien once, let it be refused, then go to **System Settings → Privacy &
+Security**, scroll to Security and click **Open Anyway**. Control-clicking the app no longer works
+on macOS Sequoia. After that it opens normally.
+
+Vien updates itself: it checks the newest release once a day, verifies the download's SHA-256 and
+that its code signature matches the running app's, then swaps the bundle and relaunches. Vien ›
+Check for Updates… does it now; Settings › General turns the daily check off.
+
 ## Build, Run, Test
 
 Requires macOS 15 and the latest Swift release toolchain (rolling policy: the newest toolchain on
