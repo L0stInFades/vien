@@ -135,6 +135,34 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
     scheduleStats()
   }
 
+  /// Removes the spell checker's marks from code, math, HTML and front matter. It applies them as
+  /// rendering attributes on the layout manager rather than through the delegate, so filtering the
+  /// delegate's results is not enough: `<br/>` inside a Mermaid fence was still underlined, and in
+  /// the folded block, where the source is hairline-thin, the underline showed as a red dot.
+  func clearSpellingInCode() {
+    guard let lm = textView.textLayoutManager, let cs = lm.textContentManager as? NSTextContentStorage else { return }
+    let doc = document.markdown
+    var marked: [NSTextRange] = []
+    lm.enumerateRenderingAttributes(from: cs.documentRange.location, reverse: false) { _, attributes, range in
+      guard attributes.keys.contains(where: { Self.spelling.contains($0) }) else { return true }
+      let offset = cs.offset(from: cs.documentRange.location, to: range.location)
+      if Self.isCode(doc.path(at: doc.byteOffset(forUTF16: offset)).last?.kind) { marked.append(range) }
+      return true
+    }
+    for range in marked {
+      for key in Self.spelling { lm.removeRenderingAttribute(key, for: range) }
+    }
+  }
+
+  private static let spelling: [NSAttributedString.Key] = [.spellingState, .init("NSAccessibilitySpellingState")]
+
+  private static func isCode(_ kind: BlockKind?) -> Bool {
+    switch kind {
+    case .fencedCode, .indentedCode, .htmlBlock, .mathBlock, .frontMatter, .linkReferenceDefinition, .table: return true
+    default: return false
+    }
+  }
+
   private func scheduleStats() {
     wordCountTask?.cancel()
     wordCountTask = Task { [weak self] in
@@ -313,6 +341,9 @@ final class EditorViewController: NSViewController, NSTextStorageDelegate, NSTex
   /// Spelling results inside code, math, HTML and front matter are noise: drop them.
   func textView(_ view: NSTextView, didCheckTextIn range: NSRange, types checkingTypes: NSTextCheckingTypes, options: [NSSpellChecker.OptionKey: Any], results: [NSTextCheckingResult], orthography: NSOrthography, wordCount: Int) -> [NSTextCheckingResult] {
     let doc = document.markdown
+    // The checker also marks words directly, as rendering attributes the delegate never sees, so
+    // the ones that land in code are swept up once it has finished.
+    Task { @MainActor [weak self] in self?.clearSpellingInCode() }
     return results.filter { result in
       let b = doc.byteOffset(forUTF16: result.range.location)
       guard let leaf = doc.path(at: b).last else { return true }

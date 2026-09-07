@@ -260,6 +260,20 @@ enum Automation {
           tv.setSelectedRange(NSRange(location: tv.characterIndexForInsertion(at: p), length: 0))
           print("click: \(Int(n[0])),\(Int(n[1])) → offset \(tv.selectedRange().location)")
         }
+      case "spelling":
+        // Reports the spell checker's marks, so a test can show that none of them are in code.
+        if let lm = tv.textLayoutManager, let cs = lm.textContentManager as? NSTextContentStorage {
+          var found = 0
+          lm.enumerateRenderingAttributes(from: cs.documentRange.location, reverse: false) { _, attrs, range in
+            guard attrs.keys.contains(.spellingState) else { return true }
+            let lo = cs.offset(from: cs.documentRange.location, to: range.location)
+            let hi = cs.offset(from: cs.documentRange.location, to: range.endLocation)
+            found += 1
+            print("spelling: '\((tv.string as NSString).substring(with: NSRange(location: lo, length: max(0, hi - lo))))' at \(lo)")
+            return true
+          }
+          print("spelling: \(found) marks")
+        }
       case "snap": Snapshot.write(window: wc.window!, to: arg)
       case "doodle":
         // Drags the reader's pen across the About window in a short wave.

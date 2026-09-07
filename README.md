@@ -94,6 +94,11 @@ round it out.
   moves and deletes rows and columns and sets alignment; the model is read from the raw rows, so
   escaped pipes, extra cells and list or quote prefixes survive. Tab and Shift-Tab move between
   cells, add a row from the last cell.
+* **Spelling stops at the prose.** Code, math, HTML and front matter are not checked: `<br/>` in a
+  Mermaid fence is not a typo. The checker marks words as rendering attributes on the layout
+  manager rather than through the delegate that filters its results, so the marks that land in code
+  are swept off after each check; in a folded block, where the source is hairline-thin, one of them
+  showed as a red dot.
 * **Code is coloured.** `VienCode` tokenizes a fenced block once per edit (comments and strings
   may span lines) and the styler colours each line; the same tokens drive HTML export and printing.
 * **Themes.** System (follows macOS), Paper, Graphite, Solarized Light and Dark, Nord, One Dark.
@@ -160,8 +165,8 @@ VIEN_SCRIPT="type:- a§enter§type:b§dump§quit" Vien file.md   # drives the ed
 # steps: type: enter tab backtab backspace key:c select:a,b goto:phrase top:phrase end bold heading:n
 #        bullets quote undo wait:ms pagedown:n action:selector: clicktable:r,c inserttable:r,c
 #        theme:name update:check|install recycle snap:path snapkey:path window:w,h stats undoinfo
-#        sidebar:files|outline|search|hide fullscreen doodle activate click:x,y dump selection
-#        time quit
+#        sidebar:files|outline|search|hide fullscreen doodle activate click:x,y spelling dump
+#        selection time quit
 # type: inserts text outside an event, so it does not close the undo group or mark the document
 # edited; use key: for a real key event. quit clears change counts, so scripted edits are discarded.
 # time prints how long the previous step took; after pagedown it also splits layout (and the
