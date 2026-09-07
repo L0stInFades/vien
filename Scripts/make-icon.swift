@@ -1,15 +1,33 @@
 // Draws the app icon: the black calligraphic wordmark "Vien" (Snell Roundhand Black, a copperplate
-// script) on a white squircle. Small sizes, where four cursive letters cannot resolve, use a single
-// "V" instead. Rendered at exact pixel sizes into an sRGB bitmap (deterministic on any display).
+// script) on a white tile. Small sizes, where four cursive letters cannot resolve, use a single "V".
+// Rendered at exact pixel sizes into an sRGB bitmap (deterministic on any display).
 // Built and run by Scripts/make-icon.sh (swiftc, then iconutil).
+//
+// The tile follows Apple's macOS icon grid, measured from the system's own icons: on a 1024 canvas
+// the body is 824 square, centred, with a continuous-curvature corner of radius 185.4 (SwiftUI's
+// `.continuous` style, so the curve is the platform's own, not an approximation), and a soft
+// downward shadow that grounds it on a light background. No outline: system icons have none.
 import AppKit
 import CoreText
+import SwiftUI
 
 guard CommandLine.arguments.count > 1 else { fputs("usage: make-icon <output-dir>\n", stderr); exit(2) }
 let outDir = URL(fileURLWithPath: CommandLine.arguments[1])
 try? FileManager.default.createDirectory(at: outDir, withIntermediateDirectories: true)
 
 let faceName = "SnellRoundhand-Black"
+
+/// Apple's icon grid, as fractions of the canvas (1024 in the published template).
+enum Grid {
+  static let body = 824.0 / 1024                 // the tile's side
+  static let corner = 185.4 / 824                // of the tile's side
+  /// Two shadows, as the system's icons have: a tight contact shadow where the tile meets the
+  /// surface, and a wide ambient one under it. Blur, drop and alpha, all as fractions of the canvas.
+  static let shadows = [(blur: 24.0 / 1024, drop: 10.0 / 1024, alpha: 0.32), (blur: 5.0 / 1024, drop: 3.0 / 1024, alpha: 0.30)]
+  /// How much of the tile the mark may fill, so it sits inside the icon rather than against its edge.
+  static let markWidth = 0.75, markHeight = 0.46
+  static let monogramHeight = 0.56
+}
 
 /// A string set in the calligraphic face as one merged CGPath, with its ink bounding box.
 func text(_ string: String) -> (CGPath, CGRect) {
@@ -34,51 +52,49 @@ func text(_ string: String) -> (CGPath, CGRect) {
 let word = text("Vien")
 let monogram = text("V")
 
-/// A continuous-curvature squircle (superellipse, exponent 5) inscribed in `rect` — the iOS/macOS
-/// tile shape, rounder than a circular-arc rounded rectangle.
-func squircle(in rect: CGRect) -> CGPath {
-  let path = CGMutablePath()
-  let n = 5.0, steps = 180
-  let a = rect.width / 2, b = rect.height / 2
-  for i in 0...steps {
-    let t = Double(i) / Double(steps) * 2 * .pi
-    let x = a * copysign(pow(abs(cos(t)), 2 / n), cos(t))
-    let y = b * copysign(pow(abs(sin(t)), 2 / n), sin(t))
-    let p = CGPoint(x: rect.midX + x, y: rect.midY + y)
-    if i == 0 { path.move(to: p) } else { path.addLine(to: p) }
-  }
-  path.closeSubpath()
-  return path
-}
-
 func render(px: Int) -> CGImage {
   let s = CGFloat(px)
-  let space = CGColorSpace(name: CGColorSpace.sRGB)!
   let ctx = CGContext(data: nil, width: px, height: px, bitsPerComponent: 8, bytesPerRow: 0,
-    space: space, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+    space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
   ctx.interpolationQuality = .high
   ctx.setAllowsAntialiasing(true)
-  let inset = s * 0.098
-  let rect = CGRect(x: inset, y: inset, width: s - inset * 2, height: s - inset * 2)
-  let tile = squircle(in: rect)
-  // Soft contact shadow so the white tile reads on white backgrounds (Finder, Launchpad).
+
+  let side = (s * Grid.body).rounded()
+  let tile = CGRect(x: ((s - side) / 2).rounded(), y: ((s - side) / 2).rounded(), width: side, height: side)
+  let shape = RoundedRectangle(cornerRadius: side * Grid.corner, style: .continuous).path(in: tile).cgPath
+
+  // The tile is paper: white, with the faintest fall-off towards its foot, cast on the surface twice.
+  for shadow in Grid.shadows {
+    ctx.saveGState()
+    ctx.setShadow(offset: CGSize(width: 0, height: -s * shadow.drop), blur: s * shadow.blur,
+      color: CGColor(srgbRed: 0, green: 0, blue: 0, alpha: shadow.alpha))
+    ctx.addPath(shape)
+    ctx.setFillColor(CGColor(gray: 1, alpha: 1))
+    ctx.fillPath()
+    ctx.restoreGState()
+  }
   ctx.saveGState()
-  ctx.setShadow(offset: CGSize(width: 0, height: -s * 0.006), blur: s * 0.022,
-    color: CGColor(srgbRed: 0, green: 0, blue: 0, alpha: 0.22))
-  ctx.addPath(tile); ctx.setFillColor(CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 1)); ctx.fillPath()
+  ctx.addPath(shape)
+  ctx.clip()
+  let paper = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
+    colors: [CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 1), CGColor(srgbRed: 0.965, green: 0.965, blue: 0.961, alpha: 1)] as CFArray,
+    locations: [0, 1])!
+  ctx.drawLinearGradient(paper, start: CGPoint(x: 0, y: tile.maxY), end: CGPoint(x: 0, y: tile.minY), options: [])
   ctx.restoreGState()
-  // Hairline edge (a touch darker than before) so it is defined even where the shadow is faint.
-  ctx.addPath(tile); ctx.setStrokeColor(CGColor(srgbRed: 0.78, green: 0.78, blue: 0.78, alpha: 1))
-  ctx.setLineWidth(max(1, s / 220)); ctx.strokePath()
+
   // The mark: the full word where it can resolve, a single V at tiny sizes.
   let useWord = px >= 64
   let (glyph, bbox) = useWord ? word : monogram
-  let scale = useWord ? min(s * 0.76 / bbox.width, s * 0.60 / bbox.height) : s * 0.58 / bbox.height
+  let scale = useWord
+    ? min(side * Grid.markWidth / bbox.width, side * Grid.markHeight / bbox.height)
+    : side * Grid.monogramHeight / bbox.height
   ctx.saveGState()
-  // Centre by the ink box, nudged up ~3% (a script's visual mass sits low).
-  ctx.translateBy(x: s / 2 - bbox.midX * scale, y: s / 2 - bbox.midY * scale + s * 0.03)
+  // Centre by the ink box, nudged up a little: a script's visual mass sits below its middle.
+  ctx.translateBy(x: tile.midX - bbox.midX * scale, y: tile.midY - bbox.midY * scale + side * 0.025)
   ctx.scaleBy(x: scale, y: scale)
-  ctx.addPath(glyph); ctx.setFillColor(CGColor(srgbRed: 0, green: 0, blue: 0, alpha: 1)); ctx.fillPath()
+  ctx.addPath(glyph)
+  ctx.setFillColor(CGColor(srgbRed: 0.071, green: 0.071, blue: 0.078, alpha: 1))  // ink, not pure black
+  ctx.fillPath()
   ctx.restoreGState()
   return ctx.makeImage()!
 }
