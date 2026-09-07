@@ -326,6 +326,15 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
     return grid
   }
 
+  /// The picture a fenced block stands for, if any: a Mermaid diagram or a display formula.
+  private func picture(of block: Block, language: String?) -> Overlay? {
+    switch language?.lowercased() {
+    case "mermaid": return .mermaid(document.markdown.text(of: block))
+    case "math", "latex", "tex": return .math(document.markdown.text(of: block))
+    default: return nil
+    }
+  }
+
   private func styleLeaf(_ leaf: Block, in path: [Block], s: NSMutableAttributedString, full: NSRange, byteStart: Int, byteEnd: Int, folded: Bool, out: inout Styled,
     nsRange: (Range<Int>) -> NSRange, mark: (Range<Int>, NSColor) -> Void, hide: @escaping (Range<Int>) -> Void) -> Layout
   {
@@ -369,6 +378,15 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
     case .fencedCode(let fence):
       codeFont()
       let language = leaf.language(in: doc.bytes)
+      let picture = sourceMode ? nil : picture(of: leaf, language: language)
+      if folded, picture != nil {
+        // A diagram or a formula stands for itself: the page shows the picture and nothing else.
+        // Put the caret in the block and the source comes back, with the picture still beneath it.
+        hide(byteStart..<byteEnd)
+        out.decor.fixedHeight = 0
+        if isLastLine { out.overlay = picture }
+        return Layout()
+      }
       if isFirstLine {
         if folded {
           hide(byteStart..<byteEnd)
@@ -385,10 +403,7 @@ final class Styler: NSObject, NSTextContentStorageDelegate, NSTextLayoutManagerD
       if !sourceMode {
         for token in highlight.tokens(for: leaf, in: document, intersecting: byteStart..<byteEnd) { mark(token.range, Theme.syntax(token.kind)) }
       }
-      if isLastLine, !sourceMode, let lang = language?.lowercased() {
-        if lang == "mermaid" { out.overlay = .mermaid(doc.text(of: leaf)) }
-        else if ["math", "latex", "tex"].contains(lang) { out.overlay = .math(doc.text(of: leaf)) }
-      }
+      if isLastLine { out.overlay = picture }
       var layout = codeLayout
       layout.inset = theme.codeInset
       layout.boxIndent = boxIndent(of: leaf, fence: fence)

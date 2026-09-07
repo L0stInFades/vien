@@ -135,8 +135,25 @@ nonisolated final class OverlayFragment: MarkdownFragment {
     super.init(textElement: textElement, range: range, decor: decor, palette: palette)
   }
 
-  /// Follows the container, so a window resized after layout still scales the image to fit.
-  var contentWidth: CGFloat { max(120, (textLayoutManager?.textContainer?.size.width ?? initialWidth) - 24) }
+  /// Where a picture may go, in the coordinates `draw(at:in:)` is given. A diagram or a formula may
+  /// use the whole window: shrunk to a reading measure a wide diagram cannot be read, and a diagram
+  /// is there to be read. An image belongs in the text column, with the prose.
+  private var box: (x: CGFloat, width: CGFloat) {
+    let column = textLayoutManager?.textContainer?.size.width ?? initialWidth
+    // `super`, not `self`: this fragment's frame is measured from the picture, which needs the box.
+    let left = -super.layoutFragmentFrame.minX
+    if case .images = overlay { return (left, max(120, column)) }
+    let margin = textLayoutManager?.textContainer?.textView?.textContainerInset.width ?? 0
+    return (left - margin + 24, max(120, column + 2 * margin - 48))
+  }
+
+  var contentWidth: CGFloat { box.width }
+
+  /// The size the picture is drawn at: its own, or shrunk to the width it has.
+  private func drawn(_ natural: CGSize) -> CGSize {
+    guard natural.width > box.width, natural.width > 0 else { return natural }
+    return CGSize(width: box.width, height: (natural.height * box.width / natural.width).rounded())
+  }
 
   required init?(coder: NSCoder) { fatalError() }
 
@@ -160,7 +177,7 @@ nonisolated final class OverlayFragment: MarkdownFragment {
 
   private var extraHeight: CGFloat {
     if let e = lookup() {
-      if let _ = e.image { return e.size.height + padding * 2 }
+      if e.image != nil { return drawn(e.size).height + padding * 2 }
       return 24 + padding  // error line
     }
     return placeholderHeight
@@ -175,7 +192,9 @@ nonisolated final class OverlayFragment: MarkdownFragment {
   override var renderingSurfaceBounds: CGRect {
     var b = super.renderingSurfaceBounds
     b.size.height += extraHeight
-    b.size.width = max(b.size.width, contentWidth + 24)
+    let left = min(b.minX, box.x), right = max(b.maxX, box.x + box.width)
+    b.origin.x = left
+    b.size.width = right - left
     return b
   }
 
@@ -185,11 +204,8 @@ nonisolated final class OverlayFragment: MarkdownFragment {
     let entry = lookup()
     ctx.saveGState()
     if let entry, let image = entry.image {
-      let s = entry.size
-      let scale = s.width > contentWidth ? contentWidth / s.width : 1
-      let size = CGSize(width: s.width * scale, height: s.height * scale)
-      let x = point.x + max(0, (contentWidth - size.width) / 2) + 12
-      let rect = CGRect(x: x, y: top, width: size.width, height: size.height)
+      let size = drawn(entry.size)
+      let rect = CGRect(x: point.x + box.x + ((box.width - size.width) / 2).rounded(), y: top, width: size.width, height: size.height)
       NSGraphicsContext.saveGraphicsState()
       let gc = NSGraphicsContext(cgContext: ctx, flipped: true)
       NSGraphicsContext.current = gc
@@ -202,7 +218,7 @@ nonisolated final class OverlayFragment: MarkdownFragment {
       ]
       NSGraphicsContext.saveGraphicsState()
       NSGraphicsContext.current = NSGraphicsContext(cgContext: ctx, flipped: true)
-      (label as NSString).draw(at: CGPoint(x: point.x + 12, y: top), withAttributes: attrs)
+      (label as NSString).draw(at: CGPoint(x: point.x + box.x, y: top), withAttributes: attrs)
       NSGraphicsContext.restoreGraphicsState()
     }
     ctx.restoreGState()

@@ -251,6 +251,15 @@ enum Automation {
         NSApp.activate(ignoringOtherApps: true)
         try? await Task.sleep(for: .milliseconds(150))
         print("active: \(NSApp.isActive) key: \(wc.window?.isKeyWindow ?? false)")
+      case "click":
+        // Where a click at this point of the visible area would put the caret (y down from the top):
+        // what folding and hit testing decide, without NSTextView's modal drag-tracking loop.
+        let n = arg.split(separator: ",").compactMap { Double($0) }
+        if n.count == 2 {
+          let p = CGPoint(x: tv.visibleRect.minX + n[0], y: tv.visibleRect.minY + n[1])
+          tv.setSelectedRange(NSRange(location: tv.characterIndexForInsertion(at: p), length: 0))
+          print("click: \(Int(n[0])),\(Int(n[1])) → offset \(tv.selectedRange().location)")
+        }
       case "snap": Snapshot.write(window: wc.window!, to: arg)
       case "doodle":
         // Drags the reader's pen across the About window in a short wave.

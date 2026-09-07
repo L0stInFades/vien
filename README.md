@@ -79,12 +79,16 @@ round it out.
   the transparent marker, fences collapse into the padding of a code background whose header strip
   carries the language tag, `---` becomes a rule, blank lines become half-height gaps, inline code
   sits in a rounded box, a hard line break shows a small ↓, links show their text, images show in
-  place, tables become a native grid with wrapped cells. The line under the caret always shows its
-  true size. Settings › Editor › Markup turns this off; Source Code Mode shows everything.
+  place, tables become a native grid with wrapped cells. A Mermaid or math fence shows only its
+  picture; click it and the source comes back with the picture still beneath. The line under the
+  caret always shows its true size. Settings › Editor › Markup turns this off; Source Code Mode
+  shows everything.
 * **Diagrams and math draw themselves.** A Mermaid fence or a `$$` block gets a custom
   `NSTextLayoutFragment` that reserves space and draws the rendered bitmap beneath the closing line;
-  the text stays editable above it. Rendering is synchronous native code (5–20 ms per diagram,
-  <2 ms per formula) with an in-memory cache.
+  the text stays editable above it. A picture may use the whole window rather than the text column,
+  because a wide diagram shrunk to a reading measure cannot be read; images stay with the prose.
+  Rendering is synchronous native code (5–20 ms per diagram, <2 ms per formula) with an in-memory
+  cache.
 * **Tables are edited as tables.** The Table menu (also in the context menu) inserts, formats, adds,
   moves and deletes rows and columns and sets alignment; the model is read from the raw rows, so
   escaped pipes, extra cells and list or quote prefixes survive. Tab and Shift-Tab move between
@@ -155,7 +159,8 @@ VIEN_SCRIPT="type:- a§enter§type:b§dump§quit" Vien file.md   # drives the ed
 # steps: type: enter tab backtab backspace key:c select:a,b goto:phrase top:phrase end bold heading:n
 #        bullets quote undo wait:ms pagedown:n action:selector: clicktable:r,c inserttable:r,c
 #        theme:name update:check|install recycle snap:path snapkey:path window:w,h stats undoinfo
-#        sidebar:files|outline|search|hide fullscreen doodle activate dump selection time quit
+#        sidebar:files|outline|search|hide fullscreen doodle activate click:x,y dump selection
+#        time quit
 # type: inserts text outside an event, so it does not close the undo group or mark the document
 # edited; use key: for a real key event. quit clears change counts, so scripted edits are discarded.
 # time prints how long the previous step took; after pagedown it also splits layout (and the
