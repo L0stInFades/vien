@@ -241,7 +241,8 @@ struct Layered {
     var down: [[Int]] = Array(repeating: [], count: verts.count)
     for (a, b) in links { down[a].append(b); up[b].append(a) }
 
-    // 4. Ordering by barycenter sweeps, keeping the best (fewest crossings).
+    // 4. Ordering: the weighted-median heuristic with adjacent transposition, keeping the sweep
+    // with the fewest crossings. Sorting is stable (position breaks ties) so a layer never churns.
     func positions() -> [Int] {
       var pos = [Int](repeating: 0, count: verts.count)
       for layer in layers { for (i, v) in layer.enumerated() { pos[v] = i } }
@@ -257,31 +258,69 @@ struct Layered {
       }
       return total
     }
-    var best = layers
-    var bestCrossings = crossings()
-    for iteration in 0..<12 {
-      let pos = positions()
-      if iteration % 2 == 0 {
-        for l in 1..<layers.count {
-          layers[l].sort { a, b in bary(a, up, pos) < bary(b, up, pos) }
-        }
-      } else {
-        for l in stride(from: layers.count - 2, through: 0, by: -1) {
-          layers[l].sort { a, b in bary(a, down, pos) < bary(b, down, pos) }
+    /// Where a vertex wants to sit: the median of its neighbours in the adjacent layer, biased
+    /// towards the denser side when it has an even number of them. -1 keeps it where it is.
+    func median(_ v: Int, _ nb: [[Int]], _ pos: [Int]) -> Double {
+      let p = nb[v].map { pos[$0] }.sorted()
+      guard !p.isEmpty else { return -1 }
+      let m = p.count / 2
+      if p.count % 2 == 1 { return Double(p[m]) }
+      if p.count == 2 { return Double(p[0] + p[1]) / 2 }
+      let left = Double(p[m - 1] - p[0]), right = Double(p[p.count - 1] - p[m])
+      guard left + right > 0 else { return Double(p[m - 1] + p[m]) / 2 }
+      return (Double(p[m - 1]) * right + Double(p[m]) * left) / (left + right)
+    }
+    /// How many crossings the pair (v, w) contributes, in that order.
+    func pairCrossings(_ v: Int, _ w: Int, _ nb: [[Int]], _ pos: [Int]) -> Int {
+      var c = 0
+      for i in nb[v] { for j in nb[w] where pos[i] > pos[j] { c += 1 } }
+      return c
+    }
+    /// Swaps neighbours while that removes crossings: what the median alone cannot see.
+    func transpose() {
+      var improved = true
+      var rounds = 0
+      while improved, rounds < 4 {
+        improved = false
+        rounds += 1
+        for l in layers.indices {
+          let pos = positions()
+          for i in 0..<max(0, layers[l].count - 1) {
+            let v = layers[l][i], w = layers[l][i + 1]
+            let keep = pairCrossings(v, w, up, pos) + pairCrossings(v, w, down, pos)
+            let swap = pairCrossings(w, v, up, pos) + pairCrossings(w, v, down, pos)
+            if swap < keep {
+              layers[l].swapAt(i, i + 1)
+              improved = true
+            }
+          }
         }
       }
+    }
+    var best = layers
+    var bestCrossings = crossings()
+    for iteration in 0..<8 {
+      let pos = positions()
+      let sweep = iteration % 2 == 0 ? Array(1..<layers.count) : Array(stride(from: layers.count - 2, through: 0, by: -1))
+      let nb = iteration % 2 == 0 ? up : down
+      for l in sweep {
+        let want = layers[l].map { median($0, nb, pos) }
+        let order = layers[l].indices.sorted { a, b in
+          let x = want[a], y = want[b]
+          if x < 0 || y < 0 || x == y { return a < b }  // no neighbours, or a tie: keep the order
+          return x < y
+        }
+        layers[l] = order.map { layers[l][$0] }
+      }
+      transpose()
       let c = crossings()
       if c < bestCrossings { bestCrossings = c; best = layers }
       if c == 0 { break }
     }
     layers = best
-    func bary(_ v: Int, _ nb: [[Int]], _ pos: [Int]) -> Double {
-      let n = nb[v]
-      guard !n.isEmpty else { return Double(pos[v]) }
-      return Double(n.map { pos[$0] }.reduce(0, +)) / Double(n.count)
-    }
 
-    // 5. Coordinates. y from layer heights; x by packing then averaging neighbours.
+    // 5. Coordinates. The rank axis comes straight from the layer heights; the other one is the
+    // Brandes-Köpf assignment, which is what keeps long edges straight and chains on one line.
     var layerHeights = layers.map { layer in layer.map { verts[$0].h }.max() ?? 0 }
     for i in layerHeights.indices where layerHeights[i] < 10 { layerHeights[i] = 10 }
     var y: Double = 0
@@ -290,40 +329,9 @@ struct Layered {
       y += layerHeights[l] + rankSep
     }
     let totalHeight = max(0, y - rankSep)
-    // Initial packing.
-    for layer in layers {
-      var x: Double = 0
-      for v in layer {
-        verts[v].x = x + verts[v].w / 2
-        x += verts[v].w + nodeSep
-      }
-    }
-    func resolve(_ layer: [Int]) {
-      // Enforce minimum separation left-to-right, then centre the layer as a whole.
-      for i in 1..<max(1, layer.count) {
-        let a = layer[i - 1], b = layer[i]
-        let minX = verts[a].x + verts[a].w / 2 + nodeSep + verts[b].w / 2
-        if verts[b].x < minX { verts[b].x = minX }
-      }
-      for i in stride(from: layer.count - 2, through: 0, by: -1) {
-        let a = layer[i], b = layer[i + 1]
-        let maxX = verts[b].x - verts[b].w / 2 - nodeSep - verts[a].w / 2
-        if verts[a].x > maxX { verts[a].x = maxX }
-      }
-    }
-    for _ in 0..<6 {
-      for l in 1..<layers.count {
-        for v in layers[l] where !up[v].isEmpty { verts[v].x = up[v].map { verts[$0].x }.reduce(0, +) / Double(up[v].count) }
-        resolve(layers[l])
-      }
-      for l in stride(from: layers.count - 2, through: 0, by: -1) {
-        for v in layers[l] where !down[v].isEmpty {
-          let target = down[v].map { verts[$0].x }.reduce(0, +) / Double(down[v].count)
-          verts[v].x = (verts[v].x + target) / 2
-        }
-        resolve(layers[l])
-      }
-    }
+    let xs = Coordinates(layers: layers, widths: verts.map(\.w), isDummy: verts.map(\.isDummy), up: up, down: down, sep: nodeSep).run()
+    for v in verts.indices { verts[v].x = xs[v] }
+
     // Normalise x to start at 0.
     let minX = verts.map { $0.x - $0.w / 2 }.min() ?? 0
     let maxX = verts.map { $0.x + $0.w / 2 }.max() ?? 0
@@ -345,4 +353,147 @@ struct Layered {
   }
 
   private func point(_ x: Double, _ y: Double) -> CGPoint { horizontal ? CGPoint(x: y, y: x) : CGPoint(x: x, y: y) }
+}
+
+/// Brandes-Köpf horizontal coordinate assignment.
+///
+/// Averaging a vertex against its neighbours and then pushing the layer apart, which is the obvious
+/// thing to do, leaves every chain sagging a little further than the last and every long edge bent.
+/// This instead aligns each vertex with a *median* neighbour so that the two form a block, compacts
+/// the blocks against each other, and does the whole thing from each of the four corners, keeping
+/// the average of the two middle answers. Chains come out on one line and long edges come out
+/// straight, which is what a layered drawing is read along.
+struct Coordinates {
+  let layers: [[Int]]
+  let widths: [Double]
+  let isDummy: [Bool]
+  /// Neighbours in the previous and the next layer.
+  let up: [[Int]]
+  let down: [[Int]]
+  let sep: Double
+
+  private var count: Int { widths.count }
+  private func key(_ upper: Int, _ lower: Int) -> Int { upper * count + lower }
+
+  func run() -> [Double] {
+    let conflicts = type1Conflicts()
+    let candidates = [(false, false), (false, true), (true, false), (true, true)].map {
+      pass(upward: $0.0, rightward: $0.1, conflicts: conflicts)
+    }
+    // Line the four up with the narrowest of them — left-biased on the left edge, right-biased on
+    // the right — then take the average of the two middle answers.
+    let extents = candidates.map { xs -> (lo: Double, hi: Double) in
+      var lo = Double.infinity, hi = -Double.infinity
+      for v in 0..<count {
+        lo = min(lo, xs[v] - widths[v] / 2)
+        hi = max(hi, xs[v] + widths[v] / 2)
+      }
+      return (lo, hi)
+    }
+    let narrowest = extents.indices.min { extents[$0].hi - extents[$0].lo < extents[$1].hi - extents[$1].lo } ?? 0
+    let aligned = candidates.indices.map { i -> [Double] in
+      let shift = i % 2 == 0 ? extents[narrowest].lo - extents[i].lo : extents[narrowest].hi - extents[i].hi
+      return candidates[i].map { $0 + shift }
+    }
+    return (0..<count).map { v in
+      let four = aligned.map { $0[v] }.sorted()
+      return (four[1] + four[2]) / 2
+    }
+  }
+
+  /// A segment between two dummy vertices is part of a long edge and has to stay straight; where an
+  /// ordinary segment crosses one, the ordinary one is marked and gives way during alignment.
+  private func type1Conflicts() -> Set<Int> {
+    var marked: Set<Int> = []
+    guard layers.count > 2 else { return marked }
+    var pos = [Int](repeating: 0, count: count)
+    for layer in layers { for (i, v) in layer.enumerated() { pos[v] = i } }
+    for i in 1..<(layers.count - 1) {
+      let lower = layers[i + 1]
+      var k0 = 0, scanned = 0
+      for l1 in lower.indices {
+        let v = lower[l1]
+        let inner = isDummy[v] ? up[v].first(where: { isDummy[$0] }) : nil
+        guard l1 == lower.count - 1 || inner != nil else { continue }
+        let k1 = inner.map { pos[$0] } ?? (layers[i].count - 1)
+        while scanned <= l1 {
+          for u in up[lower[scanned]] where pos[u] < k0 || pos[u] > k1 { marked.insert(key(u, lower[scanned])) }
+          scanned += 1
+        }
+        k0 = k1
+      }
+    }
+    return marked
+  }
+
+  /// One of the four corners: `upward` sweeps from the last layer, `rightward` from the right.
+  private func pass(upward: Bool, rightward: Bool, conflicts: Set<Int>) -> [Double] {
+    var ls = layers
+    if upward { ls.reverse() }
+    if rightward { for i in ls.indices { ls[i].reverse() } }
+    let previous = upward ? down : up
+    var pos = [Int](repeating: 0, count: count)
+    var layerOf = [Int](repeating: 0, count: count)
+    for (i, layer) in ls.enumerated() { for (j, v) in layer.enumerated() { pos[v] = j; layerOf[v] = i } }
+
+    // Alignment: each vertex joins the block of a median neighbour, as long as that does not cross
+    // an alignment already made in this layer or a segment that has to stay straight.
+    var root = Array(0..<count), align = Array(0..<count)
+    for i in 1..<max(1, ls.count) {
+      var placed = -1
+      for v in ls[i] {
+        let neighbours = previous[v].sorted { pos[$0] < pos[$1] }
+        guard !neighbours.isEmpty else { continue }
+        let medians = Set([(neighbours.count - 1) / 2, neighbours.count / 2]).sorted()
+        for m in medians where align[v] == v {
+          let u = neighbours[m]
+          let blocked = upward ? conflicts.contains(key(v, u)) : conflicts.contains(key(u, v))
+          if !blocked, placed < pos[u] {
+            align[u] = v
+            root[v] = root[u]
+            align[v] = root[v]
+            placed = pos[u]
+          }
+        }
+      }
+    }
+
+    // Compaction: place each block against the one to its left, and let blocks that meet through a
+    // common sink pull each other along rather than pile up.
+    var sink = Array(0..<count)
+    var shift = [Double](repeating: .infinity, count: count)
+    var x = [Double?](repeating: nil, count: count)
+    // A dummy vertex is a passing edge, not a box: it needs half the room beside its neighbour.
+    func separation(_ a: Int, _ b: Int) -> Double {
+      (widths[a] + widths[b]) / 2 + (isDummy[a] || isDummy[b] ? sep / 2 : sep)
+    }
+    func placeBlock(_ v: Int) {
+      guard x[v] == nil else { return }
+      x[v] = 0
+      var w = v
+      repeat {
+        if pos[w] > 0 {
+          let left = ls[layerOf[w]][pos[w] - 1]
+          let u = root[left]
+          placeBlock(u)
+          if sink[v] == v { sink[v] = sink[u] }
+          if sink[v] == sink[u] {
+            x[v] = max(x[v]!, x[u]! + separation(left, w))
+          } else {
+            shift[sink[u]] = min(shift[sink[u]], x[v]! - x[u]! - separation(left, w))
+          }
+        }
+        w = align[w]
+      } while w != v
+    }
+    for v in 0..<count where root[v] == v { placeBlock(v) }
+    var out = [Double](repeating: 0, count: count)
+    for v in 0..<count {
+      out[v] = x[root[v]] ?? 0
+      let s = shift[sink[root[v]]]
+      if s < .infinity { out[v] += s }
+    }
+    if rightward { for v in 0..<count { out[v] = -out[v] } }
+    return out
+  }
 }

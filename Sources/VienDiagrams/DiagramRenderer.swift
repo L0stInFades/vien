@@ -18,7 +18,16 @@ public enum DiagramRenderer {
     var draw: (inout any Canvas) -> Void
     switch diagram {
     case .graph(let g):
-      let r = GraphRenderer(diagram: g, theme: theme)
+      // A long chain laid out across the page has to be shrunk to fit the column, and shrunk text
+      // cannot be read; the same chain laid out down the page keeps its size. Try the author's
+      // direction and the quarter turn of it, and keep whichever survives the fit better.
+      var r = GraphRenderer(diagram: g, theme: theme)
+      if maxWidth > 0, r.size.width > maxWidth {
+        var turned = g
+        turned.direction = g.direction.turned
+        let alternative = GraphRenderer(diagram: turned, theme: theme)
+        if min(1, maxWidth / alternative.size.width) > min(1, maxWidth / r.size.width) { r = alternative }
+      }
       size = r.size
       draw = { c in r.draw(on: &c) }
     case .sequence(let s):
@@ -61,7 +70,7 @@ public enum DiagramRenderer {
       throw DiagramSyntaxError(line: 1, message: "“\(kind)” diagrams are not supported yet")
     }
     size = CGSize(width: max(24, size.width.rounded(.up)), height: max(24, size.height.rounded(.up)))
-    // Bitmap: drawn at the natural size; the editor scales wide diagrams down to fit.
+    // Bitmap: drawn at the natural size; the editor scales anything still too wide down to fit.
     guard let cg = CGCanvas.makeImage(size: size, scale: scale, background: nil, draw: { canvas in
       var any: any Canvas = canvas
       draw(&any)
@@ -69,7 +78,6 @@ public enum DiagramRenderer {
     }) else { throw DiagramSyntaxError(line: 1, message: "could not allocate a bitmap") }
     var svgCanvas: any Canvas = SVGCanvas(size: size)
     draw(&svgCanvas)
-    _ = maxWidth
     return RenderedDiagram(image: cg, size: size, svg: (svgCanvas as! SVGCanvas).svg)
   }
 

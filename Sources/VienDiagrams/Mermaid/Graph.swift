@@ -3,7 +3,18 @@ import Foundation
 
 /// Node/edge/cluster model shared by flowcharts, class diagrams and state diagrams.
 public struct GraphDiagram: Sendable {
-  public enum Direction: String, Sendable { case TB, BT, LR, RL }
+  public enum Direction: String, Sendable {
+    case TB, BT, LR, RL
+    /// The same flow turned a quarter: what a graph too wide for its measure is laid out along instead.
+    public var turned: Direction {
+      switch self {
+      case .TB: return .LR
+      case .BT: return .RL
+      case .LR: return .TB
+      case .RL: return .BT
+      }
+    }
+  }
 
   public enum Shape: Sendable, Equatable {
     case rect, rounded, stadium, subroutine, cylinder, circle, doubleCircle, asymmetric, diamond, hexagon

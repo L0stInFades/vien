@@ -135,16 +135,11 @@ nonisolated final class OverlayFragment: MarkdownFragment {
     super.init(textElement: textElement, range: range, decor: decor, palette: palette)
   }
 
-  /// Where a picture may go, in the coordinates `draw(at:in:)` is given. A diagram or a formula may
-  /// use the whole window: shrunk to a reading measure a wide diagram cannot be read, and a diagram
-  /// is there to be read. An image belongs in the text column, with the prose.
+  /// Where a picture goes, in the coordinates `draw(at:in:)` is given: the text column, the same
+  /// measure as the prose, so its edges line up with the paragraphs around it.
+  /// `super`, not `self`: this fragment's frame is measured from the picture, which needs the box.
   private var box: (x: CGFloat, width: CGFloat) {
-    let column = textLayoutManager?.textContainer?.size.width ?? initialWidth
-    // `super`, not `self`: this fragment's frame is measured from the picture, which needs the box.
-    let left = -super.layoutFragmentFrame.minX
-    if case .images = overlay { return (left, max(120, column)) }
-    let margin = textLayoutManager?.textContainer?.textView?.textContainerInset.width ?? 0
-    return (left - margin + 24, max(120, column + 2 * margin - 48))
+    (-super.layoutFragmentFrame.minX, max(120, textLayoutManager?.textContainer?.size.width ?? initialWidth))
   }
 
   var contentWidth: CGFloat { box.width }

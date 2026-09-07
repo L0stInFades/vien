@@ -85,10 +85,11 @@ round it out.
   shows everything.
 * **Diagrams and math draw themselves.** A Mermaid fence or a `$$` block gets a custom
   `NSTextLayoutFragment` that reserves space and draws the rendered bitmap beneath the closing line;
-  the text stays editable above it. A picture may use the whole window rather than the text column,
-  because a wide diagram shrunk to a reading measure cannot be read; images stay with the prose.
-  Rendering is synchronous native code (5–20 ms per diagram, <2 ms per formula) with an in-memory
-  cache.
+  the text stays editable above it, and the picture keeps the measure of the text column so its
+  edges line up with the prose. A flowchart too wide for that measure is laid out along the other
+  axis instead — a long chain turned down the page keeps its size, where shrunk to fit it could not
+  be read — and the layout keeps whichever of the two survives the fit better. Rendering is
+  synchronous native code (5–20 ms per diagram, <2 ms per formula) with an in-memory cache.
 * **Tables are edited as tables.** The Table menu (also in the context menu) inserts, formats, adds,
   moves and deletes rows and columns and sets alignment; the model is read from the raw rows, so
   escaped pipes, extra cells and list or quote prefixes survive. Tab and Shift-Tab move between
