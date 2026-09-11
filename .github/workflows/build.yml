@@ -27,7 +27,7 @@ jobs:
           dist/Vien.app/Contents/MacOS/Vien --export html README.md /tmp/readme.html
           dist/Vien.app/Contents/MacOS/Vien --export pdf README.md /tmp/readme.pdf
           test -s /tmp/readme.html && test -s /tmp/readme.pdf
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: Vien.app
           path: dist/Vien.app
